@@ -100,7 +100,7 @@ class MenuDrawerState extends State<MenuDrawer> {
                 child: Container(height: 40, padding: EdgeInsets.symmetric(horizontal: 20),
                   child: Row(
                     children: <Widget>[
-                      Icon(Icons.price_change_outlined, color: Colors.grey, size: 20),
+                      Icon(Icons.person, color: Colors.grey, size: 20),
                       Container(width: 20),
                       Expanded(child: Text("Coupons", style: TextStyle(color: Colors.grey))),
                     ],
