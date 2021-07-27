@@ -64,7 +64,7 @@ class _AllCategoriesState extends State<AllCategories> {
                   itemBuilder: (BuildContext context, int index) {
                     return new InkWell(
                       onTap: (){
-                        Navigator.push(context, new MaterialPageRoute(builder: (context) => AllServicesList()));
+                       // Navigator.push(context, new MaterialPageRoute(builder: (context) => AllServicesList()));
                       },
                       child: Card(
                         shape: RoundedRectangleBorder(

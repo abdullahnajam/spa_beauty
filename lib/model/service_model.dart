@@ -1,14 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ServiceModel{
-  String id,name,image,gender,categoryName,categoryId;
-  double rating;
+  String id,name,image,gender,categoryName,categoryId,description;
+  int rating;
   int totalRating;
   String price;
 
 
   ServiceModel(this.id, this.name, this.image, this.gender, this.categoryName,
-      this.categoryId, this.rating, this.price,this.totalRating);
+      this.categoryId, this.rating, this.price,this.totalRating,this.description);
 
   ServiceModel.fromMap(Map<String,dynamic> map,String key)
       : id=key,
@@ -19,6 +19,7 @@ class ServiceModel{
         categoryId = map['categoryId'],
         rating = map['rating'],
         price = map['price'],
+        description = map['description'],
         totalRating = map['totalRating'];
 
 
