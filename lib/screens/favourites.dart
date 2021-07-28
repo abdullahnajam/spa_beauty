@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
@@ -54,6 +56,7 @@ class _FavouritesState extends State<Favourites> {
                                 Text("5"),
                                 Container(height: 10, child: VerticalDivider(color: Colors.grey)),
                                 RatingBar(
+
                                   initialRating: 3,
                                   direction: Axis.horizontal,
                                   allowHalfRating: true,
@@ -63,6 +66,7 @@ class _FavouritesState extends State<Favourites> {
                                     half: Icon(Icons.star_half,color: darkBrown),
                                     empty:Icon(Icons.star_border,color: darkBrown,),
                                   ),
+                                  ignoreGestures: true,
                                   itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
                                   onRatingUpdate: (rating) {
                                     print(rating);
@@ -95,5 +99,18 @@ class _FavouritesState extends State<Favourites> {
         ),
       ),
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    List<String> id=[];
+    FirebaseFirestore.instance.collection('favourites').doc(FirebaseAuth.instance.currentUser!.uid).collection("services").get().then((QuerySnapshot querySnapshot) {
+      querySnapshot.docs.forEach((doc) {
+        setState(() {
+          id.add(doc['serviceId']);
+        });
+      });
+    });
   }
 }

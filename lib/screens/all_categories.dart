@@ -136,7 +136,7 @@ class _AllCategoriesState extends State<AllCategories> {
                                             topRight: Radius.circular(10)
                                         ),
                                         image: DecorationImage(
-                                            image: AssetImage("assets/images/placeholder.png"),
+                                            image: NetworkImage(model.image),
                                             fit: BoxFit.cover
                                         )
                                     ),
@@ -152,7 +152,7 @@ class _AllCategoriesState extends State<AllCategories> {
                                     ),
                                   ),
                                   alignment: Alignment.center,
-                                  child: Text("Service",style: TextStyle(color: Colors.white),),
+                                  child: Text(model.name,style: TextStyle(color: Colors.white),),
                                 )
                               ],
                             ),
