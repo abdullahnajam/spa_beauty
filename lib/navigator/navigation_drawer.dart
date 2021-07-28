@@ -3,6 +3,7 @@ import 'package:cool_alert/cool_alert.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:spa_beauty/auth/auth_selection.dart';
+import 'package:spa_beauty/model/user_model.dart';
 import 'package:spa_beauty/screens/all_categories.dart';
 import 'package:spa_beauty/screens/appointments.dart';
 import 'package:spa_beauty/screens/coupons.dart';
@@ -102,9 +103,10 @@ class MenuDrawerState extends State<MenuDrawer> {
                       .get()
                       .then((DocumentSnapshot documentSnapshot) {
                     if (documentSnapshot.exists) {
-
+                      Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
+                      UserModel user=UserModel.fromMap(data, documentSnapshot.reference.id);
                       Navigator.pushReplacement(context, new MaterialPageRoute(
-                          builder: (context) => MyAccount()));
+                          builder: (context) => MyAccount(user)));
                     }
                   });
 

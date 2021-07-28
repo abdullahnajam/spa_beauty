@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:spa_beauty/model/category_model.dart';
 import 'package:spa_beauty/model/service_model.dart';
 import 'package:spa_beauty/navigator/navigation_drawer.dart';
 import 'package:spa_beauty/screens/reservation.dart';
@@ -423,7 +424,7 @@ class _HomePageState extends State<HomePage> {
                         physics: NeverScrollableScrollPhysics(),
                         children: snapshot.data!.docs.map((DocumentSnapshot document) {
                           Map<String, dynamic> data = document.data() as Map<String, dynamic>;
-
+                          CategoryModel model= CategoryModel.fromMap(data, document.reference.id);
                           return new Padding(
                             padding: const EdgeInsets.only(top: 15.0),
                             child: Column(
@@ -436,7 +437,7 @@ class _HomePageState extends State<HomePage> {
                                       Text(data['name'],style: TextStyle(fontWeight: FontWeight.w500,fontSize: 18),),
                                       InkWell(
                                         onTap: (){
-                                          // Navigator.push(context, new MaterialPageRoute(builder: (context) => AllServicesList()));
+                                           Navigator.push(context, new MaterialPageRoute(builder: (context) => AllServicesList(model.id,model.name)));
                                         },
                                         child: Text("View All",style: TextStyle(fontWeight: FontWeight.w300,fontSize: 15),),
                                       )
