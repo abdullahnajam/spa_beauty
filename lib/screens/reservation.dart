@@ -6,6 +6,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:sn_progress_dialog/progress_dialog.dart';
 import 'package:spa_beauty/model/service_model.dart';
+import 'package:spa_beauty/model/specialist_model.dart';
+import 'package:spa_beauty/model/time_model.dart';
 import 'package:spa_beauty/payment/payment-service.dart';
 import 'package:spa_beauty/values/constants.dart';
 class Reservation extends StatefulWidget {
@@ -20,6 +22,37 @@ class Reservation extends StatefulWidget {
 
 
 class _ReservationState extends State<Reservation> {
+
+  List<TimeModel> time=[];
+  List<SpecialistModel> specialist=[];
+  getSpecialists(){
+    FirebaseFirestore.instance.collection('specialists').where("serviceId",isEqualTo: widget.model.id).get().then((QuerySnapshot querySnapshot) {
+      querySnapshot.docs.forEach((doc) {
+        SpecialistModel model=new SpecialistModel(doc.reference.id,doc['name'], doc['image'],doc['serviceId']);
+        setState(() {
+          specialist.add(model);
+        });
+      });
+      setState(() {
+        isSpecialistLoading=false;
+      });
+    });
+  }
+  getTimeSlots(){
+    FirebaseFirestore.instance.collection('timeslots').get().then((QuerySnapshot querySnapshot) {
+      querySnapshot.docs.forEach((doc) {
+        TimeModel timeModel=new TimeModel(doc['time'], false);
+        setState(() {
+          time.add(timeModel);
+        });
+      });
+      setState(() {
+        isTimeLoading=false;
+      });
+    });
+  }
+  bool isTimeLoading=true;
+  bool isSpecialistLoading=true;
 
   payViaNewCard(BuildContext context) async {
     final ProgressDialog pr = ProgressDialog(context: context);
@@ -56,7 +89,6 @@ class _ReservationState extends State<Reservation> {
   }
   DateTime _selectedDate=DateTime.now();
   String? appointmentTimeSelected;
-  List<String> time=[];
   List<bool> timeSelected=[];
   String specialistName="none";
   String specialistId="none";
@@ -140,68 +172,14 @@ class _ReservationState extends State<Reservation> {
                   margin: EdgeInsets.only(left: 10,top: 10),
                   child: Text("Available Slots",style: TextStyle(fontWeight: FontWeight.w500,fontSize: 18),),
                 ),
-                Expanded(
-                  child: StreamBuilder<QuerySnapshot>(
-                    stream: FirebaseFirestore.instance.collection('gallery').where("serviceId",isEqualTo: widget.model.id).snapshots(),
-                    builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-                      if (snapshot.hasError) {
-                        return Center(
-                          child: Column(
-                            children: [
-                              Image.asset("assets/images/wrong.png",width: 150,height: 150,),
-                              Text("Something Went Wrong")
-
-                            ],
-                          ),
-                        );
-                      }
-
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return Center(
-                          child: CircularProgressIndicator(),
-                        );
-                      }
-                      if (snapshot.data!.size==0){
-                        return Container(
-                            alignment: Alignment.center,
-                            child:Text("No Pictures")
-
-                        );
-
-                      }
-                      return new GridView(
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                            childAspectRatio: (itemWidth / itemHeight),
-                            crossAxisCount: (orientation == Orientation.portrait) ? 4 : 6),
-                        children: snapshot.data!.docs.map((DocumentSnapshot document) {
-                          Map<String, dynamic> data = document.data() as Map<String, dynamic>;
-                          for(int i=0;i<snapshot.data!.size;i++){
-                            time.add(data['time']);
-                            timeSelected.add(false);
-                          }
-                          return Card(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10.0),
-                            ),
-                            child: InkWell(
-                              child: Container(
-                                decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(10)
-                                ),
-                                alignment: Alignment.center,
-                                child: Text("10:00 AM",style: TextStyle(fontWeight: FontWeight.w400,fontSize: 15),),
-                              ),
-                            ),
-                          );
-                        }).toList(),
-                      );
-                    },
-                  ),
-                ),
-                Expanded(
+                isTimeLoading?
+                Container(
+                  alignment: Alignment.center,
+                  margin: EdgeInsets.all(10),
+                  child: CircularProgressIndicator(),
+                ):Expanded(
                   child: GridView.builder(
-                    itemCount: 10,
+                    itemCount: time.length,
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                         childAspectRatio: (itemWidth / itemHeight),
                         crossAxisCount: (orientation == Orientation.portrait) ? 4 : 6),
@@ -211,13 +189,29 @@ class _ReservationState extends State<Reservation> {
                           borderRadius: BorderRadius.circular(10.0),
                         ),
                         child: InkWell(
+                          onTap: (){
+                            for(int i=0;i<time.length;i++){
+                              if(i==index){
+                                setState(() {
+                                  time[i].isSelected=true;
+                                  appointmentTimeSelected=time[i].time;
+                                });
+                              }
+                              else{
+                                setState(() {
+                                  time[i].isSelected=false;
+                                });
+                              }
+
+                            }
+                          },
                           child: Container(
                             decoration: BoxDecoration(
-                                color: Colors.white,
+                                color: time[index].isSelected?lightBrown:Colors.white,
                                 borderRadius: BorderRadius.circular(10)
                             ),
                             alignment: Alignment.center,
-                            child: Text("10:00 AM",style: TextStyle(fontWeight: FontWeight.w400,fontSize: 15),),
+                            child: Text(time[index].time,style: TextStyle(fontWeight: FontWeight.w400,fontSize: 15),),
                           ),
                         ),
                       );
@@ -237,10 +231,15 @@ class _ReservationState extends State<Reservation> {
                   margin: EdgeInsets.all(10),
                   child: Text("Choose Specialist",style: TextStyle(fontWeight: FontWeight.w500,fontSize: 18),),
                 ),
+                isSpecialistLoading?
                 Container(
+                  alignment: Alignment.center,
+                  margin: EdgeInsets.all(10),
+                  child: CircularProgressIndicator(),
+                ):Container(
                   height: 120,
                   child: ListView.builder(
-                    itemCount: 2,
+                    itemCount: specialist.length,
                     scrollDirection: Axis.horizontal,
                     itemBuilder: (BuildContext context,index){
                       return Container(
@@ -249,6 +248,7 @@ class _ReservationState extends State<Reservation> {
                         width: 80,
                         decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(10),
+                            border: Border.all(),
                             image: DecorationImage(
                                 image: AssetImage("assets/images/placeholder.png"),
                                 fit: BoxFit.cover
