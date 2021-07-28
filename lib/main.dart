@@ -11,7 +11,7 @@ void main() async{
   await Firebase.initializeApp();
   runApp(
     EasyLocalization(
-        supportedLocales: [Locale('en', 'US'), Locale('ar', 'AR')],
+        supportedLocales: [Locale('en', 'US'), Locale('ar', 'EG')],
         path: 'assets/json', // <-- change the path of the translation files
         fallbackLocale: Locale('en', 'US'),
         child: MyApp()

@@ -3,8 +3,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:spa_beauty/navigator/bottom_navigation.dart';
 import 'package:spa_beauty/navigator/navigation_drawer.dart';
+import 'package:spa_beauty/screens/privacy_policy.dart';
 import 'package:spa_beauty/values/constants.dart';
 import 'package:spa_beauty/widget/appbar.dart';
+import 'package:easy_localization/easy_localization.dart';
 class MyAccount extends StatefulWidget {
   const MyAccount({Key? key}) : super(key: key);
 
@@ -35,11 +37,13 @@ class _MyAccountState extends State<MyAccount> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   SizedBox(height: 20,),
-                  Container(
-                    height: 80,
-                    width: 80,
-                    child: CircleAvatar(
-                      child: Text("Image"),
+                  InkWell(
+                    child: Container(
+                      height: 80,
+                      width: 80,
+                      child: CircleAvatar(
+                        child: Text("Image"),
+                      ),
                     ),
                   ),
                   Container(
@@ -73,8 +77,8 @@ class _MyAccountState extends State<MyAccount> {
                                 backgroundColor: darkBrown,
                                 child: Icon(Icons.credit_card_outlined,color: Colors.white,),
                               ),
-                              title:Text("Payment Methods"),
-                              trailing: Icon(Icons.chevron_right,color: Colors.grey,),
+                              title:Text("Wallet"),
+                              trailing: Text("0",style: TextStyle(color: lightBrown),),
 
                             ),
                             ListTile(
@@ -117,7 +121,7 @@ class _MyAccountState extends State<MyAccount> {
                               title:Text("Invite Friend"),
                               trailing: Icon(Icons.chevron_right,color: Colors.grey,),
                             ),
-                            ListTile(
+                            /*ListTile(
                               leading: CircleAvatar(
                                 backgroundColor: darkBrown,
                                 child: Icon(Icons.settings,color: Colors.white,),
@@ -125,13 +129,16 @@ class _MyAccountState extends State<MyAccount> {
                               title:Text("Settings"),
                               trailing: Icon(Icons.chevron_right,color: Colors.grey,),
 
-                            ),
+                            ),*/
                             ListTile(
+                              onTap: (){
+                                Navigator.push(context, new MaterialPageRoute(builder: (context) => PrivacyPolicy()));
+                              },
                               leading: CircleAvatar(
                                 backgroundColor: darkBrown,
                                 child: Icon(Icons.card_travel_sharp,color: Colors.white,),
                               ),
-                              title:Text("Terms and Service"),
+                              title:Text('privacy'.tr()),
                               trailing: Icon(Icons.chevron_right,color: Colors.grey,),
 
                             ),

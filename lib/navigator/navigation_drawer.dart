@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cool_alert/cool_alert.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -95,8 +96,18 @@ class MenuDrawerState extends State<MenuDrawer> {
               FirebaseAuth.instance.currentUser!=null?
               InkWell(
                 onTap: (){
-                Navigator.pushReplacement(context, new MaterialPageRoute(
-                    builder: (context) => MyAccount()));
+                  FirebaseFirestore.instance
+                      .collection('customer')
+                      .doc(FirebaseAuth.instance.currentUser!.uid)
+                      .get()
+                      .then((DocumentSnapshot documentSnapshot) {
+                    if (documentSnapshot.exists) {
+
+                      Navigator.pushReplacement(context, new MaterialPageRoute(
+                          builder: (context) => MyAccount()));
+                    }
+                  });
+
               },
                 child: Container(height: 40, padding: EdgeInsets.symmetric(horizontal: 20),
                   child: Row(
