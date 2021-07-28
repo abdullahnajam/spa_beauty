@@ -1,12 +1,19 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:spa_beauty/model/user_model.dart';
 import 'package:spa_beauty/navigator/bottom_navigation.dart';
 import 'package:spa_beauty/navigator/navigation_drawer.dart';
+import 'package:spa_beauty/screens/notifications.dart';
+import 'package:spa_beauty/screens/privacy_policy.dart';
 import 'package:spa_beauty/values/constants.dart';
 import 'package:spa_beauty/widget/appbar.dart';
+import 'package:easy_localization/easy_localization.dart';
 class MyAccount extends StatefulWidget {
-  const MyAccount({Key? key}) : super(key: key);
+  UserModel userModel;
+
+  MyAccount(this.userModel);
 
   @override
   _MyAccountState createState() => _MyAccountState();
@@ -35,19 +42,21 @@ class _MyAccountState extends State<MyAccount> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   SizedBox(height: 20,),
-                  Container(
-                    height: 80,
-                    width: 80,
-                    child: CircleAvatar(
-                      child: Text("Image"),
+                  InkWell(
+                    child: Container(
+                      height: 80,
+                      width: 80,
+                      child: CircleAvatar(
+                        child: Image.network(widget.userModel.profilePicture),
+                      ),
                     ),
                   ),
                   Container(
                     margin: EdgeInsets.all(10),
-                    child: Text("John Doe",style:  Theme.of(context).textTheme.headline6!.apply(color: Colors.black),),
+                    child: Text(widget.userModel.username,style:  Theme.of(context).textTheme.headline6!.apply(color: Colors.black),),
                   ),
                   Container(
-                    child: Text("usermail@mail.com",style:  TextStyle(color: Colors.grey),),
+                    child: Text(widget.userModel.email,style:  TextStyle(color: Colors.grey),),
                   ),
                   SizedBox(height: 20,),
                 ],
@@ -73,8 +82,8 @@ class _MyAccountState extends State<MyAccount> {
                                 backgroundColor: darkBrown,
                                 child: Icon(Icons.credit_card_outlined,color: Colors.white,),
                               ),
-                              title:Text("Payment Methods"),
-                              trailing: Icon(Icons.chevron_right,color: Colors.grey,),
+                              title:Text("Wallet"),
+                              trailing: Text("0",style: TextStyle(color: lightBrown),),
 
                             ),
                             ListTile(
@@ -101,6 +110,9 @@ class _MyAccountState extends State<MyAccount> {
                         child: Column(
                           children: [
                             ListTile(
+                              onTap: (){
+                                Navigator.push(context, new MaterialPageRoute(builder: (context) => Notifications()));
+                              },
                               leading: CircleAvatar(
                                 backgroundColor: darkBrown,
                                 child: Icon(Icons.notifications_active_outlined,color: Colors.white,),
@@ -117,7 +129,7 @@ class _MyAccountState extends State<MyAccount> {
                               title:Text("Invite Friend"),
                               trailing: Icon(Icons.chevron_right,color: Colors.grey,),
                             ),
-                            ListTile(
+                            /*ListTile(
                               leading: CircleAvatar(
                                 backgroundColor: darkBrown,
                                 child: Icon(Icons.settings,color: Colors.white,),
@@ -125,13 +137,16 @@ class _MyAccountState extends State<MyAccount> {
                               title:Text("Settings"),
                               trailing: Icon(Icons.chevron_right,color: Colors.grey,),
 
-                            ),
+                            ),*/
                             ListTile(
+                              onTap: (){
+                                Navigator.push(context, new MaterialPageRoute(builder: (context) => PrivacyPolicy()));
+                              },
                               leading: CircleAvatar(
                                 backgroundColor: darkBrown,
                                 child: Icon(Icons.card_travel_sharp,color: Colors.white,),
                               ),
-                              title:Text("Terms and Service"),
+                              title:Text('privacy'.tr()),
                               trailing: Icon(Icons.chevron_right,color: Colors.grey,),
 
                             ),
@@ -171,5 +186,11 @@ class _MyAccountState extends State<MyAccount> {
         ),
       )
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+   
   }
 }

@@ -7,6 +7,7 @@ import 'package:spa_beauty/screens/reservation.dart';
 import 'package:spa_beauty/screens/services_detail.dart';
 import 'package:spa_beauty/values/constants.dart';
 import 'package:spa_beauty/widget/appbar.dart';
+import 'package:easy_localization/easy_localization.dart';
 class AllServicesList extends StatefulWidget {
   String catId,catName;
 
@@ -56,7 +57,7 @@ class _AllServicesListState extends State<AllServicesList> {
                     SizedBox(
                       width: 5,
                     ),
-                    Text("Search")
+                    Text('search'.tr())
                   ],
                 ),
               ),

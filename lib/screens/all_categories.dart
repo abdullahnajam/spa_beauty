@@ -7,6 +7,7 @@ import 'package:spa_beauty/screens/services_list.dart';
 import 'package:spa_beauty/search/search_category.dart';
 import 'package:spa_beauty/values/constants.dart';
 import 'package:spa_beauty/widget/appbar.dart';
+import 'package:easy_localization/easy_localization.dart';
 class AllCategories extends StatefulWidget {
   const AllCategories({Key? key}) : super(key: key);
 
@@ -71,7 +72,7 @@ class _AllCategoriesState extends State<AllCategories> {
                       SizedBox(
                         width: 5,
                       ),
-                      Text("Search")
+                      Text('search'.tr())
                     ],
                   ),
                 ),
@@ -136,7 +137,7 @@ class _AllCategoriesState extends State<AllCategories> {
                                             topRight: Radius.circular(10)
                                         ),
                                         image: DecorationImage(
-                                            image: AssetImage("assets/images/placeholder.png"),
+                                            image: NetworkImage(model.image),
                                             fit: BoxFit.cover
                                         )
                                     ),
@@ -152,7 +153,7 @@ class _AllCategoriesState extends State<AllCategories> {
                                     ),
                                   ),
                                   alignment: Alignment.center,
-                                  child: Text("Service",style: TextStyle(color: Colors.white),),
+                                  child: Text(model.name,style: TextStyle(color: Colors.white),),
                                 )
                               ],
                             ),

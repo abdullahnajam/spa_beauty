@@ -3,12 +3,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:spa_beauty/model/category_model.dart';
 import 'package:spa_beauty/model/service_model.dart';
 import 'package:spa_beauty/navigator/navigation_drawer.dart';
 import 'package:spa_beauty/screens/reservation.dart';
 import 'package:spa_beauty/screens/services_detail.dart';
 import 'package:spa_beauty/screens/services_list.dart';
 import 'package:spa_beauty/values/constants.dart';
+import 'package:easy_localization/easy_localization.dart';
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
 
@@ -20,6 +22,103 @@ class _HomePageState extends State<HomePage> {
   final GlobalKey<ScaffoldState> _drawerKey = GlobalKey();
   void _openDrawer () {
     _drawerKey.currentState!.openDrawer();
+  }
+  _showChangeLanguageDailog() async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: true, // user must tap button!
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: const BorderRadius.all(
+              Radius.circular(10.0),
+            ),
+          ),
+          insetAnimationDuration: const Duration(seconds: 1),
+          insetAnimationCurve: Curves.fastOutSlowIn,
+          elevation: 2,
+
+          child: Container(
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(30)
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  margin: EdgeInsets.all(10),
+                  child: Text('changeLanguage'.tr(),textAlign: TextAlign.center,style: TextStyle(fontSize: 20,color:Colors.black,fontWeight: FontWeight.w600),),
+                ),
+                ListTile(
+                  onTap: (){
+                    context.locale = Locale('ar', 'EG');
+
+                  },
+                  title: Text('arabic'.tr()),
+                ),
+                ListTile(
+                  onTap: (){
+                    context.locale = Locale('en', 'US');
+                  },
+                  title: Text("English"),
+                ),
+                SizedBox(
+                  height: 15,
+                )
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+  _showChangeGenderDailog() async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: true, // user must tap button!
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: const BorderRadius.all(
+              Radius.circular(10.0),
+            ),
+          ),
+          insetAnimationDuration: const Duration(seconds: 1),
+          insetAnimationCurve: Curves.fastOutSlowIn,
+          elevation: 2,
+
+          child: Container(
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(30)
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  margin: EdgeInsets.all(10),
+                  child: Text('chooseGender'.tr(),textAlign: TextAlign.center,style: TextStyle(fontSize: 20,color:Colors.black,fontWeight: FontWeight.w600),),
+                ),
+                ListTile(
+                  onTap: (){
+                    Navigator.pop(context);
+                  },
+                  title: Text('female'.tr()),
+                ),
+                ListTile(
+                  onTap: (){
+                    Navigator.pop(context);
+                  },
+                  title: Text('male'.tr()),
+                ),
+                SizedBox(
+                  height: 15,
+                )
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
   @override
   Widget build(BuildContext context) {
@@ -62,7 +161,7 @@ class _HomePageState extends State<HomePage> {
                                   children: [
                                     SizedBox(width: 5,),
                                     Icon(Icons.place,color: Colors.white,),
-                                    Text("Location",style: Theme.of(context).textTheme.bodyText1!.apply(color: Colors.white),)
+                                    Text('location'.tr(),style: Theme.of(context).textTheme.bodyText1!.apply(color: Colors.white),)
                                   ],
                                 ),
                                 IconButton(
@@ -93,17 +192,22 @@ class _HomePageState extends State<HomePage> {
                                           SizedBox(
                                             width: 5,
                                           ),
-                                          Text("Search")
+                                          Text('search'.tr())
                                         ],
                                       ),
                                     ),
                                   ),
-                                  Container(
-                                    height: 50,
-                                    width: MediaQuery.of(context).size.width*0.15,
-                                    child: CircleAvatar(
-                                      backgroundColor: Colors.white,
-                                      child: Image.asset('assets/images/sort.png',width: 25,height: 25,),
+                                  InkWell(
+                                    onTap: (){
+                                      _showChangeGenderDailog();
+                                    },
+                                    child: Container(
+                                      height: 50,
+                                      width: MediaQuery.of(context).size.width*0.15,
+                                      child: CircleAvatar(
+                                        backgroundColor: Colors.white,
+                                        child: Image.asset('assets/images/sort.png',width: 25,height: 25,),
+                                      ),
                                     ),
                                   ),
                                   Container(
@@ -320,7 +424,7 @@ class _HomePageState extends State<HomePage> {
                         physics: NeverScrollableScrollPhysics(),
                         children: snapshot.data!.docs.map((DocumentSnapshot document) {
                           Map<String, dynamic> data = document.data() as Map<String, dynamic>;
-
+                          CategoryModel model= CategoryModel.fromMap(data, document.reference.id);
                           return new Padding(
                             padding: const EdgeInsets.only(top: 15.0),
                             child: Column(
@@ -333,7 +437,7 @@ class _HomePageState extends State<HomePage> {
                                       Text(data['name'],style: TextStyle(fontWeight: FontWeight.w500,fontSize: 18),),
                                       InkWell(
                                         onTap: (){
-                                          // Navigator.push(context, new MaterialPageRoute(builder: (context) => AllServicesList()));
+                                           Navigator.push(context, new MaterialPageRoute(builder: (context) => AllServicesList(model.id,model.name)));
                                         },
                                         child: Text("View All",style: TextStyle(fontWeight: FontWeight.w300,fontSize: 15),),
                                       )

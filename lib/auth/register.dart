@@ -256,6 +256,7 @@ class _RegisterState extends State<Register> {
                                         'token': value,
                                         'topic': 'customer',
                                         'email': emailController.text,
+                                        'profilePicture':"https://firebasestorage.googleapis.com/v0/b/accesfy-882e6.appspot.com/o/images%2F2021-07-27%2001%3A30%3A51.606.png?alt=media&token=50eaee1a-4878-4ad4-985a-dfdfb19ce78d"
                                       }).then((value) {
                                         pr.close();
                                         Navigator.pushReplacement(context, new MaterialPageRoute(builder: (context) => BottomBar()));

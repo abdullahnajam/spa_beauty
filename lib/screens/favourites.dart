@@ -3,6 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:lottie/lottie.dart';
+import 'package:spa_beauty/auth/auth_selection.dart';
 import 'package:spa_beauty/model/service_model.dart';
 import 'package:spa_beauty/navigator/navigation_drawer.dart';
 import 'package:spa_beauty/screens/reservation.dart';
@@ -30,11 +32,11 @@ class _FavouritesState extends State<Favourites> {
       drawer: MenuDrawer(),
       key: _drawerKey,
       body: SafeArea(
-        child: Column(
+        child: FirebaseAuth.instance.currentUser!=null?Column(
           children: [
             CustomAppBar(_openDrawer, "Favourites"),
             SizedBox(height: 10,),
-            isLoaded?Expanded(
+            isLoaded?services.length>0?Expanded(
               child: ListView.builder(
                 itemCount: services.length,
                 itemBuilder: (BuildContext context,index){
@@ -107,8 +109,47 @@ class _FavouritesState extends State<Favourites> {
             ):Container(
               margin: EdgeInsets.all(10),
               alignment: Alignment.center,
+              child: Text("No Favourites"),
+            ):Container(
+              margin: EdgeInsets.all(10),
+              alignment: Alignment.center,
               child: CircularProgressIndicator(),
             )
+          ],
+        ):
+        Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Lottie.asset('assets/json/nouser.json',width: 150,height: 150),
+            Container(
+              alignment: Alignment.center,
+              child: Text("You are currently not logged In",style: TextStyle(fontSize: 20),),
+            ),
+            SizedBox(height: 20,),
+            InkWell(
+              onTap: (){
+                Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => AuthSelection()));
+              },
+              child: Container(
+                height: 50,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(40),
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      darkBrown,
+                      lightBrown,
+                    ],
+                  ),
+                ),
+                alignment: Alignment.center,
+                margin: EdgeInsets.all(12),
+                child:Text("LOGIN",style: TextStyle(color: Colors.white,fontSize: 20,fontWeight: FontWeight.w500),),
+              ),
+            )
+
           ],
         ),
       ),
@@ -118,32 +159,35 @@ class _FavouritesState extends State<Favourites> {
   @override
   void initState() {
     super.initState();
-
-    FirebaseFirestore.instance.collection('favourites').doc(FirebaseAuth.instance.currentUser!.uid).collection("services").get().then((QuerySnapshot querySnapshot) {
-      querySnapshot.docs.forEach((doc) {
-        setState(() {
-          id.add(doc['serviceId']);
+    if(FirebaseAuth.instance.currentUser!=null){
+      FirebaseFirestore.instance.collection('favourites').doc(FirebaseAuth.instance.currentUser!.uid).collection("services").get().then((QuerySnapshot querySnapshot) {
+        querySnapshot.docs.forEach((doc) {
+          setState(() {
+            id.add(doc['serviceId']);
+          });
         });
       });
-    });
-    FirebaseFirestore.instance.collection('services').get().then((QuerySnapshot querySnapshot) {
-      querySnapshot.docs.forEach((doc) {
-        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-        ServiceModel model= ServiceModel.fromMap(data, doc.reference.id);
-        for(int i=0;i<id.length;i++){
-          if(id[i]==model.id){
-            setState(() {
-              services.add(model);
-            });
+      FirebaseFirestore.instance.collection('services').get().then((QuerySnapshot querySnapshot) {
+        querySnapshot.docs.forEach((doc) {
+          Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+          ServiceModel model= ServiceModel.fromMap(data, doc.reference.id);
+          for(int i=0;i<id.length;i++){
+            if(id[i]==model.id){
+              setState(() {
+                services.add(model);
+              });
 
+            }
           }
-        }
+        });
+        setState(() {
+          isLoaded=true;
+        });
       });
-      setState(() {
-        isLoaded=true;
-      });
-    });
+    }
+    
 
-
+    
+    
   }
 }

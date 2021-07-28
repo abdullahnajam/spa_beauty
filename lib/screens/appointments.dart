@@ -1,7 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:lottie/lottie.dart';
+import 'package:spa_beauty/auth/auth_selection.dart';
 import 'package:spa_beauty/model/appointment_model.dart';
 import 'package:spa_beauty/navigator/navigation_drawer.dart';
 import 'package:spa_beauty/values/constants.dart';
@@ -29,7 +32,7 @@ class _AppointmentsState extends State<Appointments> {
       drawer: MenuDrawer(),
       key: _drawerKey,
       body: SafeArea(
-        child: Column(
+        child: FirebaseAuth.instance.currentUser!=null?Column(
           children: [
             CustomAppBar(_openDrawer,"Appointments"),
 
@@ -158,7 +161,8 @@ class _AppointmentsState extends State<Appointments> {
                   //if all is pressed is upcoming choosed ?  true
                   option1 == 1 ? Expanded(
                     child: StreamBuilder<QuerySnapshot>(
-                      stream: FirebaseFirestore.instance.collection('appointments').where('status', whereIn: ['Approved','Pending'] ).snapshots(),
+                      stream: FirebaseFirestore.instance.collection('appointments').where('status', whereIn: ['Approved','Pending'] )
+                        .where('userId', isEqualTo: FirebaseAuth.instance.currentUser!.uid ).snapshots(),
                       builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
                         if (snapshot.hasError) {
                           return Center(
@@ -199,7 +203,8 @@ class _AppointmentsState extends State<Appointments> {
                   //else if all is pressed past is choosed ? true
                   option1== 2 ? Expanded(
                     child: StreamBuilder<QuerySnapshot>(
-                      stream: FirebaseFirestore.instance.collection('appointments').where('status', whereIn: ['Completed','Cancelled'] ).snapshots(),
+                      stream: FirebaseFirestore.instance.collection('appointments').where('status', whereIn: ['Completed','Cancelled'] )
+                          .where('userId', isEqualTo: FirebaseAuth.instance.currentUser!.uid ).snapshots(),
                       builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
                         if (snapshot.hasError) {
                           return Center(
@@ -244,7 +249,8 @@ class _AppointmentsState extends State<Appointments> {
                   // if approved is choosed ? true
                   option1 == 1 ? Expanded(
                     child: StreamBuilder<QuerySnapshot>(
-                      stream: FirebaseFirestore.instance.collection('appointments').where('status', isEqualTo: 'Approved' ).snapshots(),
+                      stream: FirebaseFirestore.instance.collection('appointments').where('status', isEqualTo: 'Approved' )
+                          .where('userId', isEqualTo: FirebaseAuth.instance.currentUser!.uid ).snapshots(),
                       builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
                         if (snapshot.hasError) {
                           return Center(
@@ -285,7 +291,8 @@ class _AppointmentsState extends State<Appointments> {
                   // else is completed choosed ? true
                   option1 == 2 ?   Expanded(
                     child: StreamBuilder<QuerySnapshot>(
-                      stream: FirebaseFirestore.instance.collection('appointments').where('status', isEqualTo: 'Completed' ).snapshots(),
+                      stream: FirebaseFirestore.instance.collection('appointments').where('status', isEqualTo: 'Completed' )
+                          .where('userId', isEqualTo: FirebaseAuth.instance.currentUser!.uid ).snapshots(),
                       builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
                         if (snapshot.hasError) {
                           return Center(
@@ -329,7 +336,8 @@ class _AppointmentsState extends State<Appointments> {
              // if Pending is pressed ? true
              option1 == 1 ? Expanded(
                child: StreamBuilder<QuerySnapshot>(
-                 stream: FirebaseFirestore.instance.collection('appointments').where('status', isEqualTo: 'Pending' ).snapshots(),
+                 stream: FirebaseFirestore.instance.collection('appointments').where('status', isEqualTo: 'Pending' )
+                     .where('userId', isEqualTo: FirebaseAuth.instance.currentUser!.uid ).snapshots(),
                  builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
                    if (snapshot.hasError) {
                      return Center(
@@ -370,7 +378,8 @@ class _AppointmentsState extends State<Appointments> {
              // if cancelled is pressed ? true
              option1 == 2 ? Expanded(
                child: StreamBuilder<QuerySnapshot>(
-                 stream: FirebaseFirestore.instance.collection('appointments').where('status', isEqualTo: 'Cancelled' ).snapshots(),
+                 stream: FirebaseFirestore.instance.collection('appointments').where('status', isEqualTo: 'Cancelled' )
+                     .where('userId', isEqualTo: FirebaseAuth.instance.currentUser!.uid ).snapshots(),
                  builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
                    if (snapshot.hasError) {
                      return Center(
@@ -414,7 +423,42 @@ class _AppointmentsState extends State<Appointments> {
 
 
           ],
-        ),
+        ):
+        Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Lottie.asset('assets/json/nouser.json',width: 150,height: 150),
+          Container(
+            alignment: Alignment.center,
+            child: Text("You are currently not logged In",style: TextStyle(fontSize: 20),),
+          ),
+          SizedBox(height: 20,),
+          InkWell(
+            onTap: (){
+              Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => AuthSelection()));
+            },
+            child: Container(
+              height: 50,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(40),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    darkBrown,
+                    lightBrown,
+                  ],
+                ),
+              ),
+              alignment: Alignment.center,
+              margin: EdgeInsets.all(12),
+              child:Text("LOGIN",style: TextStyle(color: Colors.white,fontSize: 20,fontWeight: FontWeight.w500),),
+            ),
+          )
+
+        ],
+      ),
       ),
     );
   }

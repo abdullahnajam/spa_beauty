@@ -84,7 +84,7 @@ class _ReservationState extends State<Reservation> {
       'specialistName': specialistName,
       'serviceId':widget.model.id,
       'serviceName': widget.model.name,
-      'status': "pending",
+      'status': "Pending",
       'isRated':false,
       'rating':0
     }).then((value) {

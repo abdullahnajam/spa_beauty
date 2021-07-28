@@ -1,6 +1,11 @@
+import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:sn_progress_dialog/progress_dialog.dart';
 import 'package:spa_beauty/model/appointment_model.dart';
+import 'package:spa_beauty/screens/appointments.dart';
+import 'package:spa_beauty/screens/reservation.dart';
 import 'package:spa_beauty/values/constants.dart';
 
 class AppointmentTile extends StatefulWidget {
@@ -13,6 +18,8 @@ class AppointmentTile extends StatefulWidget {
 }
 
 class _AppointmentTileState extends State<AppointmentTile> {
+  int? rating=5;
+  var reviewController=TextEditingController();
 
   Future<void> _showRatedDialog() async {
 
@@ -22,7 +29,7 @@ class _AppointmentTileState extends State<AppointmentTile> {
       builder: (BuildContext context) {
         return StatefulBuilder(
           builder: (context,setState){
-
+            final _formKey = GlobalKey<FormState>();
             return Dialog(
               shape: RoundedRectangleBorder(
                 borderRadius: const BorderRadius.all(
@@ -40,7 +47,126 @@ class _AppointmentTileState extends State<AppointmentTile> {
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(10)
                 ),
-                child:Container(),
+                child:Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Stack(
+                        children: [
+                          Align(
+                            alignment: Alignment.center,
+                            child: Container(
+                              margin: EdgeInsets.all(10),
+                              child: Text("Give Rating",textAlign: TextAlign.center,style: Theme.of(context).textTheme.headline6!.apply(color: darkBrown),),
+                            ),
+                          ),
+
+                        ],
+                      ),
+                      RatingBar(
+                        initialRating: 5,
+                        direction: Axis.horizontal,
+                        itemCount: 5,
+                        ratingWidget: RatingWidget(
+                          full: Icon(Icons.star,color: darkBrown),
+                          half: Icon(Icons.star_half,color: darkBrown),
+                          empty:Icon(Icons.star_border,color: darkBrown,),
+                        ),
+                        itemSize: 40,
+                        itemPadding: EdgeInsets.symmetric(horizontal: 1.0),
+                        onRatingUpdate: (rate) {
+                          print(rate);
+                          rating=rate.toInt();
+                        },
+                      ),
+                      SizedBox(height: 20,),
+                      TextFormField(
+                        minLines: 3,
+                        maxLines: 3,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter some text';
+                          }
+                          return null;
+                        },
+                        decoration: InputDecoration(
+                          contentPadding: EdgeInsets.all(15),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(7.0),
+                            borderSide: BorderSide(
+                              color: Colors.transparent,
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(7.0),
+                            borderSide: BorderSide(
+                                color: Colors.transparent,
+                                width: 0.5
+                            ),
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(7.0),
+                            borderSide: BorderSide(
+                              color: Colors.transparent,
+                              width: 0.5,
+                            ),
+                          ),
+                          filled: true,
+                          fillColor: Colors.grey[200],
+                          hintText: "Enter Review",
+                          // If  you are using latest version of flutter then lable text and hint text shown like this
+                          // if you r using flutter less then 1.20.* then maybe this is not working properly
+                          floatingLabelBehavior: FloatingLabelBehavior.always,
+                        ),
+                      ),
+                      SizedBox(height: 10,),
+                      InkWell(
+                        onTap: (){
+                          final ProgressDialog pr = ProgressDialog(context: context);
+                          pr.show(max: 100, msg: "Please wait");
+                          FirebaseFirestore.instance.collection('appointments').doc(widget.model.id).update({
+                            'isRated':true,
+                            'rating':rating!,
+                          }).then((value) {
+                            pr.close();
+                            Navigator.pop(context);
+                          }).onError((error, stackTrace) {
+                            pr.close();
+                            AwesomeDialog(
+                              context: context,
+                              dialogType: DialogType.ERROR,
+                              animType: AnimType.BOTTOMSLIDE,
+                              title: 'Error',
+                              desc: '${error.toString()}',
+                              btnOkOnPress: () {
+                                Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) => Appointments()));
+                              },
+                            )..show();
+                          });
+                        },
+                        child: Container(
+                          height: 50,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10),
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                darkBrown,
+                                lightBrown,
+                              ],
+                            ),
+                          ),
+                          alignment: Alignment.center,
+                          margin: EdgeInsets.all(12),
+                          child:Text("SUBMIT",style: TextStyle(color: Colors.white,fontSize: 20,fontWeight: FontWeight.w500),),
+                        ),
+                      )
+
+                    ],
+                  ),
+                ),
               ),
             );
           },

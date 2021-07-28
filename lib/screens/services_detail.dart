@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:sn_progress_dialog/progress_dialog.dart';
 import 'package:spa_beauty/auth/auth_selection.dart';
 import 'package:spa_beauty/model/service_model.dart';
 import 'package:spa_beauty/screens/reservation.dart';
@@ -20,6 +21,66 @@ class ServiceDetail extends StatefulWidget {
 }
 
 class _ServiceDetailState extends State<ServiceDetail> {
+  IconData _iconData=Icons.favorite_border;
+  Color _color=Colors.white;
+  bool isFavourite = false;
+  checkFavouriteFromDatabase()async{
+
+    FirebaseFirestore.instance
+        .collection('favourites')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .collection('services')
+        .doc(widget.model.id)
+        .get()
+        .then((DocumentSnapshot documentSnapshot) {
+      if (documentSnapshot.exists) {
+        setState(() {
+          _iconData=Icons.favorite;
+          _color=Colors.red;
+          isFavourite=true;
+        });
+      }
+    });
+
+  }
+  checkFavourite() async{
+    final ProgressDialog pr = ProgressDialog(context: context);
+    pr.show(max: 100, msg: "Please wait");
+    if(isFavourite){
+      FirebaseFirestore.instance.collection('favourites').doc(FirebaseAuth.instance.currentUser!.uid).collection("services").doc(widget.model.id).delete().then((value) {
+        setState(() {
+          _iconData=Icons.favorite_border;
+          _color=Colors.white;
+          isFavourite=false;
+          pr.close();
+        });
+      })
+          .catchError((error, stackTrace) {
+        print("inner: $error");
+        pr.close();
+
+      });
+    }
+    else{
+      FirebaseFirestore.instance.collection('favourites').doc(FirebaseAuth.instance.currentUser!.uid).collection("services").doc(widget.model.id).set({
+        'serviceId': widget.model.id,
+      }).then((value) {
+        setState(() {
+          _iconData=Icons.favorite;
+          _color=Colors.red;
+          isFavourite=true;
+        });
+        pr.close();
+      })
+          .catchError((error, stackTrace) {
+        print("inner: $error");
+        pr.close();
+
+      });
+    }
+
+
+  }
   @override
   Widget build(BuildContext context) {
     final orientation = MediaQuery.of(context).orientation;
@@ -49,7 +110,11 @@ class _ServiceDetailState extends State<ServiceDetail> {
                 Positioned(
                   right: 20,
                   top: 40,
-                  child: Icon(Icons.favorite_outlined,color: Colors.red,size: 25,),
+                  child: IconButton(
+                    icon: Icon(_iconData),
+                    color: _color,
+                    onPressed: checkFavourite,
+                  ),
                 ),
 
                 Positioned(
@@ -369,5 +434,11 @@ class _ServiceDetailState extends State<ServiceDetail> {
       ),
 
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    checkFavouriteFromDatabase();
   }
 }
