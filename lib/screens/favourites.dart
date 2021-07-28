@@ -1,7 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:spa_beauty/model/service_model.dart';
 import 'package:spa_beauty/navigator/navigation_drawer.dart';
+import 'package:spa_beauty/screens/reservation.dart';
 import 'package:spa_beauty/values/constants.dart';
 import 'package:spa_beauty/widget/appbar.dart';
 class Favourites extends StatefulWidget {
@@ -16,6 +20,9 @@ class _FavouritesState extends State<Favourites> {
   void _openDrawer () {
     _drawerKey.currentState!.openDrawer();
   }
+  List<String> id=[];
+  List<ServiceModel> services=[];
+  bool isLoaded=false;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -27,15 +34,15 @@ class _FavouritesState extends State<Favourites> {
           children: [
             CustomAppBar(_openDrawer, "Favourites"),
             SizedBox(height: 10,),
-            Expanded(
+            isLoaded?Expanded(
               child: ListView.builder(
-                itemCount: 2,
+                itemCount: services.length,
                 itemBuilder: (BuildContext context,index){
                   return InkWell(
                     child: Container(
                         decoration: BoxDecoration(
                             color: Colors.white,
-                          borderRadius: BorderRadius.circular(15)
+                            borderRadius: BorderRadius.circular(15)
                         ),
 
                         margin: EdgeInsets.only(left: 10,right: 10,bottom: 10),
@@ -45,16 +52,16 @@ class _FavouritesState extends State<Favourites> {
                               leading: CircleAvatar(
                                 child:Container(),
                               ),
-                              title: Text("Service Name",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w500),),
+                              title: Text(services[index].name,style: TextStyle(fontSize: 15,fontWeight: FontWeight.w500),),
                               subtitle:Text("Service",style: TextStyle(fontSize: 12,fontWeight: FontWeight.w300),),
                             ),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
-                                Text("5"),
+                                Text(services[index].totalRating.toString()),
                                 Container(height: 10, child: VerticalDivider(color: Colors.grey)),
                                 RatingBar(
-                                  initialRating: 3,
+                                  initialRating: services[index].rating.toDouble(),
                                   direction: Axis.horizontal,
                                   allowHalfRating: true,
                                   itemCount: 5,
@@ -63,21 +70,28 @@ class _FavouritesState extends State<Favourites> {
                                     half: Icon(Icons.star_half,color: darkBrown),
                                     empty:Icon(Icons.star_border,color: darkBrown,),
                                   ),
-                                  itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
+                                  ignoreGestures: true,
+                                  itemSize: 18,
+                                  itemPadding: EdgeInsets.symmetric(horizontal: 1.0),
                                   onRatingUpdate: (rating) {
                                     print(rating);
                                   },
                                 ),
                                 SizedBox(width: 20,),
-                                Container(
-                                  height: 25,
-                                  padding: EdgeInsets.only(left: 10,right: 10,top: 5,bottom: 5),
-                                  decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(20),
-                                      color: darkBrown
+                                InkWell(
+                                  onTap: (){
+                                    Navigator.push(context, new MaterialPageRoute(builder: (context) => Reservation(services[index])));
+                                  },
+                                  child: Container(
+                                    height: 25,
+                                    padding: EdgeInsets.only(left: 10,right: 10,top: 5,bottom: 5),
+                                    decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(20),
+                                        color: darkBrown
+                                    ),
+                                    alignment: Alignment.center,
+                                    child: Text("Book Now",style: TextStyle(color: Colors.white),),
                                   ),
-                                  alignment: Alignment.center,
-                                  child: Text("Book Now",style: TextStyle(color: Colors.white),),
                                 ),
                                 SizedBox(width: 10,)
 
@@ -90,10 +104,46 @@ class _FavouritesState extends State<Favourites> {
                   );
                 },
               ),
+            ):Container(
+              margin: EdgeInsets.all(10),
+              alignment: Alignment.center,
+              child: CircularProgressIndicator(),
             )
           ],
         ),
       ),
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    FirebaseFirestore.instance.collection('favourites').doc(FirebaseAuth.instance.currentUser!.uid).collection("services").get().then((QuerySnapshot querySnapshot) {
+      querySnapshot.docs.forEach((doc) {
+        setState(() {
+          id.add(doc['serviceId']);
+        });
+      });
+    });
+    FirebaseFirestore.instance.collection('services').get().then((QuerySnapshot querySnapshot) {
+      querySnapshot.docs.forEach((doc) {
+        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+        ServiceModel model= ServiceModel.fromMap(data, doc.reference.id);
+        for(int i=0;i<id.length;i++){
+          if(id[i]==model.id){
+            setState(() {
+              services.add(model);
+            });
+
+          }
+        }
+      });
+      setState(() {
+        isLoaded=true;
+      });
+    });
+
+
   }
 }
