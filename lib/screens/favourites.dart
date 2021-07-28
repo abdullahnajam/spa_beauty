@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:spa_beauty/model/service_model.dart';
 import 'package:spa_beauty/navigator/navigation_drawer.dart';
+import 'package:spa_beauty/screens/reservation.dart';
 import 'package:spa_beauty/values/constants.dart';
 import 'package:spa_beauty/widget/appbar.dart';
 class Favourites extends StatefulWidget {
@@ -77,15 +78,20 @@ class _FavouritesState extends State<Favourites> {
                                   },
                                 ),
                                 SizedBox(width: 20,),
-                                Container(
-                                  height: 25,
-                                  padding: EdgeInsets.only(left: 10,right: 10,top: 5,bottom: 5),
-                                  decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(20),
-                                      color: darkBrown
+                                InkWell(
+                                  onTap: (){
+                                    Navigator.push(context, new MaterialPageRoute(builder: (context) => Reservation(services[index])));
+                                  },
+                                  child: Container(
+                                    height: 25,
+                                    padding: EdgeInsets.only(left: 10,right: 10,top: 5,bottom: 5),
+                                    decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(20),
+                                        color: darkBrown
+                                    ),
+                                    alignment: Alignment.center,
+                                    child: Text("Book Now",style: TextStyle(color: Colors.white),),
                                   ),
-                                  alignment: Alignment.center,
-                                  child: Text("Book Now",style: TextStyle(color: Colors.white),),
                                 ),
                                 SizedBox(width: 10,)
 
