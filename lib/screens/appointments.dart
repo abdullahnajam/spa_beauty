@@ -11,12 +11,14 @@ class Appointments extends StatefulWidget {
 }
 
 class _AppointmentsState extends State<Appointments> {
+  int option1 = 0 , option2 = 0 ;
   final GlobalKey<ScaffoldState> _drawerKey = GlobalKey();
   void _openDrawer () {
     _drawerKey.currentState!.openDrawer();
   }
   @override
   Widget build(BuildContext context) {
+    Size size = MediaQuery.of(context).size;
     return Scaffold(
       backgroundColor: Colors.grey[200],
       drawer: MenuDrawer(),
@@ -25,80 +27,169 @@ class _AppointmentsState extends State<Appointments> {
         child: Column(
           children: [
             CustomAppBar(_openDrawer,"Appointments"),
-            Container(
-              margin: EdgeInsets.only(left: 5,right: 5,top: 10,bottom: 10),
-              padding: EdgeInsets.only(top: 10,bottom: 10,left: 10),
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
+
+            SizedBox(
+              height: size.height*0.03,
+            ),
+
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                SizedBox(
+                  height: size.height*0.055,
+                  width: size.width*0.34,
+                  child: RaisedButton(
+
+                    color : option1 == 1 ?  lightBrown : Colors.white ,
+                    textColor: option1 == 1 ?  Colors.white : Colors.black87 ,
+                    child: Text('Upcoming'),
+
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(20.0))),
+                    onPressed: () {
+                      setState(() {
+                        option1 = 1 ;
+                      });
+                    },
+                  ),
+                ),
+                SizedBox(
+                  height: size.height*0.055,
+                  width: size.width*0.34,
+                  child: RaisedButton(
+                    child: Text('Past'),
+                    color : option1 == 2 ?  lightBrown : Colors.white ,
+                    textColor: option1 == 2 ?  Colors.white : Colors.black87 ,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(20.0))),
+                    onPressed: () {
+                      setState(() {
+                        option1 = 2 ;
+                      });
+
+                    },
+                  ),
+                ),
+              ],
+            ),
+
+            SizedBox(
+              height: size.height*0.025,
+            ),
+
+             Row(
+               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+
+                  SizedBox(
+                    height : size.height*0.055,
+                    width: size.width*0.2,
+                    child: RaisedButton(
+                      child: Text('All'),
+                      color : option2 == 1 ?  lightBrown : Colors.white ,
+                      textColor: option2 == 1 ?  Colors.white : Colors.black87 ,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(20.0))),
+                      onPressed: () {
+                        setState(() {
+                          option2 = 1 ;
+                        });
+
+                      },
+                    ),
+                  ),
+
+                  SizedBox(
+                    height : size.height*0.055,
+                    width: size.width*0.34,
+                    child: RaisedButton(
+                      child: option1 == 1 ? Text('Approved') :Text('Completed') ,
+                      color : option2 == 2 ?  lightBrown : Colors.white ,
+                      textColor: option2 == 2 ?  Colors.white : Colors.black87 ,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(20.0))),
+                      onPressed: () {
+                        setState(() {
+                           option2 = 2 ;
+                        });
+
+                      },
+                    ),
+                  ),
+
+                  SizedBox(
+                    height : size.height*0.055,
+                    width: size.width*0.34,
+                    child: RaisedButton(
+                      child: option1 == 1 ? Text('Pending') :Text('Cancelled'),
+                      color : option2 == 3 ?  lightBrown : Colors.white ,
+                      textColor: option2 == 3 ?  Colors.white : Colors.black87 ,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(20.0))),
+                      onPressed: () {
+                        setState(() {
+                           option2 = 3 ;
+                        });
+                      },
+                    ),
+                  ),
+                ],
               ),
+
+            SizedBox(
+              height: size.height*0.02,
+            ),
+
+            Divider(
+              indent: 20,
+              endIndent: 20,
+              thickness: 1,
+              color: Colors.black54,
+            ),
+
+            Container(
+              margin: EdgeInsets.all(5),
               child: Row(
                 children: [
                   Container(
-                    width: MediaQuery.of(context).size.width*0.47,
-                    child:Text("Beauty Expert")
-                  ),
-                  Container(
-                    width: MediaQuery.of(context).size.width*0.25,
-                      child:Text("Description")
-                  ),
-                  Container(
-                    width: MediaQuery.of(context).size.width*0.2,
-                      child:Text("Status")
-                  )
-                ],
-              ),
-            ),
-            Expanded(
-              child: ListView.separated(
-                separatorBuilder: (context, index) {
-                  return Divider();
-                },
-                itemCount: 2,
-                itemBuilder: (BuildContext context,index){
-                  return Container(
-                    margin: EdgeInsets.all(5),
+                    width: MediaQuery.of(context).size.width*0.5,
                     child: Row(
                       children: [
-                        Container(
-                          width: MediaQuery.of(context).size.width*0.5,
-                          child: Row(
-                            children: [
-                              CircleAvatar(
-                                child: Container(),
-                              ),
-                              SizedBox(width: 5,),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text("Specialist Name",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w500),),
-                                  Text("Service",style: TextStyle(fontSize: 12,fontWeight: FontWeight.w300),)
-                                ],
-                              )
-                            ],
-                          ),
+                        CircleAvatar(
+                          child: Container(),
                         ),
-                        Container(
-                          width: MediaQuery.of(context).size.width*0.25,
-                          child: Text("Description",style: TextStyle(fontSize: 12,fontWeight: FontWeight.w400),),
-                        ),
-                        Container(
-                          width: MediaQuery.of(context).size.width*0.2,
-                          child: Container(
-                            height: 25,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(20),
-                              color: darkBrown
-                            ),
-                            alignment: Alignment.center,
-                            child: Text("Status",style: TextStyle(color: Colors.white),),
-                          ),
+                        SizedBox(width: 5,),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text("Specialist Name",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w500),),
+                            Text("Service",style: TextStyle(fontSize: 12,fontWeight: FontWeight.w300),)
+                          ],
                         )
                       ],
                     ),
-                  );
-                },
+                  ),
+                  Container(
+                    width: MediaQuery.of(context).size.width*0.25,
+                    child: Text("Description",style: TextStyle(fontSize: 12,fontWeight: FontWeight.w400),),
+                  ),
+                  Container(
+                    width: MediaQuery.of(context).size.width*0.2,
+                    child: Container(
+                      height: 25,
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          color: darkBrown
+                      ),
+                      alignment: Alignment.center,
+                      child: Text("Status",style: TextStyle(color: Colors.white),),
+                    ),
+                  )
+                ],
               ),
             )
+
+
           ],
         ),
       ),
