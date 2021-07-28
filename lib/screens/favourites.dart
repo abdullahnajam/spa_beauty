@@ -45,28 +45,25 @@ class _FavouritesState extends State<Favourites> {
                               leading: CircleAvatar(
                                 child:Container(),
                               ),
-                              title: Text("Specialist Name",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w500),),
+                              title: Text("Service Name",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w500),),
                               subtitle:Text("Service",style: TextStyle(fontSize: 12,fontWeight: FontWeight.w300),),
-                              trailing: Text("2 km",style: TextStyle(fontSize: 15,fontWeight: FontWeight.w500),),
                             ),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
                                 Text("5"),
                                 Container(height: 10, child: VerticalDivider(color: Colors.grey)),
-                                RatingBar.builder(
+                                RatingBar(
                                   initialRating: 3,
-                                  minRating: 1,
                                   direction: Axis.horizontal,
                                   allowHalfRating: true,
-                                  itemSize: 15,
                                   itemCount: 5,
-                                  itemPadding: EdgeInsets.symmetric(horizontal: 0),
-                                  itemBuilder: (context, _) => Icon(
-                                    Icons.star,
-                                    size: 10,
-                                    color: darkBrown,
+                                  ratingWidget: RatingWidget(
+                                    full: Icon(Icons.star,color: darkBrown),
+                                    half: Icon(Icons.star_half,color: darkBrown),
+                                    empty:Icon(Icons.star_border,color: darkBrown,),
                                   ),
+                                  itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
                                   onRatingUpdate: (rating) {
                                     print(rating);
                                   },

@@ -1,3 +1,4 @@
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:date_picker_timeline/date_picker_widget.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -8,6 +9,7 @@ import 'package:sn_progress_dialog/progress_dialog.dart';
 import 'package:spa_beauty/model/service_model.dart';
 import 'package:spa_beauty/model/specialist_model.dart';
 import 'package:spa_beauty/model/time_model.dart';
+import 'package:spa_beauty/navigator/bottom_navigation.dart';
 import 'package:spa_beauty/payment/payment-service.dart';
 import 'package:spa_beauty/values/constants.dart';
 class Reservation extends StatefulWidget {
@@ -24,6 +26,7 @@ class Reservation extends StatefulWidget {
 class _ReservationState extends State<Reservation> {
 
   List<TimeModel> time=[];
+  String? username;
   List<SpecialistModel> specialist=[];
   getSpecialists(){
     FirebaseFirestore.instance.collection('specialists').where("serviceId",isEqualTo: widget.model.id).get().then((QuerySnapshot querySnapshot) {
@@ -51,6 +54,7 @@ class _ReservationState extends State<Reservation> {
       });
     });
   }
+
   bool isTimeLoading=true;
   bool isSpecialistLoading=true;
 
@@ -72,7 +76,7 @@ class _ReservationState extends State<Reservation> {
     final ProgressDialog pr = ProgressDialog(context: context);
     pr.show(max: 100, msg: "Adding");
     FirebaseFirestore.instance.collection('appointments').add({
-      'name': "model.name",
+      'name': username,
       'userId': FirebaseAuth.instance.currentUser!.uid,
       'date': f.format(_selectedDate).toString(),
       'time': appointmentTimeSelected,
@@ -81,10 +85,34 @@ class _ReservationState extends State<Reservation> {
       'serviceId':widget.model.id,
       'serviceName': widget.model.name,
       'status': "pending",
+      'isRated':false,
+      'rating':0
     }).then((value) {
       pr.close();
-      print("added");
-      Navigator.pop(context);
+      AwesomeDialog(
+        context: context,
+        dialogType: DialogType.SUCCES,
+        animType: AnimType.BOTTOMSLIDE,
+        title: 'Your booking was successful',
+        desc: 'Please wait for the approval of appointment',
+
+
+        btnOkOnPress: () {
+          Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => BottomBar()));
+
+        },
+      )..show();
+    }).onError((error, stackTrace) {
+      AwesomeDialog(
+        context: context,
+        dialogType: DialogType.ERROR,
+        animType: AnimType.BOTTOMSLIDE,
+        title: 'Error',
+        desc: '${error.toString()}',
+        btnOkOnPress: () {
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) => Reservation(widget.model)));
+        },
+      )..show();
     });
   }
   DateTime _selectedDate=DateTime.now();
@@ -238,7 +266,7 @@ class _ReservationState extends State<Reservation> {
                   child: CircularProgressIndicator(),
                 ):Container(
                   height: 120,
-                  child: ListView.builder(
+                  child: specialist.length>0?ListView.builder(
                     itemCount: specialist.length,
                     scrollDirection: Axis.horizontal,
                     itemBuilder: (BuildContext context,index){
@@ -261,6 +289,10 @@ class _ReservationState extends State<Reservation> {
                         ),
                       );
                     },
+                  ):Container(
+                    alignment: Alignment.center,
+                    margin: EdgeInsets.all(10),
+                    child: Text("No Specialists"),
                   ),
                 ),
                 InkWell(
@@ -297,5 +329,18 @@ class _ReservationState extends State<Reservation> {
   void initState() {
     super.initState();
     StripeService.init();
+    getTimeSlots();
+    getSpecialists();
+    FirebaseFirestore.instance.collection('customer')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .get()
+        .then((DocumentSnapshot documentSnapshot) {
+      if (documentSnapshot.exists) {
+        Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
+        setState(() {
+          username=data['username'];
+        });
+      }
+    });
   }
 }

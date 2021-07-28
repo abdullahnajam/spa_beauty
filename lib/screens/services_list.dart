@@ -63,7 +63,6 @@ class _AllServicesListState extends State<AllServicesList> {
               SizedBox(height: 10,),
 
               Container(
-
                 child: StreamBuilder<QuerySnapshot>(
                   stream: FirebaseFirestore.instance.collection('services').where('categoryId', isEqualTo: widget.catId).snapshots(),
                   builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {

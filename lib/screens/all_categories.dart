@@ -1,7 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:spa_beauty/model/category_model.dart';
 import 'package:spa_beauty/navigator/navigation_drawer.dart';
 import 'package:spa_beauty/screens/services_list.dart';
+import 'package:spa_beauty/search/search_category.dart';
 import 'package:spa_beauty/values/constants.dart';
 import 'package:spa_beauty/widget/appbar.dart';
 class AllCategories extends StatefulWidget {
@@ -35,77 +38,132 @@ class _AllCategoriesState extends State<AllCategories> {
                 margin: EdgeInsets.all(10),
                 child: Text("Find Best Services",style: TextStyle(fontSize: 20,fontWeight: FontWeight.w600),),
               ),
-              Container(
-                height: 50,
-                margin: EdgeInsets.only(left: 10,right: 10),
-                decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(10)
-                ),
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 10,
-                    ),
-                    Icon(Icons.search),
-                    SizedBox(
-                      width: 5,
-                    ),
-                    Text("Search")
-                  ],
+              InkWell(
+                onTap: ()async{
+                  List<CategoryModel> category=[];
+                  FirebaseFirestore.instance.collection('categories').get().then((QuerySnapshot querySnapshot) {
+                    querySnapshot.docs.forEach((doc) {
+                      CategoryModel model=new CategoryModel(doc.reference.id, doc['name'], doc['image']);
+                      setState(() {
+                        category.add(model);
+                      });
+                    });
+                  });
+                  await showSearch<String>(
+                    context: context,
+                    delegate: CategorySearch(category),
+                  );
+
+                },
+                child: Container(
+                  height: 50,
+                  margin: EdgeInsets.only(left: 10,right: 10),
+                  decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10)
+                  ),
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 10,
+                      ),
+                      Icon(Icons.search),
+                      SizedBox(
+                        width: 5,
+                      ),
+                      Text("Search")
+                    ],
+                  ),
                 ),
               ),
               SizedBox(height: 10,),
               Expanded(
-                child: GridView.builder(
-                  itemCount: 8,
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: (orientation == Orientation.portrait) ? 2 : 3),
-                  itemBuilder: (BuildContext context, int index) {
-                    return new InkWell(
-                      onTap: (){
-                       // Navigator.push(context, new MaterialPageRoute(builder: (context) => AllServicesList()));
-                      },
-                      child: Card(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10.0),
-                        ),
-                        child: new Column(
+                child: StreamBuilder<QuerySnapshot>(
+                  stream: FirebaseFirestore.instance.collection('categories').snapshots(),
+                  builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                    if (snapshot.hasError) {
+                      return Center(
+                        child: Column(
                           children: [
-                            Expanded(
-                              child: Container(
-                                width: double.maxFinite,
-                                decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.only(
-                                        topLeft: Radius.circular(10),
-                                        topRight: Radius.circular(10)
-                                    ),
-                                    image: DecorationImage(
-                                        image: AssetImage("assets/images/placeholder.png"),
-                                        fit: BoxFit.cover
-                                    )
-                                ),
-                              ),
-                            ),
-                            Container(
-                              height: 30,
-                              decoration: BoxDecoration(
-                                color: lightBrown,
-                                borderRadius: BorderRadius.only(
-                                    bottomRight: Radius.circular(10),
-                                    bottomLeft: Radius.circular(10)
-                                ),
-                              ),
-                              alignment: Alignment.center,
-                              child: Text("Service",style: TextStyle(color: Colors.white),),
-                            )
+                            Image.asset("assets/images/wrong.png",width: 150,height: 150,),
+                            Text("Something Went Wrong")
+
                           ],
                         ),
-                      ),
+                      );
+                    }
+
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    }
+                    if (snapshot.data!.size==0){
+                      return Center(
+                        child: Column(
+                          children: [
+                            Image.asset("assets/images/empty.png",width: 150,height: 150,),
+                            Text("No Categories Added")
+
+                          ],
+                        ),
+                      );
+
+                    }
+                    return new GridView(
+                      shrinkWrap: true,
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: (orientation == Orientation.portrait) ? 2 : 3),
+                      children: snapshot.data!.docs.map((DocumentSnapshot document) {
+                        Map<String, dynamic> data = document.data() as Map<String, dynamic>;
+                        CategoryModel model= CategoryModel.fromMap(data, document.reference.id);
+                        return new InkWell(
+                          onTap: (){
+                            Navigator.push(context, new MaterialPageRoute(builder: (context) => AllServicesList(model.id,model.name)));
+                          },
+                          child: Card(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10.0),
+                            ),
+                            child: new Column(
+                              children: [
+                                Expanded(
+                                  child: Container(
+                                    width: double.maxFinite,
+                                    decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.only(
+                                            topLeft: Radius.circular(10),
+                                            topRight: Radius.circular(10)
+                                        ),
+                                        image: DecorationImage(
+                                            image: AssetImage("assets/images/placeholder.png"),
+                                            fit: BoxFit.cover
+                                        )
+                                    ),
+                                  ),
+                                ),
+                                Container(
+                                  height: 30,
+                                  decoration: BoxDecoration(
+                                    color: lightBrown,
+                                    borderRadius: BorderRadius.only(
+                                        bottomRight: Radius.circular(10),
+                                        bottomLeft: Radius.circular(10)
+                                    ),
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: Text("Service",style: TextStyle(color: Colors.white),),
+                                )
+                              ],
+                            ),
+                          ),
+                        );
+                      }).toList(),
                     );
                   },
                 ),
-              )
+              ),
+
             ],
           ),
         ),
