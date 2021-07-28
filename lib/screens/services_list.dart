@@ -106,7 +106,7 @@ class _AllServicesListState extends State<AllServicesList> {
                             child: InkWell(
                               onTap: (){
                                 Navigator.push(context, new MaterialPageRoute(
-                                    builder: (context) => ServiceDetail()));
+                                    builder: (context) => ServiceDetail(model)));
                               },
                               child: Stack(
                                 children: [

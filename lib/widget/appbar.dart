@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:spa_beauty/navigator/bottom_navigation.dart';
 import 'package:spa_beauty/values/constants.dart';
 typedef void MyCallback();
 class CustomAppBar extends StatefulWidget {
@@ -29,9 +30,9 @@ class _CustomAppBarState extends State<CustomAppBar> {
             alignment: Alignment.centerLeft,
             child: IconButton(
               onPressed: (){
-                widget.callback();
+                Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => BottomBar()));
               },
-              icon: Icon(Icons.menu,color: darkBrown,),
+              icon: Icon(Icons.arrow_back_sharp,color: darkBrown,),
             ),
           ),
           Align(

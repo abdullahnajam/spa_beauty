@@ -1,6 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:sn_progress_dialog/progress_dialog.dart';
 import 'package:spa_beauty/navigator/bottom_navigation.dart';
 import 'package:spa_beauty/values/constants.dart';
 
@@ -18,8 +21,11 @@ class _RegisterState extends State<Register> {
   var passwordController=TextEditingController();
   var usernameController=TextEditingController();
   var phoneNumberController=TextEditingController();
+
   @override
   Widget build(BuildContext context) {
+
+
     return Scaffold(
         backgroundColor: lightBrown,
         body: SafeArea(
@@ -233,25 +239,51 @@ class _RegisterState extends State<Register> {
                           SizedBox(height: 10,),
                           InkWell(
                             onTap: ()async{
+                              final ProgressDialog pr = ProgressDialog(context: context);
                               if (_formKey.currentState!.validate()) {
                                 try {
+                                  pr.show(max: 100, msg: "Please wait");
                                   await FirebaseAuth.instance.createUserWithEmailAndPassword(
                                       email: emailController.text.trim(),
                                       password: passwordController.text
                                   ).then((value){
-                                    Navigator.pushReplacement(context, new MaterialPageRoute(
-                                        builder: (context) => BottomBar()));
+                                    final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
+                                    _firebaseMessaging.subscribeToTopic('customer');
+                                    _firebaseMessaging.getToken().then((value) {
+                                      FirebaseFirestore.instance.collection('customer').doc(FirebaseAuth.instance.currentUser!.uid).set({
+                                        'username': usernameController.text,
+                                        'phone': phoneNumberController.text,
+                                        'token': value,
+                                        'topic': 'customer',
+                                        'email': emailController.text,
+                                      }).then((value) {
+                                        pr.close();
+                                        Navigator.pushReplacement(context, new MaterialPageRoute(builder: (context) => BottomBar()));
+                                      }).onError((error, stackTrace){
+                                        final snackBar = SnackBar(content: Text("Database Error"));
+                                        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                                      });
+                                    }).onError((error, stackTrace){
+                                      final snackBar = SnackBar(content: Text("Notification Token Error"));
+                                      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                                    });
+
                                   });
                                 } on FirebaseAuthException catch (e) {
                                   if (e.code == 'weak-password') {
+                                    pr.close();
                                     print('The password provided is too weak.');
                                   } else if (e.code == 'email-already-in-use') {
+                                    pr.close();
                                     print('The account already exists for that email.');
                                   }
                                 } catch (e) {
                                   print(e);
+                                  pr.close();
                                 }
+                                pr.close();
                               }
+
                             },
                             child: Container(
                               height: 50,

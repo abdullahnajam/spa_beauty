@@ -1,5 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:spa_beauty/navigator/bottom_navigation.dart';
 import 'package:spa_beauty/navigator/navigation_drawer.dart';
 import 'package:spa_beauty/values/constants.dart';
 import 'package:spa_beauty/widget/appbar.dart';
@@ -146,6 +148,11 @@ class _MyAccountState extends State<MyAccount> {
                       ),
 
                       child: ListTile(
+                        onTap: (){
+                          FirebaseAuth.instance.signOut().then((value) {
+                            Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => BottomBar()));
+                          });
+                        },
                         leading: CircleAvatar(
                           backgroundColor: Colors.grey[300],
                           child: Icon(Icons.logout,color: Colors.black,),

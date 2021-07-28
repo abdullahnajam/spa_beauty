@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:sn_progress_dialog/progress_dialog.dart';
 import 'package:spa_beauty/auth/register.dart';
 import 'package:spa_beauty/navigator/bottom_navigation.dart';
 import 'package:spa_beauty/values/constants.dart';
@@ -153,20 +154,24 @@ class _LoginState extends State<Login> {
                                 SizedBox(height: 10,),
                                 InkWell(
                                   onTap: () async{
+                                    final ProgressDialog pr = ProgressDialog(context: context);
                                     if (_formKey.currentState!.validate()) {
                                       try {
+                                        pr.show(max: 100, msg: "Please wait");
                                         await FirebaseAuth.instance.signInWithEmailAndPassword(
                                             email: emailController.text.trim(),
                                             password: passwordController.text
                                         ).then((value) {
-                                          Navigator.pushReplacement(context, new MaterialPageRoute(
-                                              builder: (context) => BottomBar()));
+                                          pr.close();
+                                          Navigator.pushReplacement(context, new MaterialPageRoute(builder: (context) => BottomBar()));
 
                                         });
                                       } on FirebaseAuthException catch (e) {
                                         if (e.code == 'user-not-found') {
+                                          pr.close();
                                           print('No user found for that email.');
                                         } else if (e.code == 'wrong-password') {
+                                          pr.close();
                                           print('Wrong password provided for that user.');
                                         }
                                       }

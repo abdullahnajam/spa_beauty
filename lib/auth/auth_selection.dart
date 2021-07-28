@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:spa_beauty/auth/login.dart';
+import 'package:spa_beauty/auth/register.dart';
 import 'package:spa_beauty/values/constants.dart';
 class AuthSelection extends StatefulWidget {
   const AuthSelection({Key? key}) : super(key: key);
@@ -49,7 +50,8 @@ class _AuthSelectionState extends State<AuthSelection> {
                 ),
                 InkWell(
                   onTap: (){
-
+                    Navigator.push(context, new MaterialPageRoute(
+                        builder: (context) => Register()));
                   },
                   child: Container(
                     height: 50,

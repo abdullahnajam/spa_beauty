@@ -119,21 +119,60 @@ class _HomePageState extends State<HomePage> {
                             ),
                             Container(
                               height: 180,
-                              child: ListView.builder(
-                                scrollDirection: Axis.horizontal,
-                                itemCount: 2,
-                                itemBuilder: (BuildContext context,index){
-                                  return Container(
-                                    height: 180,
-                                    width: MediaQuery.of(context).size.width*0.85,
-                                    margin: EdgeInsets.all(10),
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(20),
-                                      image: DecorationImage(
-                                        image: AssetImage('assets/images/placeholder.png'),
-                                        fit: BoxFit.cover
-                                      )
-                                    ),
+                              child: StreamBuilder<QuerySnapshot>(
+                                stream: FirebaseFirestore.instance.collection('banner').snapshots(),
+                                builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                                  if (snapshot.hasError) {
+                                    return Center(
+                                      child: Column(
+                                        children: [
+                                          Image.asset("assets/images/wrong.png",width: 150,height: 150,),
+                                          Text("Something Went Wrong")
+
+                                        ],
+                                      ),
+                                    );
+                                  }
+
+                                  if (snapshot.connectionState == ConnectionState.waiting) {
+                                    return Center(
+                                      child: CircularProgressIndicator(),
+                                    );
+                                  }
+                                  if (snapshot.data!.size==0){
+                                    return Container(
+                                        alignment: Alignment.center,
+                                        child:Text("No Banners")
+
+                                    );
+
+                                  }
+                                  return new ListView(
+                                    scrollDirection: Axis.horizontal,
+                                    children: snapshot.data!.docs.map((DocumentSnapshot document) {
+                                      Map<String, dynamic> data = document.data() as Map<String, dynamic>;
+                                      return Container(
+                                        height: 180,
+                                        width: MediaQuery.of(context).size.width*0.85,
+                                        margin: EdgeInsets.all(10),
+                                        decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.circular(20)
+                                        ),
+                                        child: ClipRRect(
+                                          borderRadius: BorderRadius.circular(20),
+                                          child: CachedNetworkImage(
+                                            imageUrl: data['image'],
+                                            height: 180,
+                                            width: MediaQuery.of(context).size.width*0.85,
+                                            fit: BoxFit.cover,
+                                            placeholder: (context, url) => Center(
+                                              child: CircularProgressIndicator(),
+                                            ),
+                                            errorWidget: (context, url, error) => Icon(Icons.error),
+                                          ),
+                                        ),
+                                      );
+                                    }).toList(),
                                   );
                                 },
                               ),
@@ -179,7 +218,7 @@ class _HomePageState extends State<HomePage> {
                           child: Column(
                             children: [
                               Image.asset("assets/images/empty.png",width: 50,height:50,),
-                              Text("No Pets Added")
+                              Text("No categories found")
 
                             ],
                           ),
@@ -268,7 +307,7 @@ class _HomePageState extends State<HomePage> {
                           child: Column(
                             children: [
                               Image.asset("assets/images/empty.png",width: 150,height: 150,),
-                              Text("No Pets Added")
+                              Text("No Categories Found")
 
                             ],
                           ),
@@ -302,11 +341,8 @@ class _HomePageState extends State<HomePage> {
                                   ),
                                 ),
                                 SizedBox(height: 5,),
-
-
-
                                 Container(
-
+                                  height: 120,
                                   child: StreamBuilder<QuerySnapshot>(
                                     stream: FirebaseFirestore.instance.collection('services').where('categoryId', isEqualTo: document.reference.id).snapshots(),
                                     builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
@@ -329,12 +365,14 @@ class _HomePageState extends State<HomePage> {
                                       }
                                       if (snapshot.data!.size==0){
                                         return Container(
-                                          height : 100,
+                                          alignment: Alignment.center,
+                                          child:Text("No Services")
+
                                         );
 
                                       }
                                       return new ListView(
-                                        shrinkWrap: true,
+                                        scrollDirection: Axis.horizontal,
                                         children: snapshot.data!.docs.map((DocumentSnapshot document) {
                                           Map<String, dynamic> data = document.data() as Map<String, dynamic>;
                                           ServiceModel model= ServiceModel.fromMap(data, document.reference.id);
@@ -343,7 +381,7 @@ class _HomePageState extends State<HomePage> {
                                             child: InkWell(
                                               onTap: (){
                                                 Navigator.push(context, new MaterialPageRoute(
-                                                    builder: (context) => ServiceDetail()));
+                                                    builder: (context) => ServiceDetail(model)));
                                               },
                                               child: Container(
                                           margin: EdgeInsets.all(5),
