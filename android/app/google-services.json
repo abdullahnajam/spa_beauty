@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "721165776870-26jl776eb4il6ao6dkgksdjq1os98sq4.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.spa.spa_beauty",
+            "certificate_hash": "c3a0cd39f6ac9b945403790fd500b6262b3aa33e"
+          }
+        },
+        {
           "client_id": "721165776870-c6vd0fm836ltdplqqdqqku9a3tbiac8a.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {

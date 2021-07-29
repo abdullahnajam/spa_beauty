@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:spa_beauty/auth/login.dart';
 import 'package:spa_beauty/auth/register.dart';
 import 'package:spa_beauty/values/constants.dart';
+
+import 'google_signIn.dart';
 class AuthSelection extends StatefulWidget {
   const AuthSelection({Key? key}) : super(key: key);
 
@@ -125,25 +127,7 @@ class _AuthSelectionState extends State<AuthSelection> {
                         onTap: (){
 
                         },
-                        child: Container(
-                            height: 50,
-                            padding: EdgeInsets.only(left: 10,right: 10),
-                            decoration: BoxDecoration(
-                              border: Border.all(color: Colors.red),
-                              borderRadius: BorderRadius.circular(40),
-
-                            ),
-                            alignment: Alignment.center,
-                            margin: EdgeInsets.all(12),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Image.asset('assets/images/google.png',width: 30,height: 30,),
-                                SizedBox(width: 5,),
-                                Text("GOOGLE",style: TextStyle(color: Colors.red,fontSize: 17,fontWeight: FontWeight.w400),),
-                              ],
-                            )
-                        ),
+                        child: GoogleSignIn(),
                       ),
                     ],
                   ),

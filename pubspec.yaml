@@ -48,6 +48,7 @@ dependencies:
   future_progress_dialog: ^0.2.0
   sn_progress_dialog: ^1.0.1
   awesome_dialog: ^2.1.0
+  google_sign_in: ^5.0.5
 
 dev_dependencies:
   flutter_test:
