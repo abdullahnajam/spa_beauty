@@ -81,6 +81,7 @@ class _ServiceDetailState extends State<ServiceDetail> {
 
 
   }
+
   @override
   Widget build(BuildContext context) {
     final orientation = MediaQuery.of(context).orientation;
@@ -379,10 +380,6 @@ class _ServiceDetailState extends State<ServiceDetail> {
                             },
                           ),
                         ),
-
-
-
-
 
                       ]),
                     )

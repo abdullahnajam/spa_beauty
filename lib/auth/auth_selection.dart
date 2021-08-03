@@ -1,10 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:spa_beauty/auth/google_signIn.dart';
 import 'package:spa_beauty/auth/login.dart';
 import 'package:spa_beauty/auth/register.dart';
 import 'package:spa_beauty/values/constants.dart';
 
-import 'google_signIn.dart';
+import 'facebook_signIn.dart';
 class AuthSelection extends StatefulWidget {
   const AuthSelection({Key? key}) : super(key: key);
 
@@ -99,36 +100,9 @@ class _AuthSelectionState extends State<AuthSelection> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      InkWell(
-                        onTap: (){
+                      FacebookSignIn(),
+                      GoogleSignin(),
 
-                        },
-                        child: Container(
-                            height: 50,
-                            padding: EdgeInsets.only(left: 10,right: 10),
-                            decoration: BoxDecoration(
-                              border: Border.all(color: Colors.blueAccent),
-                              borderRadius: BorderRadius.circular(40),
-
-                            ),
-                            alignment: Alignment.center,
-                            margin: EdgeInsets.all(12),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Image.asset('assets/images/facebook.png',width: 30,height: 30,),
-                                SizedBox(width: 5,),
-                                Text("FACEBOOK",style: TextStyle(color: Colors.blueAccent,fontSize: 17,fontWeight: FontWeight.w400),),
-                              ],
-                            )
-                        ),
-                      ),
-                      InkWell(
-                        onTap: (){
-
-                        },
-                        child: GoogleSignIn(),
-                      ),
                     ],
                   ),
                 ),

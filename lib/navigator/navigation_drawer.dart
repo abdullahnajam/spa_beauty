@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:spa_beauty/auth/auth_selection.dart';
 import 'package:spa_beauty/model/user_model.dart';
+import 'package:spa_beauty/screens/About.dart';
 import 'package:spa_beauty/screens/all_categories.dart';
 import 'package:spa_beauty/screens/appointments.dart';
 import 'package:spa_beauty/screens/coupons.dart';
@@ -12,6 +13,8 @@ import 'package:spa_beauty/screens/home_page.dart';
 import 'package:spa_beauty/screens/my_account.dart';
 import 'package:spa_beauty/screens/offers.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class MenuDrawer extends StatefulWidget {
 
@@ -94,21 +97,50 @@ class MenuDrawerState extends State<MenuDrawer> {
                 ),
               ),
               Container(height: 8),
-              FirebaseAuth.instance.currentUser!=null?
+
+              FirebaseAuth.instance.currentUser!=null  ?
               InkWell(
                 onTap: (){
-                  FirebaseFirestore.instance
-                      .collection('customer')
-                      .doc(FirebaseAuth.instance.currentUser!.uid)
-                      .get()
-                      .then((DocumentSnapshot documentSnapshot) {
-                    if (documentSnapshot.exists) {
-                      Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
-                      UserModel user=UserModel.fromMap(data, documentSnapshot.reference.id);
-                      Navigator.pushReplacement(context, new MaterialPageRoute(
-                          builder: (context) => MyAccount(user)));
+
+                  print(FirebaseAuth.instance.currentUser!.uid);
+                  if (GoogleSignIn().currentUser != null)
+                    {
+                      FirebaseFirestore.instance
+                          .collection('customer')
+                          .doc(GoogleSignIn().currentUser!.id)
+                          .get()
+                          .then((DocumentSnapshot documentSnapshot) {
+                        if (documentSnapshot.exists) {
+                          Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
+                          UserModel user=UserModel.fromMap(data, documentSnapshot.reference.id);
+                          Navigator.pushReplacement(context, new MaterialPageRoute(
+                              builder: (context) => MyAccount(user)));
+                        }
+
+                      });
+
                     }
-                  });
+                  else
+                    {
+                      print("all ok");
+                      FirebaseFirestore.instance
+                          .collection('customer')
+                          .doc(FirebaseAuth.instance.currentUser!.uid)
+                          .get()
+                          .then((DocumentSnapshot documentSnapshot) {
+                        if (documentSnapshot.exists) {
+                          Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
+                          UserModel user=UserModel.fromMap(data, documentSnapshot.reference.id);
+                          Navigator.pushReplacement(context, new MaterialPageRoute(
+                              builder: (context) => MyAccount(user)));
+                        }
+                        else {
+
+                        }
+                      });
+                    }
+
+
 
               },
                 child: Container(height: 40, padding: EdgeInsets.symmetric(horizontal: 20),
@@ -136,6 +168,9 @@ class MenuDrawerState extends State<MenuDrawer> {
                   ),
                 ),
               ),
+
+
+
               Container(height: 10),
               InkWell(onTap: (){
                 Navigator.pushReplacement(context, new MaterialPageRoute(
@@ -196,7 +231,7 @@ class MenuDrawerState extends State<MenuDrawer> {
               ),
               Container(height: 10),
               InkWell(onTap: (){
-                //Navigator.pushReplacement(context, new MaterialPageRoute(builder: (context) => AllCategories()));
+                _service('tel:'+"0311-6741249");
               },
                 child: Container(height: 40, padding: EdgeInsets.symmetric(horizontal: 20),
                   child: Row(
@@ -210,7 +245,7 @@ class MenuDrawerState extends State<MenuDrawer> {
               ),
               Container(height: 10),
               InkWell(onTap: (){
-                //Navigator.pushReplacement(context, new MaterialPageRoute(builder: (context) => AllCategories()));
+                Navigator.pushReplacement(context, new MaterialPageRoute(builder: (context) => About()));
               },
                 child: Container(height: 40, padding: EdgeInsets.symmetric(horizontal: 20),
                   child: Row(
@@ -232,4 +267,22 @@ class MenuDrawerState extends State<MenuDrawer> {
       ),
     );
   }
+
+
+  _service(String url) async {
+    try{
+
+      if (await canLaunch(url)) {
+        await launch(url);
+      } else {
+        throw 'Could not launch $url';
+      }
+    }
+    catch (e)
+    {
+      print("error");
+    }
+  }
+
+
 }

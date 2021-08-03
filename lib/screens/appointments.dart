@@ -32,7 +32,7 @@ class _AppointmentsState extends State<Appointments> {
       drawer: MenuDrawer(),
       key: _drawerKey,
       body: SafeArea(
-        child: FirebaseAuth.instance.currentUser!=null?Column(
+        child: FirebaseAuth.instance.currentUser!=null ?Column(
           children: [
             CustomAppBar(_openDrawer,"Appointments"),
 
