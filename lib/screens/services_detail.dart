@@ -417,7 +417,7 @@ class _ServiceDetailState extends State<ServiceDetail> {
             )..show();
           }
           else
-            Navigator.push(context, new MaterialPageRoute(builder: (context) => Reservation(widget.model)));
+            Navigator.push(context, new MaterialPageRoute(builder: (context) => Reservation(widget.model,false,false,"")));
         },
         child: Container(
           color: lightBrown,

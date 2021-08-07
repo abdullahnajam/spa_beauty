@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:spa_beauty/navigator/bottom_navigation.dart';
 import 'package:spa_beauty/screens/home_page.dart';
+import 'package:spa_beauty/screens/select_gender.dart';
 import 'package:spa_beauty/values/constants.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -28,8 +29,7 @@ class _SplashScreenState extends State<SplashScreen> {
     return Timer(_duration, navigationPage);
   }
   void navigationPage() {
-    Navigator.pushReplacement(context,
-        MaterialPageRoute(builder: (BuildContext context) => BottomBar()));
+    Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) => SelectGender()));
   }
   @override
   Widget build(BuildContext context) {

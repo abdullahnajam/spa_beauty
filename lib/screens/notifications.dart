@@ -1,6 +1,8 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:spa_beauty/model/notification_model.dart';
 import 'package:spa_beauty/values/constants.dart';
 import 'package:easy_localization/easy_localization.dart';
 
@@ -12,9 +14,45 @@ class Notifications extends StatefulWidget {
 }
 
 class _NotificationsState extends State<Notifications> {
+  static String timeAgoSinceDate(String dateString, {bool numericDates = true}) {
+    DateTime date = DateTime.parse(dateString);
+    final date2 = DateTime.now();
+    final difference = date2.difference(date);
+
+    if ((difference.inDays / 365).floor() >= 2) {
+      return '${(difference.inDays / 365).floor()} years ago';
+    } else if ((difference.inDays / 365).floor() >= 1) {
+      return (numericDates) ? '1 year ago' : 'Last year';
+    } else if ((difference.inDays / 30).floor() >= 2) {
+      return '${(difference.inDays / 365).floor()} months ago';
+    } else if ((difference.inDays / 30).floor() >= 1) {
+      return (numericDates) ? '1 month ago' : 'Last month';
+    } else if ((difference.inDays / 7).floor() >= 2) {
+      return '${(difference.inDays / 7).floor()} weeks ago';
+    } else if ((difference.inDays / 7).floor() >= 1) {
+      return (numericDates) ? '1 week ago' : 'Last week';
+    } else if (difference.inDays >= 2) {
+      return '${difference.inDays} days ago';
+    } else if (difference.inDays >= 1) {
+      return (numericDates) ? '1 day ago' : 'Yesterday';
+    } else if (difference.inHours >= 2) {
+      return '${difference.inHours} hours ago';
+    } else if (difference.inHours >= 1) {
+      return (numericDates) ? '1 hour ago' : 'An hour ago';
+    } else if (difference.inMinutes >= 2) {
+      return '${difference.inMinutes} minutes ago';
+    } else if (difference.inMinutes >= 1) {
+      return (numericDates) ? '1 minute ago' : 'A minute ago';
+    } else if (difference.inSeconds >= 3) {
+      return '${difference.inSeconds} seconds ago';
+    } else {
+      return 'Just now';
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[200],
       body: SafeArea(
         child: Column(
           children: [
@@ -46,7 +84,7 @@ class _NotificationsState extends State<Notifications> {
             ),
             Expanded(
               child: StreamBuilder<QuerySnapshot>(
-                stream: FirebaseFirestore.instance.collection('notifications').where('userId', whereIn: [FirebaseAuth.instance.currentUser!.uid,'all']).snapshots(),
+                stream: FirebaseFirestore.instance.collection('notifications').where('userId', whereIn: [FirebaseAuth.instance.currentUser!.uid,'none']).snapshots(),
                 builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
                   if (snapshot.hasError) {
                     return Center(
@@ -71,68 +109,67 @@ class _NotificationsState extends State<Notifications> {
                     shrinkWrap: true,
                     children: snapshot.data!.docs.map((DocumentSnapshot document) {
                       Map<String, dynamic> data = document.data() as Map<String, dynamic>;
-
+                      NotificationModel model=NotificationModel.fromMap(data, document.reference.id);
                       return new Padding(
-                        padding: const EdgeInsets.only(top: 15.0),
+                        padding: const EdgeInsets.only(top: 5.0),
                         child: InkWell(
                           onTap: (){
 
                           },
-                          child: Stack(
-                            children: [
-                              Card(
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10.0),
-                                ),
-                                child: new Column(
-                                  children: [
-                                    Container(
-                                      height: 120,
-                                      width: double.maxFinite,
-                                      decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.only(
-                                              topLeft: Radius.circular(10),
-                                              topRight: Radius.circular(10)
-                                          ),
-                                          image: DecorationImage(
-                                              image: NetworkImage(data['image']),
-                                              fit: BoxFit.cover
-                                          )
-                                      ),
-                                    ),
-                                    Container(
-                                      height: 40,
-                                      padding: EdgeInsets.only(top: 5),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.only(
-                                            bottomRight: Radius.circular(10),
-                                            bottomLeft: Radius.circular(10)
-                                        ),
-                                      ),
-                                      child: Text(data['name'],style: TextStyle(color: Colors.black),),
-                                    )
-                                  ],
-                                ),
-                              ),
-                              Align(
-                                alignment: Alignment.bottomCenter,
-                                child: Container(
-                                  height: 30,
-                                  width: 80,
-                                  alignment: Alignment.center,
-                                  padding: EdgeInsets.only(left: 10,right: 10),
-                                  margin: EdgeInsets.only(top: 150),
+                          child: Container(
+                            margin: EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(10)
+                            ),
+                            child: Column(
+                              children: [
+                                Container(
+                                  width: MediaQuery.of(context).size.width,
+                                  padding: EdgeInsets.all(10),
+
                                   decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      border: Border.all(color: lightBrown),
-                                      borderRadius: BorderRadius.circular(40)
+                                      color: Colors.grey[300],
+                                      borderRadius: BorderRadius.only(
+                                        topLeft: Radius.circular(10),
+                                        topRight: Radius.circular(10)
+                                      )
                                   ),
-                                  child: Text(data['price']),
+                                  child: Text(model.type,style: TextStyle(fontWeight: FontWeight.w600),),
                                 ),
-                              )
-                            ],
-                          ),
+                                Container(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Container(
+                                            margin: EdgeInsets.all(10),
+                                            height: 30,width: 30,
+                                            decoration: BoxDecoration(
+                                                borderRadius: BorderRadius.circular(100),
+                                              image: DecorationImage(
+                                                fit: BoxFit.cover,
+                                                image: NetworkImage(model.image)
+                                              )
+                                            ),
+
+                                          ),
+                                          Expanded(
+                                            child: Text(model.title,style: TextStyle(fontWeight: FontWeight.w500),maxLines: 1,),
+                                          )
+                                        ],
+                                      ),
+                                      Container(
+                                        margin: EdgeInsets.all(10),
+                                        child: Text(model.detail),
+                                      )
+                                    ],
+                                  ),
+                                )
+                              ],
+                            ),
+                          )
                         ),
                       );
                     }).toList(),

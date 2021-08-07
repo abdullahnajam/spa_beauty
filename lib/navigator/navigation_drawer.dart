@@ -113,8 +113,8 @@ class MenuDrawerState extends State<MenuDrawer> {
                         if (documentSnapshot.exists) {
                           Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
                           UserModel user=UserModel.fromMap(data, documentSnapshot.reference.id);
-                          Navigator.pushReplacement(context, new MaterialPageRoute(
-                              builder: (context) => MyAccount(user)));
+                          Navigator.push(context, new MaterialPageRoute(
+                              builder: (context) => MyAccount()));
                         }
 
                       });
@@ -131,8 +131,8 @@ class MenuDrawerState extends State<MenuDrawer> {
                         if (documentSnapshot.exists) {
                           Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
                           UserModel user=UserModel.fromMap(data, documentSnapshot.reference.id);
-                          Navigator.pushReplacement(context, new MaterialPageRoute(
-                              builder: (context) => MyAccount(user)));
+                          Navigator.push(context, new MaterialPageRoute(
+                              builder: (context) => MyAccount()));
                         }
                         else {
 
@@ -155,7 +155,7 @@ class MenuDrawerState extends State<MenuDrawer> {
               ):
               InkWell(
                 onTap: (){
-                  Navigator.pushReplacement(context, new MaterialPageRoute(
+                  Navigator.push(context, new MaterialPageRoute(
                       builder: (context) => AuthSelection()));
                 },
                 child: Container(height: 40, padding: EdgeInsets.symmetric(horizontal: 20),
@@ -173,7 +173,7 @@ class MenuDrawerState extends State<MenuDrawer> {
 
               Container(height: 10),
               InkWell(onTap: (){
-                Navigator.pushReplacement(context, new MaterialPageRoute(
+                Navigator.push(context, new MaterialPageRoute(
                     builder: (context) => Offers()));
               },
                 child: Container(height: 40, padding: EdgeInsets.symmetric(horizontal: 20),
@@ -202,13 +202,28 @@ class MenuDrawerState extends State<MenuDrawer> {
               ),
               Container(height: 10),
               InkWell(onTap: (){
-                Navigator.pushReplacement(context, new MaterialPageRoute(
+                Navigator.push(context, new MaterialPageRoute(
+                    builder: (context) => Favourites()));
+              },
+                child: Container(height: 40, padding: EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    children: <Widget>[
+                      Icon(Icons.favorite, color: Colors.grey, size: 20),
+                      Container(width: 20),
+                      Expanded(child: Text('favourites', style: TextStyle(color: Colors.grey))),
+                    ],
+                  ),
+                ),
+              ),
+              Container(height: 10),
+              InkWell(onTap: (){
+                Navigator.push(context, new MaterialPageRoute(
                     builder: (context) => Coupons()));
               },
                 child: Container(height: 40, padding: EdgeInsets.symmetric(horizontal: 20),
                   child: Row(
                     children: <Widget>[
-                      Icon(Icons.person, color: Colors.grey, size: 20),
+                      Icon(Icons.local_offer, color: Colors.grey, size: 20),
                       Container(width: 20),
                       Expanded(child: Text("Coupons", style: TextStyle(color: Colors.grey))),
                     ],
@@ -217,7 +232,7 @@ class MenuDrawerState extends State<MenuDrawer> {
               ),
               Container(height: 10),
               InkWell(onTap: (){
-                Navigator.pushReplacement(context, new MaterialPageRoute(builder: (context) => AllCategories()));
+                Navigator.push(context, new MaterialPageRoute(builder: (context) => AllCategories()));
               },
                 child: Container(height: 40, padding: EdgeInsets.symmetric(horizontal: 20),
                   child: Row(
@@ -245,7 +260,7 @@ class MenuDrawerState extends State<MenuDrawer> {
               ),
               Container(height: 10),
               InkWell(onTap: (){
-                Navigator.pushReplacement(context, new MaterialPageRoute(builder: (context) => About()));
+                Navigator.push(context, new MaterialPageRoute(builder: (context) => About()));
               },
                 child: Container(height: 40, padding: EdgeInsets.symmetric(horizontal: 20),
                   child: Row(

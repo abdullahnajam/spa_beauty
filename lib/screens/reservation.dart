@@ -6,17 +6,21 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:sn_progress_dialog/progress_dialog.dart';
+import 'package:spa_beauty/model/appointment_model.dart';
 import 'package:spa_beauty/model/service_model.dart';
 import 'package:spa_beauty/model/specialist_model.dart';
 import 'package:spa_beauty/model/time_model.dart';
 import 'package:spa_beauty/navigator/bottom_navigation.dart';
 import 'package:spa_beauty/payment/payment-service.dart';
+import 'package:spa_beauty/screens/checkout.dart';
 import 'package:spa_beauty/values/constants.dart';
 class Reservation extends StatefulWidget {
   ServiceModel model;
+  bool isOffer,isPercentage;
+  String discount;
 
 
-  Reservation(this.model);
+  Reservation(this.model,this.isOffer,this.isPercentage,this.discount);
 
   @override
   _ReservationState createState() => _ReservationState();
@@ -26,12 +30,16 @@ class Reservation extends StatefulWidget {
 class _ReservationState extends State<Reservation> {
 
   List<TimeModel> time=[];
+  String payment='Cash on delivery';
+  int? amount;
+  var couponController=TextEditingController();
   String? username;
   List<SpecialistModel> specialist=[];
   getSpecialists(){
     FirebaseFirestore.instance.collection('specialists').where("serviceId",isEqualTo: widget.model.id).get().then((QuerySnapshot querySnapshot) {
       querySnapshot.docs.forEach((doc) {
-        SpecialistModel model=new SpecialistModel(doc.reference.id,doc['name'], doc['image'],doc['serviceId']);
+        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+        SpecialistModel model=SpecialistModel.fromMap(data,doc.reference.id);
         setState(() {
           specialist.add(model);
         });
@@ -44,7 +52,7 @@ class _ReservationState extends State<Reservation> {
   getTimeSlots(){
     FirebaseFirestore.instance.collection('timeslots').get().then((QuerySnapshot querySnapshot) {
       querySnapshot.docs.forEach((doc) {
-        TimeModel timeModel=new TimeModel(doc['time'], false);
+        TimeModel timeModel=new TimeModel(doc['time'], doc['max'],false);
         setState(() {
           time.add(timeModel);
         });
@@ -57,69 +65,194 @@ class _ReservationState extends State<Reservation> {
 
   bool isTimeLoading=true;
   bool isSpecialistLoading=true;
+  final f = new DateFormat('dd-MM-yyyy');
 
-  payViaNewCard(BuildContext context) async {
-    final ProgressDialog pr = ProgressDialog(context: context);
-    pr.show(max: 100, msg: "Please wait");
-
-    await StripeService.payWithNewCard(
-        amount: '15000',
-        currency: 'USD'
-    ).whenComplete(() {
-      bookAppointment();
-    });
-    pr.close();
-
-  }
-  bookAppointment(){
-    final f = new DateFormat('dd-MM-yyyy');
-    final ProgressDialog pr = ProgressDialog(context: context);
-    pr.show(max: 100, msg: "Adding");
-    FirebaseFirestore.instance.collection('appointments').add({
-      'name': username,
-      'userId': FirebaseAuth.instance.currentUser!.uid,
-      'date': f.format(_selectedDate).toString(),
-      'time': appointmentTimeSelected,
-      'specialistId': specialistId,
-      'specialistName': specialistName,
-      'serviceId':widget.model.id,
-      'serviceName': widget.model.name,
-      'status': "Pending",
-      'isRated':false,
-      'rating':0
-    }).then((value) {
-      pr.close();
-      AwesomeDialog(
-        context: context,
-        dialogType: DialogType.SUCCES,
-        animType: AnimType.BOTTOMSLIDE,
-        title: 'Your booking was successful',
-        desc: 'Please wait for the approval of appointment',
-
-
-        btnOkOnPress: () {
-          Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => BottomBar()));
-
-        },
-      )..show();
-    }).onError((error, stackTrace) {
-      AwesomeDialog(
-        context: context,
-        dialogType: DialogType.ERROR,
-        animType: AnimType.BOTTOMSLIDE,
-        title: 'Error',
-        desc: '${error.toString()}',
-        btnOkOnPress: () {
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) => Reservation(widget.model)));
-        },
-      )..show();
-    });
-  }
   DateTime _selectedDate=DateTime.now();
   String? appointmentTimeSelected;
   List<bool> timeSelected=[];
   String specialistName="none";
   String specialistId="none";
+  Future<void> _showConfirmDialog() async {
+    final _formKey = GlobalKey<FormState>();
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: true, // user must tap button!
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Dialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: const BorderRadius.all(
+                  Radius.circular(10.0),
+                ),
+              ),
+              insetAnimationDuration: const Duration(seconds: 1),
+              insetAnimationCurve: Curves.fastOutSlowIn,
+              elevation: 2,
+
+              child: Container(
+                padding: EdgeInsets.all(20),
+                width: MediaQuery.of(context).size.width*0.7,
+                decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10)
+                ),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Stack(
+                        children: [
+                          Align(
+                            alignment: Alignment.center,
+                            child: Container(
+                              margin: EdgeInsets.all(10),
+                              child: Text("Confirm",textAlign: TextAlign.center,style: Theme.of(context).textTheme.headline6!.apply(color: Colors.grey),),
+                            ),
+                          ),
+
+                        ],
+                      ),
+
+                      Expanded(
+                        child: ListView(
+                          children: [
+                            Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                SizedBox(height: 20,),
+                                Text(
+                                  "Date & Time",
+                                  style: Theme.of(context).textTheme.bodyText1!.apply(color: Colors.black),
+                                ),
+                                Text(
+                                  "${f.format(_selectedDate).toString()} $appointmentTimeSelected",
+                                  style: Theme.of(context).textTheme.bodyText2!.apply(color: Colors.grey),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 10,),
+                            Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Price",
+                                  style: Theme.of(context).textTheme.bodyText1!.apply(color: Colors.black),
+                                ),
+                                Text(
+                                  "$amount",
+                                  style: Theme.of(context).textTheme.bodyText1!.apply(color: Colors.grey),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 10,),
+                            Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Add Coupon",
+                                  style: Theme.of(context).textTheme.bodyText1!.apply(color: Colors.black),
+                                ),
+                                TextFormField(
+                                  controller:couponController,
+                                  style: TextStyle(color: Colors.black),
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Please enter some text';
+                                    }
+                                    return null;
+                                  },
+                                  decoration: InputDecoration(
+                                    contentPadding: EdgeInsets.all(15),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(7.0),
+                                      borderSide: BorderSide(
+                                        color: darkBrown,
+                                      ),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(7.0),
+                                      borderSide: BorderSide(
+                                          color: darkBrown,
+                                          width: 0.5
+                                      ),
+                                    ),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(7.0),
+                                      borderSide: BorderSide(
+                                        color: darkBrown,
+                                        width: 0.5,
+                                      ),
+                                    ),
+                                    hintText: "",
+                                    floatingLabelBehavior: FloatingLabelBehavior.always,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 10,),
+                            Container(
+                              padding: EdgeInsets.only(left: 10,right: 10),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(7.0),
+                                border: Border.all(
+                                  color: darkBrown,
+                                ),
+                              ),
+                              child: DropdownButton<String>(
+                                value: payment,
+                                icon: const Icon(Icons.keyboard_arrow_down),
+                                isExpanded: true,
+                                elevation: 16,
+                                style: const TextStyle(color: Colors.black),
+                                underline: Container(
+                                ),
+                                onChanged: (String? newValue) {
+                                  setState(() {
+                                    payment = newValue!;
+                                  });
+                                },
+                                items: <String>['Cash on delivery', 'Card Payment', 'Pay Later']
+                                    .map<DropdownMenuItem<String>>((String value) {
+                                  return DropdownMenuItem<String>(
+                                    value: value,
+                                    child: Text(value),
+                                  );
+                                }).toList(),
+                              ),
+                            ),
+
+
+
+                            SizedBox(height: 15,),
+                            InkWell(
+                              onTap: (){
+
+                              },
+                              child: Container(
+                                height: 50,
+                                color: darkBrown,
+                                alignment: Alignment.center,
+                                child: Text("Book",style: Theme.of(context).textTheme.button!.apply(color: Colors.white),),
+                              ),
+                            )
+                          ],
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
   @override
   Widget build(BuildContext context) {
     final orientation = MediaQuery.of(context).orientation;
@@ -210,7 +343,7 @@ class _ReservationState extends State<Reservation> {
                     itemCount: time.length,
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                         childAspectRatio: (itemWidth / itemHeight),
-                        crossAxisCount: (orientation == Orientation.portrait) ? 4 : 6),
+                        crossAxisCount: (orientation == Orientation.portrait) ? 3 : 4),
                     itemBuilder: (BuildContext context, int index) {
                       return new Card(
                         shape: RoundedRectangleBorder(
@@ -218,6 +351,7 @@ class _ReservationState extends State<Reservation> {
                         ),
                         child: InkWell(
                           onTap: (){
+
                             for(int i=0;i<time.length;i++){
                               if(i==index){
                                 setState(() {
@@ -239,7 +373,7 @@ class _ReservationState extends State<Reservation> {
                                 borderRadius: BorderRadius.circular(10)
                             ),
                             alignment: Alignment.center,
-                            child: Text(time[index].time,style: TextStyle(fontWeight: FontWeight.w400,fontSize: 15),),
+                            child: Text(time[index].time,style: TextStyle(fontWeight: FontWeight.w400,fontSize: 15),maxLines: 1,),
                           ),
                         ),
                       );
@@ -297,7 +431,33 @@ class _ReservationState extends State<Reservation> {
                 ),
                 InkWell(
                   onTap: (){
-                    payViaNewCard(context);
+                    if(appointmentTimeSelected==null){
+                      final snackBar = SnackBar(content: Text("Please select a time slot"));
+                      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                    }
+
+                    else{
+                      AppointmentModel model=new AppointmentModel(
+                        "",
+                        username!,
+                          FirebaseAuth.instance.currentUser!.uid,
+                        f.format(_selectedDate).toString(),
+                        appointmentTimeSelected!,
+                          specialistId,
+                          specialistName,
+                        widget.model.id,
+                        widget.model.name,
+                        "Pending",
+                        payment,
+                        false,
+                        false,
+                        0,
+                        amount.toString(),
+                      );
+                      Navigator.pushReplacement(context, new MaterialPageRoute(
+                          builder: (context) => Checkout(model)));
+                    }
+
                   },
                   child: Container(
                     height: 50,
@@ -331,6 +491,25 @@ class _ReservationState extends State<Reservation> {
     StripeService.init();
     getTimeSlots();
     getSpecialists();
+    setState(() {
+      if(widget.isOffer){
+        if(widget.isPercentage){
+          print("dis ${widget.discount}");
+          double percent=double.parse(widget.discount)/100;
+          setState(() {
+            amount=(double.parse(widget.model.price)*percent).toInt();
+          });
+
+        }
+        else{
+          setState(() {
+            amount=(double.parse(widget.model.price)-double.parse(widget.discount)).toInt();
+          });
+        }
+      }
+      else
+        amount=int.parse(widget.model.price);
+    });
     FirebaseFirestore.instance.collection('customer')
         .doc(FirebaseAuth.instance.currentUser!.uid)
         .get()

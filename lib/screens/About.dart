@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:maps_launcher/maps_launcher.dart';
 import 'package:spa_beauty/model/about_model.dart';
+import 'package:spa_beauty/model/specialist_model.dart';
 import 'package:spa_beauty/screens/home_page.dart';
 import 'package:spa_beauty/values/constants.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -53,7 +54,7 @@ class _AboutState extends State<About> {
                   top: 40,
                   child: IconButton(
                     icon: Icon(Icons.share),
-                    color: Colors.black54,
+                    color: Colors.transparent,
                     onPressed: (){} ,
                   ),
                 ),
@@ -87,6 +88,7 @@ class _AboutState extends State<About> {
                       ),
                       child: TabBar(
                         labelColor: Colors.white,
+                        labelStyle: TextStyle(fontSize: 10),
                         unselectedLabelColor: lightBrown,
                         indicator : BoxDecoration(
                           borderRadius: BorderRadius.circular(10),
@@ -101,7 +103,7 @@ class _AboutState extends State<About> {
                           Tab(text: "Description",),
                           Tab(text: "Gallery"),
                           Tab(text: "Specialist"),
-                          Tab(text: "Loacation"),
+                          Tab(text: "Location"),
                         ],
                       ),
 
@@ -147,7 +149,6 @@ class _AboutState extends State<About> {
 
                                     }
                                     return new ListView(
-                                      scrollDirection: Axis.horizontal,
                                       children: snapshot.data!.docs.map((DocumentSnapshot document) {
                                         Map<String, dynamic> data = document.data() as Map<String, dynamic>;
                                         AboutModel model= AboutModel.fromMap(data, document.reference.id);
@@ -186,36 +187,18 @@ class _AboutState extends State<About> {
                                               ),
 
                                               Row (
+                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                 children: [
 
                                                   Column(
                                                     children: [
-                                                      Text("Contact Info",style: TextStyle(
-                                                        fontSize: 18,
-                                                        fontWeight: FontWeight.w500
-                                                          ),
-                                                        ),
-
-                                                      SizedBox(
-                                                        height: 5,
-                                                      ),
-
-                                                      Text(model.contact,style: TextStyle(
-                                                          fontSize: 15,
-                                                          fontWeight: FontWeight.w300
-                                                      ),
-                                                      ),
-
-
-
-
-
+                                                      Text("Contact Info",style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),),
+                                                      SizedBox(height: 5,),
+                                                      Text(model.contact,style: TextStyle(fontSize: 15, fontWeight: FontWeight.w300),),
                                                     ],
                                                   ),
 
-                                                  SizedBox(
-                                                    width: size.width*0.53,
-                                                  ),
+
                                                   IconButton(icon: Icon(Icons.call),color: Colors.green, onPressed: (){
                                                     _service('tel:'+model.contact);
                                                   })
@@ -240,7 +223,7 @@ class _AboutState extends State<About> {
                         // gallery
                          Container(
                           child: StreamBuilder<QuerySnapshot>(
-                            stream: FirebaseFirestore.instance.collection('gallery').where("serviceId",isEqualTo: userId ).snapshots(),
+                            stream: FirebaseFirestore.instance.collection('gallery').where("serviceId",isEqualTo: "about" ).snapshots(),
                             builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
                               if (snapshot.hasError) {
                                 return Center(
@@ -290,7 +273,65 @@ class _AboutState extends State<About> {
                             },
                           ),
                         ),
-                         Container(),
+                        Container(
+                          child: StreamBuilder<QuerySnapshot>(
+                            stream: FirebaseFirestore.instance.collection('specialists').snapshots(),
+                            builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                              if (snapshot.hasError) {
+                                return Center(
+                                  child: Column(
+                                    children: [
+                                      Image.asset("assets/images/wrong.png",width: 150,height: 150,),
+                                      Text("Something Went Wrong")
+
+                                    ],
+                                  ),
+                                );
+                              }
+                              if (snapshot.connectionState == ConnectionState.waiting) {
+                                return Center(
+                                  child: CircularProgressIndicator(),
+                                );
+                              }
+                              if (snapshot.data!.size==0){
+                                return Container(
+                                    alignment: Alignment.center,
+                                    child:Text("No Specialists")
+
+                                );
+
+                              }
+                              return new GridView(
+
+                                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: (orientation == Orientation.portrait) ? 2 : 3),
+                                children: snapshot.data!.docs.map((DocumentSnapshot document) {
+                                  Map<String, dynamic> data = document.data() as Map<String, dynamic>;
+                                  SpecialistModel model=SpecialistModel.fromMap(data, document.reference.id);
+                                  print(userId);
+                                  return Container(
+                                    margin: EdgeInsets.all(5),
+                                    height: 100,
+                                    width: 80,
+                                    decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(10),
+                                        border: Border.all(),
+                                        image: DecorationImage(
+                                            image: NetworkImage(model.image),
+                                            fit: BoxFit.cover
+                                        )
+                                    ),
+                                    child: Container(
+                                      alignment: Alignment.bottomCenter,
+                                      margin: EdgeInsets.all(10),
+                                      child: Text(model.name,style: TextStyle(color: Colors.white),),
+                                    ),
+                                  );
+                                }).toList(),
+                              );
+                            },
+                          ),
+                        ),
                          Container(
                            child: Column(
 
@@ -350,6 +391,7 @@ class _AboutState extends State<About> {
                                              child: Column(
                                                children: [
                                                  Row(
+                                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                    children: [
                                                      Column(
                                                        crossAxisAlignment: CrossAxisAlignment.start,
@@ -376,17 +418,15 @@ class _AboutState extends State<About> {
                                                          ),
                                                        ],
                                                      ),
-                                                     SizedBox(
-                                                       width: size.width*0.3,
-                                                     ),
+
                                                      InkWell(
                                                        onTap: ()=>MapsLauncher.launchQuery(
                                                            data['location']),
                                                        child: Container(
                                                          height: size.height*0.04,
-                                                         width: size.width*0.3,
+                                                         padding: EdgeInsets.only(left: 10,right: 10),
                                                          decoration: BoxDecoration(
-                                                           borderRadius: BorderRadius.circular(16),
+                                                           borderRadius: BorderRadius.circular(10),
                                                            color: lightBrown,
                                                          ),
                                                          child: Center(child: Text("Get Direction",style: TextStyle(

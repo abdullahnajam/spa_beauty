@@ -5,6 +5,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:spa_beauty/screens/appointments.dart';
 import 'package:spa_beauty/screens/favourites.dart';
 import 'package:spa_beauty/screens/home_page.dart';
+import 'package:spa_beauty/screens/my_account.dart';
 import 'package:spa_beauty/screens/notifications.dart';
 import 'package:spa_beauty/values/constants.dart';
 
@@ -38,8 +39,7 @@ class _BottomNavigationState extends State<BottomBar>{
     });*/
 
     _children = [
-      /*MyAccount(user),*/
-      Notifications(),
+      MyAccount(),
       Favourites(),
       HomePage(),
       Appointments(),

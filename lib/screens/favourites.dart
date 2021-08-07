@@ -82,7 +82,7 @@ class _FavouritesState extends State<Favourites> {
                                 SizedBox(width: 20,),
                                 InkWell(
                                   onTap: (){
-                                    Navigator.push(context, new MaterialPageRoute(builder: (context) => Reservation(services[index])));
+                                    Navigator.push(context, new MaterialPageRoute(builder: (context) => Reservation(services[index],false,false,"")));
                                   },
                                   child: Container(
                                     height: 25,

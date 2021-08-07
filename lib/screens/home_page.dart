@@ -7,8 +7,10 @@ import 'package:spa_beauty/model/category_model.dart';
 import 'package:spa_beauty/model/service_model.dart';
 import 'package:spa_beauty/navigator/navigation_drawer.dart';
 import 'package:spa_beauty/screens/reservation.dart';
+import 'package:spa_beauty/screens/select_gender.dart';
 import 'package:spa_beauty/screens/services_detail.dart';
 import 'package:spa_beauty/screens/services_list.dart';
+import 'package:spa_beauty/search/search_service.dart';
 import 'package:spa_beauty/values/constants.dart';
 import 'package:easy_localization/easy_localization.dart';
 class HomePage extends StatefulWidget {
@@ -23,103 +25,7 @@ class _HomePageState extends State<HomePage> {
   void _openDrawer () {
     _drawerKey.currentState!.openDrawer();
   }
-  _showChangeLanguageDailog() async {
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: true, // user must tap button!
-      builder: (BuildContext context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: const BorderRadius.all(
-              Radius.circular(10.0),
-            ),
-          ),
-          insetAnimationDuration: const Duration(seconds: 1),
-          insetAnimationCurve: Curves.fastOutSlowIn,
-          elevation: 2,
 
-          child: Container(
-            decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(30)
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  margin: EdgeInsets.all(10),
-                  child: Text('changeLanguage'.tr(),textAlign: TextAlign.center,style: TextStyle(fontSize: 20,color:Colors.black,fontWeight: FontWeight.w600),),
-                ),
-                ListTile(
-                  onTap: (){
-                    context.locale = Locale('ar', 'EG');
-
-                  },
-                  title: Text('arabic'.tr()),
-                ),
-                ListTile(
-                  onTap: (){
-                    context.locale = Locale('en', 'US');
-                  },
-                  title: Text("English"),
-                ),
-                SizedBox(
-                  height: 15,
-                )
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-  _showChangeGenderDailog() async {
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: true, // user must tap button!
-      builder: (BuildContext context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: const BorderRadius.all(
-              Radius.circular(10.0),
-            ),
-          ),
-          insetAnimationDuration: const Duration(seconds: 1),
-          insetAnimationCurve: Curves.fastOutSlowIn,
-          elevation: 2,
-
-          child: Container(
-            decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(30)
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  margin: EdgeInsets.all(10),
-                  child: Text('chooseGender'.tr(),textAlign: TextAlign.center,style: TextStyle(fontSize: 20,color:Colors.black,fontWeight: FontWeight.w600),),
-                ),
-                ListTile(
-                  onTap: (){
-                    Navigator.pop(context);
-                  },
-                  title: Text('female'.tr()),
-                ),
-                ListTile(
-                  onTap: (){
-                    Navigator.pop(context);
-                  },
-                  title: Text('male'.tr()),
-                ),
-                SizedBox(
-                  height: 15,
-                )
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -127,6 +33,17 @@ class _HomePageState extends State<HomePage> {
       key: _drawerKey,
       drawer: MenuDrawer(),
       body: Container(
+
+        height: MediaQuery.of(context).size.height,
+        width: MediaQuery.of(context).size.width,
+        decoration: BoxDecoration(
+            color:Colors.transparent.withOpacity(0.8),
+            image: DecorationImage(
+                image:AssetImage("assets/images/pattern.jpg",),
+                fit: BoxFit.fitHeight
+
+            )
+        ),
         child: Column(
           children: [
             Container(
@@ -174,32 +91,60 @@ class _HomePageState extends State<HomePage> {
                               padding: EdgeInsets.all(10),
                               child: Row(
                                 children: [
-                                  Container(
-                                    width: MediaQuery.of(context).size.width*0.63,
-                                    height: 50,
-                                    margin: EdgeInsets.only(right: 5),
+                                  InkWell(
+                                    onTap: ()async{
+                                      List<ServiceModel> services=[];
+                                      FirebaseFirestore.instance.collection('services').get().then((QuerySnapshot querySnapshot) {
+                                        querySnapshot.docs.forEach((doc) {
+                                          ServiceModel model=new ServiceModel(
+                                              doc.reference.id,
+                                              doc['name'],
+                                              doc['image'],
+                                            doc['gender'],
+                                            doc['categoryName'],
+                                            doc['categoryId'],
+                                            doc['rating'],
+                                            doc['price'],
+                                            doc['totalRating'],
+                                            doc['description'],
+                                          );
+                                          setState(() {
+                                            services.add(model);
+                                          });
+                                        });
+                                      });
+                                      await showSearch<String>(
+                                      context: context,
+                                      delegate: ServiceSearch(services),
+                                      );
+                                    },
                                     child: Container(
-                                      decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          borderRadius: BorderRadius.circular(40)
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          SizedBox(
-                                            width: 10,
-                                          ),
-                                          Icon(Icons.search),
-                                          SizedBox(
-                                            width: 5,
-                                          ),
-                                          Text('search'.tr())
-                                        ],
+                                      width: MediaQuery.of(context).size.width*0.63,
+                                      height: 50,
+                                      margin: EdgeInsets.only(right: 5),
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            borderRadius: BorderRadius.circular(40)
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            SizedBox(
+                                              width: 10,
+                                            ),
+                                            Icon(Icons.search),
+                                            SizedBox(
+                                              width: 5,
+                                            ),
+                                            Text('search'.tr())
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ),
                                   InkWell(
                                     onTap: (){
-                                      _showChangeGenderDailog();
+                                      Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => SelectGender()));
                                     },
                                     child: Container(
                                       height: 50,
@@ -514,20 +459,20 @@ class _HomePageState extends State<HomePage> {
                                                 children: [
                                                   Text(data['name'],style: TextStyle(fontSize: 18,fontWeight: FontWeight.w500),),
                                                   SizedBox(height: 10,),
-                                                  Text(data['price'],style: TextStyle(fontSize: 12,fontWeight: FontWeight.w300),),
-                                                  RatingBar.builder(
-                                                    initialRating: 3,
-                                                    minRating: 1,
+                                                  Text("\$${data['price']}",style: TextStyle(fontSize: 12,fontWeight: FontWeight.w300),),
+                                                  RatingBar(
+                                                    initialRating: data['rating'].toDouble(),
                                                     direction: Axis.horizontal,
                                                     allowHalfRating: true,
-                                                    itemSize: 15,
                                                     itemCount: 5,
-                                                    itemPadding: EdgeInsets.symmetric(horizontal: 0),
-                                                    itemBuilder: (context, _) => Icon(
-                                                      Icons.star,
-                                                      size: 10,
-                                                      color: darkBrown,
+                                                    ratingWidget: RatingWidget(
+                                                      full: Icon(Icons.star,color: darkBrown),
+                                                      half: Icon(Icons.star_half,color: darkBrown),
+                                                      empty:Icon(Icons.star_border,color: darkBrown,),
                                                     ),
+                                                    ignoreGestures: true,
+                                                    itemSize: 15,
+                                                    itemPadding: EdgeInsets.symmetric(horizontal: 1.0),
                                                     onRatingUpdate: (rating) {
                                                       print(rating);
                                                     },

@@ -2,7 +2,9 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:spa_beauty/model/service_model.dart';
 import 'package:spa_beauty/navigator/navigation_drawer.dart';
+import 'package:spa_beauty/screens/reservation.dart';
 import 'package:spa_beauty/values/constants.dart';
 import 'package:spa_beauty/widget/appbar.dart';
 class Offers extends StatefulWidget {
@@ -65,6 +67,23 @@ class _OffersState extends State<Offers> {
                       return new Padding(
                           padding: const EdgeInsets.only(top: 15.0),
                           child: InkWell(
+                            onTap: (){
+                              FirebaseFirestore.instance.collection('services').doc(data['serviceId']).get().then((DocumentSnapshot documentSnapshot) {
+                                if (documentSnapshot.exists) {
+                                  Map<String, dynamic> serviceData = documentSnapshot.data() as Map<String, dynamic>;
+                                  ServiceModel model=ServiceModel.fromMap(serviceData, document.reference.id);
+                                  if(data['discountType']=='Percentage'){
+                                    Navigator.push(context, new MaterialPageRoute(
+                                        builder: (context) => Reservation(model,true,true,data['discount'])));
+                                  }
+                                  else{
+                                    Navigator.push(context, new MaterialPageRoute(
+                                        builder: (context) => Reservation(model,true,false,data['discount'])));
+                                  }
+
+                                }
+                              });
+                            },
                             child: Container(
                                 decoration: BoxDecoration(
                                     color: Colors.white,
@@ -103,8 +122,8 @@ class _OffersState extends State<Offers> {
                                           children: [
                                             Text(data['name'],style: TextStyle(fontSize: 18,fontWeight: FontWeight.w500),),
                                             SizedBox(height: 20,),
-                                            Text("Coupon Code",style: TextStyle(fontSize: 12,fontWeight: FontWeight.w300),),
-                                            Text("1234567",style: TextStyle(fontSize: 12,fontWeight: FontWeight.w200),),
+                                            Text("Discount",style: TextStyle(fontSize: 12,fontWeight: FontWeight.w300),),
+                                            Text(data['discountType']=="Percentage"?"${data['discount']}%":"\$${data['discount']}",style: TextStyle(fontSize: 12,fontWeight: FontWeight.w200),),
                                           ],
                                         )
                                       ],
@@ -127,9 +146,9 @@ class _OffersState extends State<Offers> {
                                           Row(
                                             children: [
                                               Container(
-                                                child: Text("Details",style: TextStyle(color: red),),
+                                                child: Text("Details",style: TextStyle(color: Colors.transparent),),
                                               ),
-                                              Icon(Icons.keyboard_arrow_down_sharp,color: red,)
+                                              Icon(Icons.keyboard_arrow_down_sharp,color: Colors.transparent,)
                                             ],
                                           )
                                         ],
