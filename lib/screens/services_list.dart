@@ -5,6 +5,7 @@ import 'package:spa_beauty/model/service_model.dart';
 import 'package:spa_beauty/navigator/navigation_drawer.dart';
 import 'package:spa_beauty/screens/reservation.dart';
 import 'package:spa_beauty/screens/services_detail.dart';
+import 'package:spa_beauty/search/search_service.dart';
 import 'package:spa_beauty/values/constants.dart';
 import 'package:spa_beauty/widget/appbar.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -32,6 +33,17 @@ class _AllServicesListState extends State<AllServicesList> {
       body: SafeArea(
         child: Container(
           height: MediaQuery.of(context).size.height,
+          width: MediaQuery.of(context).size.width,
+          decoration: BoxDecoration(
+
+            //color:Colors.transparent.withOpacity(0.2),
+              image: DecorationImage(
+                  colorFilter: new ColorFilter.mode(Colors.black.withOpacity(0.2), BlendMode.dstATop),
+                  image:AssetImage("assets/images/pattern.jpg",),
+                  fit: BoxFit.fitHeight
+
+              )
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -39,26 +51,49 @@ class _AllServicesListState extends State<AllServicesList> {
               Container(
 
                 margin: EdgeInsets.all(10),
-                child: Text("Find Best Services",style: TextStyle(fontSize: 20,fontWeight: FontWeight.w600),),
+                child: Text('findTheBestService'.tr(),style: TextStyle(fontSize: 20,fontWeight: FontWeight.w600),),
               ),
-              Container(
-                height: 50,
-                margin: EdgeInsets.only(left: 10,right: 10),
-                decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(10)
-                ),
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 10,
-                    ),
-                    Icon(Icons.search),
-                    SizedBox(
-                      width: 5,
-                    ),
-                    Text('search'.tr())
-                  ],
+              InkWell(
+                onTap: ()async{
+                  List<ServiceModel> services=[];
+                  FirebaseFirestore.instance.collection('services')
+                      .where("categoryId",isEqualTo: widget.catId)
+                      .get().then((QuerySnapshot querySnapshot) {
+                    querySnapshot.docs.forEach((doc) {
+                      Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+                      ServiceModel model=ServiceModel.fromMap(data, doc.reference.id);
+                      setState(() {
+                        services.add(model);
+                      });
+                    });
+                    print("size1 ${services.length}");
+                  }).then((value){
+                    showSearch<String>(
+                      context: context,
+                      delegate: ServiceSearch(services),
+                    );
+                  });
+                  print("size ${services.length}");
+                },
+                child: Container(
+                  height: 50,
+                  margin: EdgeInsets.only(left: 10,right: 10),
+                  decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10)
+                  ),
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 10,
+                      ),
+                      Icon(Icons.search),
+                      SizedBox(
+                        width: 5,
+                      ),
+                      Text('search'.tr())
+                    ],
+                  ),
                 ),
               ),
               SizedBox(height: 10,),
@@ -105,8 +140,14 @@ class _AllServicesListState extends State<AllServicesList> {
                             padding: const EdgeInsets.only(top: 15.0),
                             child: InkWell(
                               onTap: (){
-                                Navigator.push(context, new MaterialPageRoute(
-                                    builder: (context) => ServiceDetail(model)));
+                                String languageCode=context.locale.toLanguageTag().toString();
+                                languageCode="${languageCode[languageCode.length-2]}${languageCode[languageCode.length-1]}";
+                                if(languageCode=="US")
+                                  Navigator.push(context, new MaterialPageRoute(
+                                      builder: (context) => ServiceDetail(model,'English')));
+                                else
+                                  Navigator.push(context, new MaterialPageRoute(
+                                      builder: (context) => ServiceDetail(model,'Arabic')));
                               },
                               child: Stack(
                                 children: [

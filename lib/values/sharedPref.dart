@@ -11,4 +11,5 @@ class SharedPref{
     String gender = (prefs.getString(genderPref) ?? "");
     return gender;
   }
+
 }

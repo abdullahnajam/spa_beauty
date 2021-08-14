@@ -29,7 +29,10 @@ class _SplashScreenState extends State<SplashScreen> {
     return Timer(_duration, navigationPage);
   }
   void navigationPage() {
-    Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) => SelectGender()));
+    Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) => SelectGender("Home")));
+  }
+  void navigationHomePage() {
+    Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) => BottomBar()));
   }
   @override
   Widget build(BuildContext context) {

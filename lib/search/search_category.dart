@@ -25,7 +25,7 @@ class CategorySearch extends SearchDelegate<String> {
     return IconButton(
       icon: Icon(Icons.arrow_back),
       onPressed: () {
-        close(context, result!);
+        Navigator.pop(context);
       },
     );
   }

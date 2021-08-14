@@ -29,6 +29,18 @@ class _AboutState extends State<About> {
     Size size = MediaQuery.of(context).size;
     return Scaffold(
       body: Container(
+        height: MediaQuery.of(context).size.height,
+        width: MediaQuery.of(context).size.width,
+        decoration: BoxDecoration(
+
+          //color:Colors.transparent.withOpacity(0.2),
+            image: DecorationImage(
+                colorFilter: new ColorFilter.mode(Colors.black.withOpacity(0.2), BlendMode.dstATop),
+                image:AssetImage("assets/images/pattern.jpg",),
+                fit: BoxFit.fitHeight
+
+            )
+        ),
         child: Column(
           children: [
             Stack(

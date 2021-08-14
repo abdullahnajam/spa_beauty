@@ -10,6 +10,7 @@ import 'package:spa_beauty/navigator/navigation_drawer.dart';
 import 'package:spa_beauty/values/constants.dart';
 import 'package:spa_beauty/widget/appbar.dart';
 import 'package:spa_beauty/widget/appointment_tile.dart';
+import 'package:easy_localization/easy_localization.dart';
 class Appointments extends StatefulWidget {
   const Appointments({Key? key}) : super(key: key);
 
@@ -18,7 +19,7 @@ class Appointments extends StatefulWidget {
 }
 
 class _AppointmentsState extends State<Appointments> {
-  int option1 = 1 , option2 = 0 ;
+  int option1 = 1 , option2 = 1 ;
   String? status;
   final GlobalKey<ScaffoldState> _drawerKey = GlobalKey();
   void _openDrawer () {
@@ -31,434 +32,448 @@ class _AppointmentsState extends State<Appointments> {
       backgroundColor: Colors.grey[200],
       drawer: MenuDrawer(),
       key: _drawerKey,
-      body: SafeArea(
-        child: FirebaseAuth.instance.currentUser!=null ?Column(
-          children: [
-            CustomAppBar(_openDrawer,"Appointments"),
+      body: Container(
+        height: MediaQuery.of(context).size.height,
+        width: MediaQuery.of(context).size.width,
+        decoration: BoxDecoration(
 
-            SizedBox(
-              height: size.height*0.03,
-            ),
+          //color:Colors.transparent.withOpacity(0.2),
+            image: DecorationImage(
+                colorFilter: new ColorFilter.mode(Colors.black.withOpacity(0.2), BlendMode.dstATop),
+                image:AssetImage("assets/images/pattern.jpg",),
+                fit: BoxFit.fitHeight
 
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                SizedBox(
-                  height: size.height*0.055,
-                  width: size.width*0.34,
-                  child: RaisedButton(
+            )
+        ),
+        child: SafeArea(
+          child: FirebaseAuth.instance.currentUser!=null ?Column(
+            children: [
+              CustomAppBar(_openDrawer,'appointments'.tr()),
 
-                    color : option1 == 1 ?  lightBrown : Colors.white ,
-                    textColor: option1 == 1 ?  Colors.white : Colors.black87 ,
-                    child: Text('Upcoming'),
+              SizedBox(
+                height: size.height*0.03,
+              ),
 
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(20.0))),
-                    onPressed: () {
-                      setState(() {
-                        option1 = 1 ;
-                      });
-                    },
-                  ),
-                ),
-                SizedBox(
-                  height: size.height*0.055,
-                  width: size.width*0.34,
-                  child: RaisedButton(
-                    child: Text('Past'),
-                    color : option1 == 2 ?  lightBrown : Colors.white ,
-                    textColor: option1 == 2 ?  Colors.white : Colors.black87 ,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(20.0))),
-                    onPressed: () {
-                      setState(() {
-                        option1 = 2 ;
-                      });
-
-                    },
-                  ),
-                ),
-              ],
-            ),
-
-            SizedBox(
-              height: size.height*0.025,
-            ),
-
-             Row(
-               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-
                   SizedBox(
-                    height : size.height*0.055,
-                    width: size.width*0.2,
+                    height: size.height*0.055,
+                    width: size.width*0.34,
                     child: RaisedButton(
-                      child: Text('All'),
-                      color : option2 == 1 ?  lightBrown : Colors.white ,
-                      textColor: option2 == 1 ?  Colors.white : Colors.black87 ,
+
+                      color : option1 == 1 ?  lightBrown : Colors.white ,
+                      textColor: option1 == 1 ?  Colors.white : Colors.black87 ,
+                      child: Text('upcoming'.tr()),
+
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.all(Radius.circular(20.0))),
                       onPressed: () {
                         setState(() {
-                          option2 = 1 ;
+                          option1 = 1 ;
                         });
-
                       },
                     ),
                   ),
-
                   SizedBox(
-                    height : size.height*0.055,
+                    height: size.height*0.055,
                     width: size.width*0.34,
                     child: RaisedButton(
-                      child: option1 == 1 ? Text('Approved') :Text('Completed') ,
-                      color : option2 == 2 ?  lightBrown : Colors.white ,
-                      textColor: option2 == 2 ?  Colors.white : Colors.black87 ,
+                      child: Text('past'.tr()),
+                      color : option1 == 2 ?  lightBrown : Colors.white ,
+                      textColor: option1 == 2 ?  Colors.white : Colors.black87 ,
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.all(Radius.circular(20.0))),
                       onPressed: () {
                         setState(() {
-                           option2 = 2 ;
+                          option1 = 2 ;
                         });
 
-                      },
-                    ),
-                  ),
-
-                  SizedBox(
-                    height : size.height*0.055,
-                    width: size.width*0.34,
-                    child: RaisedButton(
-                      child: option1 == 1 ? Text('Pending') :Text('Cancelled'),
-                      color : option2 == 3 ?  lightBrown : Colors.white ,
-                      textColor: option2 == 3 ?  Colors.white : Colors.black87 ,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(20.0))),
-                      onPressed: () {
-                        setState(() {
-                           option2 = 3 ;
-                        });
                       },
                     ),
                   ),
                 ],
               ),
 
-            SizedBox(
-              height: size.height*0.02,
-            ),
+              SizedBox(
+                height: size.height*0.025,
+              ),
 
-            Divider(
-              indent: 20,
-              endIndent: 20,
-              thickness: 1,
-              color: lightBrown,
-            ),
+               Row(
+                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
 
+                    SizedBox(
+                      height : size.height*0.055,
+                      width: size.width*0.2,
+                      child: RaisedButton(
+                        child: Text('all'.tr()),
+                        color : option2 == 1 ?  lightBrown : Colors.white ,
+                        textColor: option2 == 1 ?  Colors.white : Colors.black87 ,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(20.0))),
+                        onPressed: () {
+                          setState(() {
+                            option2 = 1 ;
+                          });
 
-            //check if all is pressed
-            option2 == 1 ?
-                  //if all is pressed is upcoming choosed ?  true
-                  option1 == 1 ? Expanded(
-                    child: StreamBuilder<QuerySnapshot>(
-                      stream: FirebaseFirestore.instance.collection('appointments').where('status', whereIn: ['Approved','Pending'] )
-                        .where('userId', isEqualTo: FirebaseAuth.instance.currentUser!.uid ).snapshots(),
-                      builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-                        if (snapshot.hasError) {
-                          return Center(
-                            child: Column(
-                              children: [
-                                Image.asset("assets/images/wrong.png",width: 150,height: 150,),
-                                Text("Something Went Wrong")
-
-                              ],
-                            ),
-                          );
-                        }
-
-                        if (snapshot.connectionState == ConnectionState.waiting) {
-                          return Center(
-                            child: CircularProgressIndicator(),
-                          );
-                        }
-                        if (snapshot.data!.size==0){
-                          return Container(
-                              alignment: Alignment.center,
-                              child:Text("No Appointments")
-
-                          );
-
-                        }
-                        return new ListView(
-
-                          children: snapshot.data!.docs.map((DocumentSnapshot document) {
-                            Map<String, dynamic> data = document.data() as Map<String, dynamic>;
-                            AppointmentModel model= AppointmentModel.fromMap(data, document.reference.id);
-                            return AppointmentTile(model);
-                          }).toList(),
-                        );
-                      },
+                        },
+                      ),
                     ),
-                  ) :
-                  //else if all is pressed past is choosed ? true
-                  option1== 2 ? Expanded(
-                    child: StreamBuilder<QuerySnapshot>(
-                      stream: FirebaseFirestore.instance.collection('appointments').where('status', whereIn: ['Completed','Cancelled'] )
-                          .where('userId', isEqualTo: FirebaseAuth.instance.currentUser!.uid ).snapshots(),
-                      builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-                        if (snapshot.hasError) {
-                          return Center(
-                            child: Column(
-                              children: [
-                                Image.asset("assets/images/wrong.png",width: 150,height: 150,),
-                                Text("Something Went Wrong")
 
-                              ],
-                            ),
-                          );
-                        }
+                    SizedBox(
+                      height : size.height*0.055,
+                      width: size.width*0.34,
+                      child: RaisedButton(
+                        child: option1 == 1 ? Text('Approved'.tr()) :Text('Completed'.tr()) ,
+                        color : option2 == 2 ?  lightBrown : Colors.white ,
+                        textColor: option2 == 2 ?  Colors.white : Colors.black87 ,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(20.0))),
+                        onPressed: () {
+                          setState(() {
+                             option2 = 2 ;
+                          });
 
-                        if (snapshot.connectionState == ConnectionState.waiting) {
-                          return Center(
-                            child: CircularProgressIndicator(),
-                          );
-                        }
-                        if (snapshot.data!.size==0){
-                          return Container(
-                              alignment: Alignment.center,
-                              child:Text("No Appointments")
-
-                          );
-
-                        }
-                        return new ListView(
-
-                          children: snapshot.data!.docs.map((DocumentSnapshot document) {
-                            Map<String, dynamic> data = document.data() as Map<String, dynamic>;
-                            AppointmentModel model= AppointmentModel.fromMap(data, document.reference.id);
-                            return AppointmentTile(model);
-                          }).toList(),
-                        );
-                      },
+                        },
+                      ),
                     ),
-                  ) :
-                  // else if all is pressed and neither past is choosed nor upcoming
-                  Text('Please Choose An Option') :
-            // if all is is not pressed  is option 2 choosed  ? true
-            option2 == 2 ?
-                  // if approved is choosed ? true
-                  option1 == 1 ? Expanded(
-                    child: StreamBuilder<QuerySnapshot>(
-                      stream: FirebaseFirestore.instance.collection('appointments').where('status', isEqualTo: 'Approved' )
-                          .where('userId', isEqualTo: FirebaseAuth.instance.currentUser!.uid ).snapshots(),
-                      builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-                        if (snapshot.hasError) {
-                          return Center(
-                            child: Column(
-                              children: [
-                                Image.asset("assets/images/wrong.png",width: 150,height: 150,),
-                                Text("Something Went Wrong")
 
-                              ],
-                            ),
-                          );
-                        }
-
-                        if (snapshot.connectionState == ConnectionState.waiting) {
-                          return Center(
-                            child: CircularProgressIndicator(),
-                          );
-                        }
-                        if (snapshot.data!.size==0){
-                          return Container(
-                              alignment: Alignment.center,
-                              child:Text("No Appointments")
-
-                          );
-
-                        }
-                        return new ListView(
-
-                          children: snapshot.data!.docs.map((DocumentSnapshot document) {
-                            Map<String, dynamic> data = document.data() as Map<String, dynamic>;
-                            AppointmentModel model= AppointmentModel.fromMap(data, document.reference.id);
-                            return AppointmentTile(model);
-                          }).toList(),
-                        );
-                      },
+                    SizedBox(
+                      height : size.height*0.055,
+                      width: size.width*0.34,
+                      child: RaisedButton(
+                        child: option1 == 1 ? Text('Pending'.tr()) :Text('Cancelled'.tr()),
+                        color : option2 == 3 ?  lightBrown : Colors.white ,
+                        textColor: option2 == 3 ?  Colors.white : Colors.black87 ,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(20.0))),
+                        onPressed: () {
+                          setState(() {
+                             option2 = 3 ;
+                          });
+                        },
+                      ),
                     ),
-                  ) :
-                  // else is completed choosed ? true
-                  option1 == 2 ?   Expanded(
-                    child: StreamBuilder<QuerySnapshot>(
-                      stream: FirebaseFirestore.instance.collection('appointments').where('status', isEqualTo: 'Completed' )
-                          .where('userId', isEqualTo: FirebaseAuth.instance.currentUser!.uid ).snapshots(),
-                      builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-                        if (snapshot.hasError) {
-                          return Center(
-                            child: Column(
-                              children: [
-                                Image.asset("assets/images/wrong.png",width: 150,height: 150,),
-                                Text("Something Went Wrong")
-
-                              ],
-                            ),
-                          );
-                        }
-
-                        if (snapshot.connectionState == ConnectionState.waiting) {
-                          return Center(
-                            child: CircularProgressIndicator(),
-                          );
-                        }
-                        if (snapshot.data!.size==0){
-                          return Container(
-                              alignment: Alignment.center,
-                              child:Text("No Appointments")
-
-                          );
-
-                        }
-                        return new ListView(
-
-                          children: snapshot.data!.docs.map((DocumentSnapshot document) {
-                            Map<String, dynamic> data = document.data() as Map<String, dynamic>;
-                            AppointmentModel model= AppointmentModel.fromMap(data, document.reference.id);
-                            return AppointmentTile(model);
-                          }).toList(),
-                        );
-                      },
-                    ),
-                  ) : Text('Please Choose An Option') :
-
-            // else is option 3 choosed ? true
-            option2 == 3 ?
-             // if Pending is pressed ? true
-             option1 == 1 ? Expanded(
-               child: StreamBuilder<QuerySnapshot>(
-                 stream: FirebaseFirestore.instance.collection('appointments').where('status', isEqualTo: 'Pending' )
-                     .where('userId', isEqualTo: FirebaseAuth.instance.currentUser!.uid ).snapshots(),
-                 builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-                   if (snapshot.hasError) {
-                     return Center(
-                       child: Column(
-                         children: [
-                           Image.asset("assets/images/wrong.png",width: 150,height: 150,),
-                           Text("Something Went Wrong")
-
-                         ],
-                       ),
-                     );
-                   }
-
-                   if (snapshot.connectionState == ConnectionState.waiting) {
-                     return Center(
-                       child: CircularProgressIndicator(),
-                     );
-                   }
-                   if (snapshot.data!.size==0){
-                     return Container(
-                         alignment: Alignment.center,
-                         child:Text("No Appointments")
-
-                     );
-
-                   }
-                   return new ListView(
-
-                     children: snapshot.data!.docs.map((DocumentSnapshot document) {
-                       Map<String, dynamic> data = document.data() as Map<String, dynamic>;
-                       AppointmentModel model= AppointmentModel.fromMap(data, document.reference.id);
-                       return AppointmentTile(model);
-                     }).toList(),
-                   );
-                 },
-               ),
-             ) :
-             // if cancelled is pressed ? true
-             option1 == 2 ? Expanded(
-               child: StreamBuilder<QuerySnapshot>(
-                 stream: FirebaseFirestore.instance.collection('appointments').where('status', isEqualTo: 'Cancelled' )
-                     .where('userId', isEqualTo: FirebaseAuth.instance.currentUser!.uid ).snapshots(),
-                 builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-                   if (snapshot.hasError) {
-                     return Center(
-                       child: Column(
-                         children: [
-                           Image.asset("assets/images/wrong.png",width: 150,height: 150,),
-                           Text("Something Went Wrong")
-
-                         ],
-                       ),
-                     );
-                   }
-
-                   if (snapshot.connectionState == ConnectionState.waiting) {
-                     return Center(
-                       child: CircularProgressIndicator(),
-                     );
-                   }
-                   if (snapshot.data!.size==0){
-                     return Container(
-                         alignment: Alignment.center,
-                         child:Text("No Appointments")
-
-                     );
-
-                   }
-                   return new ListView(
-
-                     children: snapshot.data!.docs.map((DocumentSnapshot document) {
-                       Map<String, dynamic> data = document.data() as Map<String, dynamic>;
-                       AppointmentModel model= AppointmentModel.fromMap(data, document.reference.id);
-                       return AppointmentTile(model);
-                     }).toList(),
-                   );
-                 },
-               ),
-             ) :
-             // NO option is chossed
-             Text('Please Choose An Option') : Text('Please Choose An Option')  ,
-
-
-
-          ],
-        ):
-        Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Lottie.asset('assets/json/nouser.json',width: 150,height: 150),
-          Container(
-            alignment: Alignment.center,
-            child: Text("You are currently not logged In",style: TextStyle(fontSize: 20),),
-          ),
-          SizedBox(height: 20,),
-          InkWell(
-            onTap: (){
-              Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => AuthSelection()));
-            },
-            child: Container(
-              height: 50,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(40),
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    darkBrown,
-                    lightBrown,
                   ],
                 ),
-              ),
-              alignment: Alignment.center,
-              margin: EdgeInsets.all(12),
-              child:Text("LOGIN",style: TextStyle(color: Colors.white,fontSize: 20,fontWeight: FontWeight.w500),),
-            ),
-          )
 
-        ],
-      ),
+              SizedBox(
+                height: size.height*0.02,
+              ),
+
+              Divider(
+                indent: 20,
+                endIndent: 20,
+                thickness: 1,
+                color: lightBrown,
+              ),
+
+
+              //check if all is pressed
+              option2 == 1 ?
+                    //if all is pressed is upcoming choosed ?  true
+                    option1 == 1 ? Expanded(
+                      child: StreamBuilder<QuerySnapshot>(
+                        stream: FirebaseFirestore.instance.collection('appointments').where('status', whereIn: ['Approved','Pending'] )
+                          .where('userId', isEqualTo: FirebaseAuth.instance.currentUser!.uid ).snapshots(),
+                        builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                          if (snapshot.hasError) {
+                            return Center(
+                              child: Column(
+                                children: [
+                                  Image.asset("assets/images/wrong.png",width: 150,height: 150,),
+                                  Text("Something Went Wrong")
+
+                                ],
+                              ),
+                            );
+                          }
+
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          }
+                          if (snapshot.data!.size==0){
+                            return Container(
+                                alignment: Alignment.center,
+                                child:Text('noAppointment'.tr())
+
+                            );
+
+                          }
+                          return new ListView(
+
+                            children: snapshot.data!.docs.map((DocumentSnapshot document) {
+                              Map<String, dynamic> data = document.data() as Map<String, dynamic>;
+                              AppointmentModel model= AppointmentModel.fromMap(data, document.reference.id);
+                              return AppointmentTile(model);
+                            }).toList(),
+                          );
+                        },
+                      ),
+                    ) :
+                    //else if all is pressed past is choosed ? true
+                    option1== 2 ? Expanded(
+                      child: StreamBuilder<QuerySnapshot>(
+                        stream: FirebaseFirestore.instance.collection('appointments').where('status', whereIn: ['Completed','Cancelled'] )
+                            .where('userId', isEqualTo: FirebaseAuth.instance.currentUser!.uid ).snapshots(),
+                        builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                          if (snapshot.hasError) {
+                            return Center(
+                              child: Column(
+                                children: [
+                                  Image.asset("assets/images/wrong.png",width: 150,height: 150,),
+                                  Text("Something Went Wrong")
+
+                                ],
+                              ),
+                            );
+                          }
+
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          }
+                          if (snapshot.data!.size==0){
+                            return Container(
+                                alignment: Alignment.center,
+                                child:Text("No Appointments")
+
+                            );
+
+                          }
+                          return new ListView(
+
+                            children: snapshot.data!.docs.map((DocumentSnapshot document) {
+                              Map<String, dynamic> data = document.data() as Map<String, dynamic>;
+                              AppointmentModel model= AppointmentModel.fromMap(data, document.reference.id);
+                              return AppointmentTile(model);
+                            }).toList(),
+                          );
+                        },
+                      ),
+                    ) :
+                    // else if all is pressed and neither past is choosed nor upcoming
+                    Text('Please Choose An Option') :
+              // if all is is not pressed  is option 2 choosed  ? true
+              option2 == 2 ?
+                    // if approved is choosed ? true
+                    option1 == 1 ? Expanded(
+                      child: StreamBuilder<QuerySnapshot>(
+                        stream: FirebaseFirestore.instance.collection('appointments').where('status', isEqualTo: 'Approved' )
+                            .where('userId', isEqualTo: FirebaseAuth.instance.currentUser!.uid ).snapshots(),
+                        builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                          if (snapshot.hasError) {
+                            return Center(
+                              child: Column(
+                                children: [
+                                  Image.asset("assets/images/wrong.png",width: 150,height: 150,),
+                                  Text("Something Went Wrong")
+
+                                ],
+                              ),
+                            );
+                          }
+
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          }
+                          if (snapshot.data!.size==0){
+                            return Container(
+                                alignment: Alignment.center,
+                                child:Text("No Appointments")
+
+                            );
+
+                          }
+                          return new ListView(
+
+                            children: snapshot.data!.docs.map((DocumentSnapshot document) {
+                              Map<String, dynamic> data = document.data() as Map<String, dynamic>;
+                              AppointmentModel model= AppointmentModel.fromMap(data, document.reference.id);
+                              return AppointmentTile(model);
+                            }).toList(),
+                          );
+                        },
+                      ),
+                    ) :
+                    // else is completed choosed ? true
+                    option1 == 2 ?   Expanded(
+                      child: StreamBuilder<QuerySnapshot>(
+                        stream: FirebaseFirestore.instance.collection('appointments').where('status', isEqualTo: 'Completed' )
+                            .where('userId', isEqualTo: FirebaseAuth.instance.currentUser!.uid ).snapshots(),
+                        builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                          if (snapshot.hasError) {
+                            return Center(
+                              child: Column(
+                                children: [
+                                  Image.asset("assets/images/wrong.png",width: 150,height: 150,),
+                                  Text("Something Went Wrong")
+
+                                ],
+                              ),
+                            );
+                          }
+
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          }
+                          if (snapshot.data!.size==0){
+                            return Container(
+                                alignment: Alignment.center,
+                                child:Text("No Appointments")
+
+                            );
+
+                          }
+                          return new ListView(
+
+                            children: snapshot.data!.docs.map((DocumentSnapshot document) {
+                              Map<String, dynamic> data = document.data() as Map<String, dynamic>;
+                              AppointmentModel model= AppointmentModel.fromMap(data, document.reference.id);
+                              return AppointmentTile(model);
+                            }).toList(),
+                          );
+                        },
+                      ),
+                    ) : Text('Please Choose An Option') :
+
+              // else is option 3 choosed ? true
+              option2 == 3 ?
+               // if Pending is pressed ? true
+               option1 == 1 ? Expanded(
+                 child: StreamBuilder<QuerySnapshot>(
+                   stream: FirebaseFirestore.instance.collection('appointments').where('status', isEqualTo: 'Pending' )
+                       .where('userId', isEqualTo: FirebaseAuth.instance.currentUser!.uid ).snapshots(),
+                   builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                     if (snapshot.hasError) {
+                       return Center(
+                         child: Column(
+                           children: [
+                             Image.asset("assets/images/wrong.png",width: 150,height: 150,),
+                             Text("Something Went Wrong")
+
+                           ],
+                         ),
+                       );
+                     }
+
+                     if (snapshot.connectionState == ConnectionState.waiting) {
+                       return Center(
+                         child: CircularProgressIndicator(),
+                       );
+                     }
+                     if (snapshot.data!.size==0){
+                       return Container(
+                           alignment: Alignment.center,
+                           child:Text("No Appointments")
+
+                       );
+
+                     }
+                     return new ListView(
+
+                       children: snapshot.data!.docs.map((DocumentSnapshot document) {
+                         Map<String, dynamic> data = document.data() as Map<String, dynamic>;
+                         AppointmentModel model= AppointmentModel.fromMap(data, document.reference.id);
+                         return AppointmentTile(model);
+                       }).toList(),
+                     );
+                   },
+                 ),
+               ) :
+               // if cancelled is pressed ? true
+               option1 == 2 ? Expanded(
+                 child: StreamBuilder<QuerySnapshot>(
+                   stream: FirebaseFirestore.instance.collection('appointments').where('status', isEqualTo: 'Cancelled' )
+                       .where('userId', isEqualTo: FirebaseAuth.instance.currentUser!.uid ).snapshots(),
+                   builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                     if (snapshot.hasError) {
+                       return Center(
+                         child: Column(
+                           children: [
+                             Image.asset("assets/images/wrong.png",width: 150,height: 150,),
+                             Text("Something Went Wrong")
+
+                           ],
+                         ),
+                       );
+                     }
+
+                     if (snapshot.connectionState == ConnectionState.waiting) {
+                       return Center(
+                         child: CircularProgressIndicator(),
+                       );
+                     }
+                     if (snapshot.data!.size==0){
+                       return Container(
+                           alignment: Alignment.center,
+                           child:Text("No Appointments")
+
+                       );
+
+                     }
+                     return new ListView(
+
+                       children: snapshot.data!.docs.map((DocumentSnapshot document) {
+                         Map<String, dynamic> data = document.data() as Map<String, dynamic>;
+                         AppointmentModel model= AppointmentModel.fromMap(data, document.reference.id);
+                         return AppointmentTile(model);
+                       }).toList(),
+                     );
+                   },
+                 ),
+               ) :
+               // NO option is chossed
+               Text('Please Choose An Option') : Text('Please Choose An Option')  ,
+
+
+
+            ],
+          ):
+          Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Lottie.asset('assets/json/nouser.json',width: 150,height: 150),
+            Container(
+              alignment: Alignment.center,
+              child: Text("You are currently not logged In",style: TextStyle(fontSize: 20),),
+            ),
+            SizedBox(height: 20,),
+            InkWell(
+              onTap: (){
+                Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => AuthSelection()));
+              },
+              child: Container(
+                height: 50,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(40),
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      darkBrown,
+                      lightBrown,
+                    ],
+                  ),
+                ),
+                alignment: Alignment.center,
+                margin: EdgeInsets.all(12),
+                child:Text("LOGIN",style: TextStyle(color: Colors.white,fontSize: 20,fontWeight: FontWeight.w500),),
+              ),
+            )
+
+          ],
+        ),
+        ),
       ),
     );
   }

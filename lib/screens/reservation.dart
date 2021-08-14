@@ -16,11 +16,10 @@ import 'package:spa_beauty/screens/checkout.dart';
 import 'package:spa_beauty/values/constants.dart';
 class Reservation extends StatefulWidget {
   ServiceModel model;
-  bool isOffer,isPercentage;
-  String discount;
+  bool isOffer;
 
 
-  Reservation(this.model,this.isOffer,this.isPercentage,this.discount);
+  Reservation(this.model,this.isOffer);
 
   @override
   _ReservationState createState() => _ReservationState();
@@ -72,187 +71,6 @@ class _ReservationState extends State<Reservation> {
   List<bool> timeSelected=[];
   String specialistName="none";
   String specialistId="none";
-  Future<void> _showConfirmDialog() async {
-    final _formKey = GlobalKey<FormState>();
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: true, // user must tap button!
-      builder: (BuildContext context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return Dialog(
-              shape: RoundedRectangleBorder(
-                borderRadius: const BorderRadius.all(
-                  Radius.circular(10.0),
-                ),
-              ),
-              insetAnimationDuration: const Duration(seconds: 1),
-              insetAnimationCurve: Curves.fastOutSlowIn,
-              elevation: 2,
-
-              child: Container(
-                padding: EdgeInsets.all(20),
-                width: MediaQuery.of(context).size.width*0.7,
-                decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(10)
-                ),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Stack(
-                        children: [
-                          Align(
-                            alignment: Alignment.center,
-                            child: Container(
-                              margin: EdgeInsets.all(10),
-                              child: Text("Confirm",textAlign: TextAlign.center,style: Theme.of(context).textTheme.headline6!.apply(color: Colors.grey),),
-                            ),
-                          ),
-
-                        ],
-                      ),
-
-                      Expanded(
-                        child: ListView(
-                          children: [
-                            Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                SizedBox(height: 20,),
-                                Text(
-                                  "Date & Time",
-                                  style: Theme.of(context).textTheme.bodyText1!.apply(color: Colors.black),
-                                ),
-                                Text(
-                                  "${f.format(_selectedDate).toString()} $appointmentTimeSelected",
-                                  style: Theme.of(context).textTheme.bodyText2!.apply(color: Colors.grey),
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 10,),
-                            Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "Price",
-                                  style: Theme.of(context).textTheme.bodyText1!.apply(color: Colors.black),
-                                ),
-                                Text(
-                                  "$amount",
-                                  style: Theme.of(context).textTheme.bodyText1!.apply(color: Colors.grey),
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 10,),
-                            Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "Add Coupon",
-                                  style: Theme.of(context).textTheme.bodyText1!.apply(color: Colors.black),
-                                ),
-                                TextFormField(
-                                  controller:couponController,
-                                  style: TextStyle(color: Colors.black),
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Please enter some text';
-                                    }
-                                    return null;
-                                  },
-                                  decoration: InputDecoration(
-                                    contentPadding: EdgeInsets.all(15),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(7.0),
-                                      borderSide: BorderSide(
-                                        color: darkBrown,
-                                      ),
-                                    ),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(7.0),
-                                      borderSide: BorderSide(
-                                          color: darkBrown,
-                                          width: 0.5
-                                      ),
-                                    ),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(7.0),
-                                      borderSide: BorderSide(
-                                        color: darkBrown,
-                                        width: 0.5,
-                                      ),
-                                    ),
-                                    hintText: "",
-                                    floatingLabelBehavior: FloatingLabelBehavior.always,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 10,),
-                            Container(
-                              padding: EdgeInsets.only(left: 10,right: 10),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(7.0),
-                                border: Border.all(
-                                  color: darkBrown,
-                                ),
-                              ),
-                              child: DropdownButton<String>(
-                                value: payment,
-                                icon: const Icon(Icons.keyboard_arrow_down),
-                                isExpanded: true,
-                                elevation: 16,
-                                style: const TextStyle(color: Colors.black),
-                                underline: Container(
-                                ),
-                                onChanged: (String? newValue) {
-                                  setState(() {
-                                    payment = newValue!;
-                                  });
-                                },
-                                items: <String>['Cash on delivery', 'Card Payment', 'Pay Later']
-                                    .map<DropdownMenuItem<String>>((String value) {
-                                  return DropdownMenuItem<String>(
-                                    value: value,
-                                    child: Text(value),
-                                  );
-                                }).toList(),
-                              ),
-                            ),
-
-
-
-                            SizedBox(height: 15,),
-                            InkWell(
-                              onTap: (){
-
-                              },
-                              child: Container(
-                                height: 50,
-                                color: darkBrown,
-                                alignment: Alignment.center,
-                                child: Text("Book",style: Theme.of(context).textTheme.button!.apply(color: Colors.white),),
-                              ),
-                            )
-                          ],
-                        ),
-                      )
-                    ],
-                  ),
-                ),
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
   @override
   Widget build(BuildContext context) {
     final orientation = MediaQuery.of(context).orientation;
@@ -262,225 +80,241 @@ class _ReservationState extends State<Reservation> {
     final double itemWidth = size.width / 2;
     return Scaffold(
       backgroundColor: Colors.grey[200],
-      body: Column(
-        children: [
-          Container(
-            height: MediaQuery.of(context).size.height*0.33,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  darkBrown,
-                  lightBrown,
-                ],
-              ),
-              borderRadius: BorderRadius.only(
-                bottomRight: Radius.circular(50),
-                bottomLeft: Radius.circular(50)
-              )
-            ),
-            child: Column(
-              children: [
-                SizedBox(height: 30,),
-                Stack(
-                  children: [
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: IconButton(
-                        onPressed: (){
-                          Navigator.pop(context);
-                        },
-                        icon: Icon(Icons.arrow_back,color: Colors.white,),
-                      ),
-                    ),
-                    Align(
-                        alignment: Alignment.center,
-                      child: Container(
-                        alignment: Alignment.center,
-                        margin: EdgeInsets.all(12),
-                        child:Text("SELECT DATE & TIME",style: TextStyle(color: Colors.white,fontSize: 17,fontWeight: FontWeight.w600),),
-                      )
-                    )
+      body: Container(
+        height: MediaQuery.of(context).size.height,
+        width: MediaQuery.of(context).size.width,
+        decoration: BoxDecoration(
+
+          //color:Colors.transparent.withOpacity(0.2),
+            image: DecorationImage(
+                colorFilter: new ColorFilter.mode(Colors.black.withOpacity(0.2), BlendMode.dstATop),
+                image:AssetImage("assets/images/pattern.jpg",),
+                fit: BoxFit.fitHeight
+
+            )
+        ),
+        child: Column(
+          children: [
+            Container(
+              height: MediaQuery.of(context).size.height*0.33,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    darkBrown,
+                    lightBrown,
                   ],
                 ),
-                SizedBox(height: 10,),
-                DatePicker(
-                  DateTime.now(),
-                  initialSelectedDate: DateTime.now(),
-                  selectionColor: lightBrown,
-                  selectedTextColor: Colors.white,
-                  monthTextStyle: TextStyle(color: Colors.white),
-                  dateTextStyle: TextStyle(color: Colors.white),
-                  dayTextStyle: TextStyle(color: Colors.white),
-                  onDateChange: (date) {
-                    setState(() {
-                      _selectedDate = date;
-                    });
-                  },
-                ),
-                SizedBox(height: 30,),
-
-              ],
-            ),
-          ),
-          Container(
-            height: MediaQuery.of(context).size.height*0.33,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  margin: EdgeInsets.only(left: 10,top: 10),
-                  child: Text("Available Slots",style: TextStyle(fontWeight: FontWeight.w500,fontSize: 18),),
-                ),
-                isTimeLoading?
-                Container(
-                  alignment: Alignment.center,
-                  margin: EdgeInsets.all(10),
-                  child: CircularProgressIndicator(),
-                ):Expanded(
-                  child: GridView.builder(
-                    itemCount: time.length,
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        childAspectRatio: (itemWidth / itemHeight),
-                        crossAxisCount: (orientation == Orientation.portrait) ? 3 : 4),
-                    itemBuilder: (BuildContext context, int index) {
-                      return new Card(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10.0),
-                        ),
-                        child: InkWell(
-                          onTap: (){
-
-                            for(int i=0;i<time.length;i++){
-                              if(i==index){
-                                setState(() {
-                                  time[i].isSelected=true;
-                                  appointmentTimeSelected=time[i].time;
-                                });
-                              }
-                              else{
-                                setState(() {
-                                  time[i].isSelected=false;
-                                });
-                              }
-
-                            }
+                borderRadius: BorderRadius.only(
+                  bottomRight: Radius.circular(50),
+                  bottomLeft: Radius.circular(50)
+                )
+              ),
+              child: Column(
+                children: [
+                  SizedBox(height: 30,),
+                  Stack(
+                    children: [
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: IconButton(
+                          onPressed: (){
+                            Navigator.pop(context);
                           },
-                          child: Container(
-                            decoration: BoxDecoration(
-                                color: time[index].isSelected?lightBrown:Colors.white,
-                                borderRadius: BorderRadius.circular(10)
-                            ),
-                            alignment: Alignment.center,
-                            child: Text(time[index].time,style: TextStyle(fontWeight: FontWeight.w400,fontSize: 15),maxLines: 1,),
-                          ),
+                          icon: Icon(Icons.arrow_back,color: Colors.white,),
                         ),
-                      );
+                      ),
+                      Align(
+                          alignment: Alignment.center,
+                        child: Container(
+                          alignment: Alignment.center,
+                          margin: EdgeInsets.all(12),
+                          child:Text('select'.tr().toUpperCase(),style: TextStyle(color: Colors.white,fontSize: 17,fontWeight: FontWeight.w600),),
+                        )
+                      )
+                    ],
+                  ),
+                  SizedBox(height: 10,),
+                  DatePicker(
+                    DateTime.now(),
+                    initialSelectedDate: DateTime.now(),
+                    selectionColor: lightBrown,
+                    selectedTextColor: Colors.white,
+                    monthTextStyle: TextStyle(color: Colors.white),
+                    dateTextStyle: TextStyle(color: Colors.white),
+                    dayTextStyle: TextStyle(color: Colors.white),
+                    onDateChange: (date) {
+                      setState(() {
+                        _selectedDate = date;
+                      });
                     },
                   ),
-                )
-              ],
-            )
-          ),
-          Container(
-            height: MediaQuery.of(context).size.height*0.34,
-            color: Colors.white,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  margin: EdgeInsets.all(10),
-                  child: Text("Choose Specialist",style: TextStyle(fontWeight: FontWeight.w500,fontSize: 18),),
-                ),
-                isSpecialistLoading?
-                Container(
-                  alignment: Alignment.center,
-                  margin: EdgeInsets.all(10),
-                  child: CircularProgressIndicator(),
-                ):Container(
-                  height: 120,
-                  child: specialist.length>0?ListView.builder(
-                    itemCount: specialist.length,
-                    scrollDirection: Axis.horizontal,
-                    itemBuilder: (BuildContext context,index){
-                      return Container(
-                        margin: EdgeInsets.all(5),
-                        height: 100,
-                        width: 80,
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(),
-                            image: DecorationImage(
-                                image: AssetImage("assets/images/placeholder.png"),
-                                fit: BoxFit.cover
-                            )
-                        ),
-                        child: Container(
-                          alignment: Alignment.bottomCenter,
-                          margin: EdgeInsets.all(10),
-                          child: Text("Name",style: TextStyle(color: Colors.white),),
-                        ),
-                      );
-                    },
-                  ):Container(
+                  SizedBox(height: 30,),
+
+                ],
+              ),
+            ),
+            Container(
+              height: MediaQuery.of(context).size.height*0.33,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    margin: EdgeInsets.only(left: 10,top: 10),
+                    child: Text('availableSlot'.tr(),style: TextStyle(fontWeight: FontWeight.w500,fontSize: 18),),
+                  ),
+                  isTimeLoading?
+                  Container(
                     alignment: Alignment.center,
                     margin: EdgeInsets.all(10),
-                    child: Text("No Specialists"),
-                  ),
-                ),
-                InkWell(
-                  onTap: (){
-                    if(appointmentTimeSelected==null){
-                      final snackBar = SnackBar(content: Text("Please select a time slot"));
-                      ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                    }
+                    child: CircularProgressIndicator(),
+                  ):Expanded(
+                    child: GridView.builder(
+                      itemCount: time.length,
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          childAspectRatio: (itemWidth / itemHeight),
+                          crossAxisCount: (orientation == Orientation.portrait) ? 3 : 4),
+                      itemBuilder: (BuildContext context, int index) {
+                        return new Card(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                          ),
+                          child: InkWell(
+                            onTap: (){
 
-                    else{
-                      AppointmentModel model=new AppointmentModel(
-                        "",
-                        username!,
-                          FirebaseAuth.instance.currentUser!.uid,
-                        f.format(_selectedDate).toString(),
-                        appointmentTimeSelected!,
-                          specialistId,
-                          specialistName,
-                        widget.model.id,
-                        widget.model.name,
-                        "Pending",
-                        payment,
-                        false,
-                        false,
-                        0,
-                        amount.toString(),
-                      );
-                      Navigator.pushReplacement(context, new MaterialPageRoute(
-                          builder: (context) => Checkout(model)));
-                    }
+                              for(int i=0;i<time.length;i++){
+                                if(i==index){
+                                  setState(() {
+                                    time[i].isSelected=true;
+                                    appointmentTimeSelected=time[i].time;
+                                  });
+                                }
+                                else{
+                                  setState(() {
+                                    time[i].isSelected=false;
+                                  });
+                                }
 
-                  },
-                  child: Container(
-                    height: 50,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(40),
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          darkBrown,
-                          lightBrown,
-                        ],
-                      ),
+                              }
+                            },
+                            child: Container(
+                              decoration: BoxDecoration(
+                                  color: time[index].isSelected?lightBrown:Colors.white,
+                                  borderRadius: BorderRadius.circular(10)
+                              ),
+                              alignment: Alignment.center,
+                              child: Text(time[index].time,style: TextStyle(fontWeight: FontWeight.w400,fontSize: 15),maxLines: 1,),
+                            ),
+                          ),
+                        );
+                      },
                     ),
-                    alignment: Alignment.center,
-                    margin: EdgeInsets.all(12),
-                    child:Text("Book an Appointment",style: TextStyle(color: Colors.white,fontSize: 17,fontWeight: FontWeight.w600),),
-                  ),
-                )
-              ],
+                  )
+                ],
+              )
             ),
-          )
-        ],
+            Container(
+              height: MediaQuery.of(context).size.height*0.34,
+              color: Colors.white,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    margin: EdgeInsets.all(10),
+                    child: Text('chooseSpecialist'.tr(),style: TextStyle(fontWeight: FontWeight.w500,fontSize: 18),),
+                  ),
+                  isSpecialistLoading?
+                  Container(
+                    alignment: Alignment.center,
+                    margin: EdgeInsets.all(10),
+                    child: CircularProgressIndicator(),
+                  ):Container(
+                    height: 120,
+                    child: specialist.length>0?ListView.builder(
+                      itemCount: specialist.length,
+                      scrollDirection: Axis.horizontal,
+                      itemBuilder: (BuildContext context,index){
+                        return Container(
+                          margin: EdgeInsets.all(5),
+                          height: 100,
+                          width: 80,
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(),
+                              image: DecorationImage(
+                                  image: NetworkImage(specialist[index].image),
+                                  fit: BoxFit.cover
+                              )
+                          ),
+                          child: Container(
+                            alignment: Alignment.bottomCenter,
+                            margin: EdgeInsets.all(10),
+                            child: Text(specialist[index].name,style: TextStyle(color: Colors.white),),
+                          ),
+                        );
+                      },
+                    ):Container(
+                      alignment: Alignment.center,
+                      margin: EdgeInsets.all(10),
+                      child: Text('noSpecialist'.tr()),
+                    ),
+                  ),
+                  InkWell(
+                    onTap: (){
+                      if(appointmentTimeSelected==null){
+                        final snackBar = SnackBar(content: Text("Please select a time slot"));
+                        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                      }
+
+                      else{
+                        AppointmentModel model=new AppointmentModel(
+                          "",
+                          username!,
+                            FirebaseAuth.instance.currentUser!.uid,
+                          f.format(_selectedDate).toString(),
+                          appointmentTimeSelected!,
+                            specialistId,
+                            specialistName,
+                          widget.model.id,
+                          widget.model.name,
+                          "Pending",
+                          payment,
+                          false,
+                          false,
+                          0,
+                          amount.toString(),
+                          widget.isOffer?0:widget.model.points,
+                        );
+                        print("res amount $amount");
+                        Navigator.pushReplacement(context, new MaterialPageRoute(
+                            builder: (context) => Checkout(model)));
+                      }
+
+                    },
+                    child: Container(
+                      height: 50,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(40),
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            darkBrown,
+                            lightBrown,
+                          ],
+                        ),
+                      ),
+                      alignment: Alignment.center,
+                      margin: EdgeInsets.all(12),
+                      child:Text('book'.tr(),style: TextStyle(color: Colors.white,fontSize: 17,fontWeight: FontWeight.w600),),
+                    ),
+                  )
+                ],
+              ),
+            )
+          ],
+        ),
       ),
     );
   }
@@ -492,23 +326,7 @@ class _ReservationState extends State<Reservation> {
     getTimeSlots();
     getSpecialists();
     setState(() {
-      if(widget.isOffer){
-        if(widget.isPercentage){
-          print("dis ${widget.discount}");
-          double percent=double.parse(widget.discount)/100;
-          setState(() {
-            amount=(double.parse(widget.model.price)*percent).toInt();
-          });
-
-        }
-        else{
-          setState(() {
-            amount=(double.parse(widget.model.price)-double.parse(widget.discount)).toInt();
-          });
-        }
-      }
-      else
-        amount=int.parse(widget.model.price);
+      amount=int.parse(widget.model.price);
     });
     FirebaseFirestore.instance.collection('customer')
         .doc(FirebaseAuth.instance.currentUser!.uid)

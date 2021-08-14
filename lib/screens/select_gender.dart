@@ -5,12 +5,16 @@ import 'package:lottie/lottie.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:spa_beauty/model/gender_model.dart';
 import 'package:spa_beauty/navigator/bottom_navigation.dart';
+import 'package:spa_beauty/screens/all_categories.dart';
 import 'package:spa_beauty/values/constants.dart';
 import 'package:spa_beauty/values/sharedPref.dart';
 import 'package:spa_beauty/widget/appbar.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class SelectGender extends StatefulWidget {
-  const SelectGender({Key? key}) : super(key: key);
+  String screen;
+
+  SelectGender(this.screen);
 
   @override
   _SelectGenderState createState() => _SelectGenderState();
@@ -60,6 +64,7 @@ class _SelectGenderState extends State<SelectGender> {
           width: MediaQuery.of(context).size.width,
           decoration: BoxDecoration(
             image: DecorationImage(
+                colorFilter: new ColorFilter.mode(Colors.black.withOpacity(0.2), BlendMode.dstATop),
               image:AssetImage("assets/images/pattern.jpg"),
               fit: BoxFit.fitHeight
             )
@@ -79,7 +84,7 @@ class _SelectGenderState extends State<SelectGender> {
 
                     Align(
                       alignment: Alignment.center,
-                      child: Text("Select Gender"),
+                      child: Text('chooseGender'.tr()),
                     )
                   ],
                 ),
@@ -126,7 +131,13 @@ class _SelectGenderState extends State<SelectGender> {
                                 onTap: (){
                                   SharedPref shared=SharedPref();
                                   shared.setGenderPref(gender[position].gender);
-                                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) => BottomBar()));
+                                  if(widget.screen=="Home"){
+                                    Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => BottomBar()));
+
+                                  }
+                                  else if(widget.screen=="Category"){
+                                    Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => AllCategories()));
+                                  }
                                 },
                                 child: Container(
                                   height: MediaQuery.of(context).size.height*0.07,
@@ -137,7 +148,7 @@ class _SelectGenderState extends State<SelectGender> {
                                       borderRadius: BorderRadius.circular(10)
                                   ),
                                   alignment: Alignment.center,
-                                  child: Text("Select Gender",style: TextStyle(fontSize: 25,fontWeight: FontWeight.bold,color: Colors.white),),
+                                  child: Text('chooseGender'.tr(),style: TextStyle(fontSize: 25,fontWeight: FontWeight.bold,color: Colors.white),),
                                 ),
                               ),
                               SizedBox(height: MediaQuery.of(context).size.height*0.05,),

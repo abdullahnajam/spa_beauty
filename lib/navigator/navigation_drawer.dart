@@ -2,10 +2,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cool_alert/cool_alert.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_open_whatsapp/flutter_open_whatsapp.dart';
 import 'package:spa_beauty/auth/auth_selection.dart';
 import 'package:spa_beauty/model/user_model.dart';
 import 'package:spa_beauty/screens/About.dart';
 import 'package:spa_beauty/screens/all_categories.dart';
+import 'package:spa_beauty/screens/all_services_list.dart';
 import 'package:spa_beauty/screens/appointments.dart';
 import 'package:spa_beauty/screens/coupons.dart';
 import 'package:spa_beauty/screens/favourites.dart';
@@ -55,13 +57,16 @@ class MenuDrawerState extends State<MenuDrawer> {
                 ListTile(
                   onTap: (){
                     context.locale = Locale('ar', 'EG');
-
+                    Navigator.pushReplacement(context, new MaterialPageRoute(
+                        builder: (context) => HomePage()));
                   },
-                  title: Text('arabic'.tr()),
+                  title: Text("عربى"),
                 ),
                 ListTile(
                   onTap: (){
                     context.locale = Locale('en', 'US');
+                    Navigator.pushReplacement(context, new MaterialPageRoute(
+                        builder: (context) => HomePage()));
                   },
                   title: Text("English"),
                 ),
@@ -148,7 +153,7 @@ class MenuDrawerState extends State<MenuDrawer> {
                     children: <Widget>[
                       Icon(Icons.person_outline, color: Colors.grey, size: 20),
                       Container(width: 20),
-                      Expanded(child: Text("My Account", style: TextStyle(color: Colors.grey))),
+                      Expanded(child: Text('myAccount'.tr(), style: TextStyle(color: Colors.grey))),
                     ],
                   ),
                 ),
@@ -163,13 +168,27 @@ class MenuDrawerState extends State<MenuDrawer> {
                     children: <Widget>[
                       Icon(Icons.vpn_key_outlined, color: Colors.grey, size: 20),
                       Container(width: 20),
-                      Expanded(child: Text("Sign In", style: TextStyle(color: Colors.grey))),
+                      Expanded(child: Text('signin'.tr(), style: TextStyle(color: Colors.grey))),
                     ],
                   ),
                 ),
               ),
 
-
+              Container(height: 10),
+              InkWell(onTap: (){
+                Navigator.push(context, new MaterialPageRoute(
+                    builder: (context) => AllCategories()));
+              },
+                child: Container(height: 40, padding: EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    children: <Widget>[
+                      Icon(Icons.assignment_outlined, color: Colors.grey, size: 20),
+                      Container(width: 20),
+                      Expanded(child: Text('bookNow'.tr(), style: TextStyle(color: Colors.grey))),
+                    ],
+                  ),
+                ),
+              ),
 
               Container(height: 10),
               InkWell(onTap: (){
@@ -181,21 +200,7 @@ class MenuDrawerState extends State<MenuDrawer> {
                     children: <Widget>[
                       Icon(Icons.shopping_cart_outlined, color: Colors.grey, size: 20),
                       Container(width: 20),
-                      Expanded(child: Text("Offers", style: TextStyle(color: Colors.grey))),
-                    ],
-                  ),
-                ),
-              ),
-              Container(height: 10),
-              InkWell(onTap: (){
-               _showChangeLanguageDailog();
-              },
-                child: Container(height: 40, padding: EdgeInsets.symmetric(horizontal: 20),
-                  child: Row(
-                    children: <Widget>[
-                      Icon(Icons.person, color: Colors.grey, size: 20),
-                      Container(width: 20),
-                      Expanded(child: Text('changeLanguage'.tr(), style: TextStyle(color: Colors.grey))),
+                      Expanded(child: Text('offers'.tr(), style: TextStyle(color: Colors.grey))),
                     ],
                   ),
                 ),
@@ -208,52 +213,66 @@ class MenuDrawerState extends State<MenuDrawer> {
                 child: Container(height: 40, padding: EdgeInsets.symmetric(horizontal: 20),
                   child: Row(
                     children: <Widget>[
-                      Icon(Icons.favorite, color: Colors.grey, size: 20),
+                      Icon(Icons.favorite_border, color: Colors.grey, size: 20),
                       Container(width: 20),
-                      Expanded(child: Text('favourites', style: TextStyle(color: Colors.grey))),
+                      Expanded(child: Text('favourite'.tr(), style: TextStyle(color: Colors.grey))),
                     ],
                   ),
                 ),
               ),
+              Container(height: 10),
+              InkWell(onTap: (){
+               _showChangeLanguageDailog();
+              },
+                child: Container(height: 40, padding: EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    children: <Widget>[
+                      Icon(Icons.translate, color: Colors.grey, size: 20),
+                      Container(width: 20),
+                      Expanded(child: Text('changeLanguage'.tr(), style: TextStyle(color: Colors.grey))),
+                    ],
+                  ),
+                ),
+              ),
+
               Container(height: 10),
               InkWell(onTap: (){
                 Navigator.push(context, new MaterialPageRoute(
-                    builder: (context) => Coupons()));
+                    builder: (context) => Appointments()));
               },
                 child: Container(height: 40, padding: EdgeInsets.symmetric(horizontal: 20),
                   child: Row(
                     children: <Widget>[
-                      Icon(Icons.local_offer, color: Colors.grey, size: 20),
+                      Icon(Icons.assignment_turned_in, color: Colors.grey, size: 20),
                       Container(width: 20),
-                      Expanded(child: Text("Coupons", style: TextStyle(color: Colors.grey))),
+                      Expanded(child: Text('appointments'.tr(), style: TextStyle(color: Colors.grey))),
                     ],
                   ),
                 ),
               ),
+
               Container(height: 10),
               InkWell(onTap: (){
-                Navigator.push(context, new MaterialPageRoute(builder: (context) => AllCategories()));
-              },
-                child: Container(height: 40, padding: EdgeInsets.symmetric(horizontal: 20),
-                  child: Row(
-                    children: <Widget>[
-                      Icon(Icons.apps, color: Colors.grey, size: 20),
-                      Container(width: 20),
-                      Expanded(child: Text("Categories", style: TextStyle(color: Colors.grey))),
-                    ],
-                  ),
-                ),
-              ),
-              Container(height: 10),
-              InkWell(onTap: (){
-                _service('tel:'+"0311-6741249");
+                FirebaseFirestore.instance
+                    .collection('about')
+                    .doc('data')
+                    .get()
+                    .then((DocumentSnapshot documentSnapshot) {
+                  if (documentSnapshot.exists) {
+                    Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
+                    FlutterOpenWhatsapp.sendSingleMessage(data['contact'], "Book a service from Hammam spa & beauty app");
+                  } else {
+                    print('Document does not exist on the database');
+                  }
+                });
+
               },
                 child: Container(height: 40, padding: EdgeInsets.symmetric(horizontal: 20),
                   child: Row(
                     children: <Widget>[
                       Icon(Icons.add_call, color: Colors.grey, size: 20),
                       Container(width: 20),
-                      Expanded(child: Text("Support", style: TextStyle(color: Colors.grey))),
+                      Expanded(child: Text('support'.tr(), style: TextStyle(color: Colors.grey))),
                     ],
                   ),
                 ),
@@ -267,7 +286,7 @@ class MenuDrawerState extends State<MenuDrawer> {
                     children: <Widget>[
                       Icon(Icons.assignment, color: Colors.grey, size: 20),
                       Container(width: 20),
-                      Expanded(child: Text("About", style: TextStyle(color: Colors.grey))),
+                      Expanded(child: Text('about'.tr(), style: TextStyle(color: Colors.grey))),
                     ],
                   ),
                 ),
@@ -284,20 +303,6 @@ class MenuDrawerState extends State<MenuDrawer> {
   }
 
 
-  _service(String url) async {
-    try{
-
-      if (await canLaunch(url)) {
-        await launch(url);
-      } else {
-        throw 'Could not launch $url';
-      }
-    }
-    catch (e)
-    {
-      print("error");
-    }
-  }
 
 
 }

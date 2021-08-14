@@ -3,18 +3,21 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:sn_progress_dialog/progress_dialog.dart';
 import 'package:spa_beauty/auth/auth_selection.dart';
+import 'package:spa_beauty/model/review_model.dart';
 import 'package:spa_beauty/model/service_model.dart';
 import 'package:spa_beauty/screens/reservation.dart';
 import 'package:spa_beauty/values/constants.dart';
 import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 
 class ServiceDetail extends StatefulWidget {
   ServiceModel model;
-
-  ServiceDetail(this.model);
+  String Language;
+  ServiceDetail(this.model,this.Language);
 
   @override
   _ServiceDetailState createState() => _ServiceDetailState();
@@ -88,6 +91,18 @@ class _ServiceDetailState extends State<ServiceDetail> {
     Size size = MediaQuery.of(context).size;
     return Scaffold(
       body: Container(
+        height: MediaQuery.of(context).size.height,
+        width: MediaQuery.of(context).size.width,
+        decoration: BoxDecoration(
+
+          //color:Colors.transparent.withOpacity(0.2),
+            image: DecorationImage(
+                colorFilter: new ColorFilter.mode(Colors.black.withOpacity(0.2), BlendMode.dstATop),
+                image:AssetImage("assets/images/pattern.jpg",),
+                fit: BoxFit.fitHeight
+
+            )
+        ),
         child: Column(
           children: [
             Stack(
@@ -155,9 +170,9 @@ class _ServiceDetailState extends State<ServiceDetail> {
                       ),*/
 
                         tabs: [
-                          Tab(text: "Description"),
-                          Tab(text: "Gallery"),
-                          Tab(text: "Review"),
+                          Tab(text: 'description'.tr()),
+                          Tab(text: 'Gallery'.tr()),
+                          Tab(text: 'Review'.tr()),
                         ],
                       ),
 
@@ -170,34 +185,35 @@ class _ServiceDetailState extends State<ServiceDetail> {
                       child: TabBarView(children: <Widget>[
                         Container(
                           margin: EdgeInsets.all(10),
+                          padding: EdgeInsets.only(right: 10),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text("Service Title",style: TextStyle(
+                              Text('serviceTitle'.tr(),style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w500
                               ),
                               ),
                               SizedBox(height: 5,),
-                              Text(widget.model.name,style: TextStyle(
+                              Text(widget.Language=="English"?widget.model.name:widget.model.name_ar,style: TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.w300
                               ),
                               ),
                               SizedBox(height: 10,),
-                              Text("Service Description",style: TextStyle(
+                              Text('serviceDescription'.tr(),style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w500
                               ),
                               ),
                               SizedBox(height: 5,),
-                              Text(widget.model.description,style: TextStyle(
+                              Text(widget.Language=="English"?widget.model.description:widget.model.description_ar,style: TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.w300
                               ),
                               ),
                               SizedBox(height: 10,),
-                              Text("Service Price",style: TextStyle(
+                              Text('servicePrice'.tr(),style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w500
                               ),
@@ -209,7 +225,7 @@ class _ServiceDetailState extends State<ServiceDetail> {
                               ),
                               ),
                               SizedBox(height: 10,),
-                              Text("Specialists",style: TextStyle(
+                              Text('specialist'.tr(),style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w500
                               ),
@@ -239,7 +255,7 @@ class _ServiceDetailState extends State<ServiceDetail> {
                                     if (snapshot.data!.size==0){
                                       return Container(
                                           alignment: Alignment.center,
-                                          child:Text("No Specialists")
+                                          child:Text('noSpecialist'.tr())
 
                                       );
 
@@ -327,7 +343,9 @@ class _ServiceDetailState extends State<ServiceDetail> {
                         ),
                         Container(
                           child: StreamBuilder<QuerySnapshot>(
-                            stream: FirebaseFirestore.instance.collection('reviews').where("serviceId",isEqualTo: widget.model.id).snapshots(),
+                            stream: FirebaseFirestore.instance.collection('reviews')
+                                .where("serviceId",isEqualTo: widget.model.id)
+                                .where("status",isEqualTo: "Approved").snapshots(),
                             builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
                               if (snapshot.hasError) {
                                 return Center(
@@ -357,22 +375,56 @@ class _ServiceDetailState extends State<ServiceDetail> {
                               return new ListView(
                                 children: snapshot.data!.docs.map((DocumentSnapshot document) {
                                   Map<String, dynamic> data = document.data() as Map<String, dynamic>;
-                                  //ServiceModel model= ServiceModel.fromMap(data, document.reference.id);
+                                  ReviewModel model= ReviewModel.fromMap(data, document.reference.id);
                                   return Container(
-                                    margin: EdgeInsets.all(5),
-                                    height: 100,
-                                    width: 80,
+                                    margin: EdgeInsets.all(10),
                                     decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(10),
-                                        image: DecorationImage(
-                                            image: AssetImage(data['image']),
-                                            fit: BoxFit.cover
-                                        )
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(10)
                                     ),
-                                    child: Container(
-                                      alignment: Alignment.bottomCenter,
-                                      margin: EdgeInsets.all(10),
-                                      child: Text(data['name'],style: TextStyle(color: Colors.white),),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Container(
+                                          width: MediaQuery.of(context).size.width,
+                                          padding: EdgeInsets.all(10),
+
+                                          decoration: BoxDecoration(
+                                              color: Colors.grey[300],
+                                              borderRadius: BorderRadius.only(
+                                                  topLeft: Radius.circular(10),
+                                                  topRight: Radius.circular(10)
+                                              )
+                                          ),
+                                          child: Row(
+                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Text(model.username,style: TextStyle(fontWeight: FontWeight.w600),),
+                                              RatingBar(
+                                                initialRating: model.rating.toDouble(),
+                                                direction: Axis.horizontal,
+                                                allowHalfRating: true,
+                                                itemCount: 5,
+                                                ratingWidget: RatingWidget(
+                                                  full: Icon(Icons.star,color: darkBrown),
+                                                  half: Icon(Icons.star_half,color: darkBrown),
+                                                  empty:Icon(Icons.star_border,color: darkBrown),
+                                                ),
+                                                ignoreGestures: true,
+                                                itemSize: 14,
+                                                itemPadding: EdgeInsets.symmetric(horizontal: 1.0),
+                                                onRatingUpdate: (rating) {
+                                                  print(rating);
+                                                },
+                                              )
+                                            ],
+                                          )
+                                        ),
+                                        Container(
+                                          margin: EdgeInsets.all(10),
+                                          child: Text(model.review),
+                                        )
+                                      ],
                                     ),
                                   );
                                 }).toList(),
@@ -398,7 +450,6 @@ class _ServiceDetailState extends State<ServiceDetail> {
       bottomNavigationBar:
       InkWell(
         onTap: (){
-          print("hrer");
           if(FirebaseAuth.instance.currentUser==null){
             AwesomeDialog(
               context: context,
@@ -407,7 +458,7 @@ class _ServiceDetailState extends State<ServiceDetail> {
               title: 'You are not logged in',
               desc: 'To continue with the booking please login',
               btnCancelOnPress: (){
-                Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) => ServiceDetail(widget.model)));
+                Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) => ServiceDetail(widget.model,widget.Language)));
               },
 
               btnOkOnPress: () {
@@ -417,12 +468,12 @@ class _ServiceDetailState extends State<ServiceDetail> {
             )..show();
           }
           else
-            Navigator.push(context, new MaterialPageRoute(builder: (context) => Reservation(widget.model,false,false,"")));
+            Navigator.push(context, new MaterialPageRoute(builder: (context) => Reservation(widget.model,false)));
         },
         child: Container(
           color: lightBrown,
           height: size.height*0.09,
-          child: Center(child: Text("BOOK NOW",style:TextStyle(
+          child: Center(child: Text('bookNow'.tr(),style:TextStyle(
             color: Colors.white,
             fontSize: 22,
             //fontWeight: FontWeight.bold,
@@ -436,6 +487,7 @@ class _ServiceDetailState extends State<ServiceDetail> {
   @override
   void initState() {
     super.initState();
+    print("id ${widget.model.id}");
     checkFavouriteFromDatabase();
   }
 }

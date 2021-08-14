@@ -3,7 +3,7 @@ import 'package:spa_beauty/model/service_model.dart';
 import 'package:spa_beauty/model/service_model.dart';
 import 'package:spa_beauty/screens/services_detail.dart';
 import 'package:spa_beauty/screens/services_list.dart';
-
+import 'package:easy_localization/easy_localization.dart';
 class ServiceSearch extends SearchDelegate<String> {
   final List<ServiceModel> service;
   String? result;
@@ -27,7 +27,7 @@ class ServiceSearch extends SearchDelegate<String> {
     return IconButton(
       icon: Icon(Icons.arrow_back),
       onPressed: () {
-        close(context, result!);
+        Navigator.pop(context);
       },
     );
   }
@@ -43,12 +43,19 @@ class ServiceSearch extends SearchDelegate<String> {
       itemBuilder: (BuildContext context, int index) {
         return GestureDetector(
           onTap: (){
-            Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => ServiceDetail(suggestions.elementAt(index))));
+            String languageCode=context.locale.toLanguageTag().toString();
+            languageCode="${languageCode[languageCode.length-2]}${languageCode[languageCode.length-1]}";
+            if(languageCode=="US")
+              Navigator.push(context, new MaterialPageRoute(
+                  builder: (context) => ServiceDetail(suggestions.elementAt(index),'English')));
+            else
+              Navigator.push(context, new MaterialPageRoute(
+                  builder: (context) => ServiceDetail(suggestions.elementAt(index),'Arabic')));
           },
           child: Card(
             margin: EdgeInsets.all(10),
             child: ListTile(
-              leading: CircleAvatar(
+              leading: ClipRRect(
                 child: Image.network(suggestions.elementAt(index).image),
               ),
               title: Text(suggestions.elementAt(index).name,style: TextStyle(fontSize: 15,fontWeight: FontWeight.w500),),
@@ -70,12 +77,19 @@ class ServiceSearch extends SearchDelegate<String> {
       itemBuilder: (BuildContext context, int index) {
         return GestureDetector(
           onTap: (){
-            Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => ServiceDetail(suggestions.elementAt(index))));
+            String languageCode=context.locale.toLanguageTag().toString();
+            languageCode="${languageCode[languageCode.length-2]}${languageCode[languageCode.length-1]}";
+            if(languageCode=="US")
+              Navigator.push(context, new MaterialPageRoute(
+                  builder: (context) => ServiceDetail(suggestions.elementAt(index),'English')));
+            else
+              Navigator.push(context, new MaterialPageRoute(
+                  builder: (context) => ServiceDetail(suggestions.elementAt(index),'Arabic')));
           },
           child: Card(
             margin: EdgeInsets.all(10),
             child: ListTile(
-              leading: CircleAvatar(
+              leading: ClipRRect(
                 child: Image.network(suggestions.elementAt(index).image),
               ),
               title: Text(suggestions.elementAt(index).name,style: TextStyle(fontSize: 15,fontWeight: FontWeight.w500),),
