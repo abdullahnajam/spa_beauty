@@ -21,16 +21,30 @@ class Checkout extends StatefulWidget {
 }
 
 class _CheckoutState extends State<Checkout> {
-  String payment='Cash on delivery';
+  String payment='cardPayment'.tr();
+  String couponId="";
+  List ids=[];
   void back(){
     Navigator.pop(context);
   }
   String? amount;
-
+  int pointForService=0;
   @override
   void initState() {
+    super.initState();
+    FirebaseFirestore.instance
+        .collection('settings')
+        .doc('points')
+        .get()
+        .then((DocumentSnapshot documentSnapshot) {
+      if (documentSnapshot.exists) {
+        Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
+        setState(() {
+          pointForService=data['point'];
+        });
+      }
+    });
     setState(() {
-
       amount=widget.model.amount;
       print("amount $amount");
     });
@@ -68,11 +82,19 @@ class _CheckoutState extends State<Checkout> {
       'status': "Pending",
       'isRated':false,
       'rating':0,
-      'points':widget.model.points,
+      'points':pointForService,
       'paid':paid,
-      'paymentMethod':payment
+      'paymentMethod':payment=='cashPayment'.tr()?"Cash Payment":"Card Payment",
+      'datePosted':DateTime.now().toString(),
     }).then((value) {
       pr.close();
+      if(couponId!=""){
+        ids.add(couponId);
+        FirebaseFirestore.instance.collection('redeemedCoupons').doc(FirebaseAuth.instance.currentUser!.uid).set({
+          'coupons':ids
+        });
+      }
+
       AwesomeDialog(
         context: context,
         dialogType: DialogType.SUCCES,
@@ -102,11 +124,9 @@ class _CheckoutState extends State<Checkout> {
       bottomNavigationBar: InkWell(
         onTap: (){
           if (_formKey.currentState!.validate()) {
-            if(payment=='Card Payment')
+            if(payment=='cardPayment'.tr())
               payViaNewCard(context);
-            else if(payment=='Cash on delivery')
-              bookAppointment(true);
-            else if(payment=='Pay Later')
+            else if(payment=='cashPayment'.tr())
               bookAppointment(false);
 
           }
@@ -135,7 +155,7 @@ class _CheckoutState extends State<Checkout> {
             )
         ),
         child: SafeArea(
-          child: Column(
+          child: ListView(
             children: [
               Container(
                 decoration: BoxDecoration(
@@ -287,6 +307,10 @@ class _CheckoutState extends State<Checkout> {
                             SizedBox(height: 10,),
                             InkWell(
                               onTap: (){
+                                setState(() {
+                                  amount=widget.model.amount;
+                                  print("amount $amount");
+                                });
                                 int i=0;
                                 FirebaseFirestore.instance.collection('coupons').where("code",isEqualTo: couponController.text.trim())
                                     .where("serviceId",isEqualTo: widget.model.serviceId).get().then((QuerySnapshot querySnapshot) {
@@ -294,24 +318,69 @@ class _CheckoutState extends State<Checkout> {
                                     setState(() {
                                       i++;
                                     });
-                                    if(doc['discountType']=='Percentage'){
-                                      double percent=double.parse(doc['discount'])/100;
-                                      setState(() {
-                                        amount=(double.parse(amount!)*percent).toString();
-                                      });
+                                    FirebaseFirestore.instance.collection('redeemedCoupons').doc(FirebaseAuth.instance.currentUser!.uid).get().then((DocumentSnapshot documentSnapshot) {
+                                      if (documentSnapshot.exists) {
+                                        Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
+                                        List coupons=data['coupons'];
+                                        ids=coupons;
+                                        int counter=0;
+                                        int totalLimit=int.parse(doc['usage']);
+                                        for(int c=0;c<coupons.length;c++){
+                                          if(coupons[c]==doc.reference.id){
+                                            counter++;
+                                          }
+                                        }
+                                        if(counter>=totalLimit){
+                                          final snackBar = SnackBar(content: Text("Limit Exceeded"));
+                                          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                                        }
+                                        else{
+                                          print("code ${doc['code']} ${widget.model.serviceId}");
+                                          couponId=doc.reference.id;
+                                          if(doc['discountType']=='Percentage'){
+                                            double percent=double.parse(doc['discount'])/100;
+                                            percent=double.parse(amount!)*percent;
+                                            percent=double.parse(amount!)-percent;
+                                            setState(() {
+                                              amount=(percent).toString();
+                                            });
 
-                                    }
-                                    else{
-                                      setState(() {
-                                        amount=(double.parse(amount!)-double.parse(doc['discount'])).toString();
-                                      });
-                                    }
+                                          }
+                                          else{
+                                            setState(() {
+                                              amount=(double.parse(amount!)-double.parse(doc['discount'])).toString();
+                                            });
+                                          }
+                                        }
+                                      }
+                                      else{
+                                        couponId=doc.reference.id;
+                                        print("code ${doc['code']} ${widget.model.serviceId}");
+                                        if(doc['discountType']=='Percentage'){
+                                          double percent=double.parse(doc['discount'])/100;
+                                          percent=double.parse(amount!)*percent;
+                                          percent=double.parse(amount!)-percent;
+                                          setState(() {
+                                            amount=(percent).toString();
+                                          });
+
+                                        }
+                                        else{
+                                          setState(() {
+                                            amount=(double.parse(amount!)-double.parse(doc['discount'])).toString();
+                                          });
+                                        }
+                                      }
+                                    });
+
+
                                   });
+                                  if(i==0){
+                                    final snackBar = SnackBar(content: Text("Invalid Code"));
+                                    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                                  }
                                 });
-                                if(i==0){
-                                  final snackBar = SnackBar(content: Text("Invalid Code"));
-                                  ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                                }
+
                               },
                               child: Container(
                                 width: MediaQuery.of(context).size.width,
@@ -349,7 +418,7 @@ class _CheckoutState extends State<Checkout> {
                               payment = newValue!;
                             });
                           },
-                          items: <String>['Cash on delivery', 'Card Payment', 'Pay Later']
+                          items: <String>['cardPayment'.tr(),'cashPayment'.tr()]
                               .map<DropdownMenuItem<String>>((String value) {
                             return DropdownMenuItem<String>(
                               value: value,

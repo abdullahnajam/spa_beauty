@@ -8,7 +8,7 @@ import 'package:spa_beauty/model/specialist_model.dart';
 import 'package:spa_beauty/screens/home_page.dart';
 import 'package:spa_beauty/values/constants.dart';
 import 'package:url_launcher/url_launcher.dart';
-
+import 'package:easy_localization/easy_localization.dart';
 class About extends StatefulWidget {
   @override
   _AboutState createState() => _AboutState();
@@ -17,16 +17,26 @@ class About extends StatefulWidget {
 class _AboutState extends State<About> {
 
   var userId ;
-/*  void setUserId(id)
-  {
+  String? language;
+  void checkLanguage(){
+    String languageCode=context.locale.toLanguageTag().toString();
+    languageCode="${languageCode[languageCode.length-2]}${languageCode[languageCode.length-1]}";
+    if(languageCode=="US")
+      language="English";
+    else
+      language="Arabic";
+    print("language $language $languageCode");
+  }
+  void changeBannerHeight(var height){
     setState(() {
-      userId = id;
+      height=100;
     });
-  }*/
+  }
   @override
   Widget build(BuildContext context) {
     final orientation = MediaQuery.of(context).orientation;
     Size size = MediaQuery.of(context).size;
+    checkLanguage();
     return Scaffold(
       body: Container(
         height: MediaQuery.of(context).size.height,
@@ -112,10 +122,10 @@ class _AboutState extends State<About> {
                       ),*/
 
                         tabs: [
-                          Tab(text: "Description",),
-                          Tab(text: "Gallery"),
-                          Tab(text: "Specialist"),
-                          Tab(text: "Location"),
+                          Tab(text: 'description'.tr(),),
+                          Tab(text: 'Gallery'.tr()),
+                          Tab(text: 'specialist'.tr()),
+                          Tab(text: 'location'.tr()),
                         ],
                       ),
 
@@ -170,7 +180,7 @@ class _AboutState extends State<About> {
                                           child: Column(
                                             crossAxisAlignment: CrossAxisAlignment.start,
                                             children: [
-                                              Text("Working Time",style: TextStyle(
+                                              Text('workingTime'.tr(),style: TextStyle(
                                                   fontSize: 18,
                                                   fontWeight: FontWeight.w500
                                               ),
@@ -182,13 +192,13 @@ class _AboutState extends State<About> {
                                               ),
                                               ),
                                               SizedBox(height: 10,),
-                                              Text("Description",style: TextStyle(
+                                              Text('description'.tr(),style: TextStyle(
                                                   fontSize: 18,
                                                   fontWeight: FontWeight.w500
                                               ),
                                               ),
                                               SizedBox(height: 5,),
-                                              Text(model.description,maxLines: 5,style: TextStyle(
+                                              Text(language=="English"?model.description:model.description_ar,maxLines: 5,style: TextStyle(
                                                   fontSize: 15,
                                                   fontWeight: FontWeight.w300
                                               ),
@@ -204,7 +214,7 @@ class _AboutState extends State<About> {
 
                                                   Column(
                                                     children: [
-                                                      Text("Contact Info",style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),),
+                                                      Text('contactInfo'.tr(),style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),),
                                                       SizedBox(height: 5,),
                                                       Text(model.contact,style: TextStyle(fontSize: 15, fontWeight: FontWeight.w300),),
                                                     ],
@@ -308,7 +318,7 @@ class _AboutState extends State<About> {
                               if (snapshot.data!.size==0){
                                 return Container(
                                     alignment: Alignment.center,
-                                    child:Text("No Specialists")
+                                    child:Text('noSpecialist'.tr())
 
                                 );
 
@@ -336,7 +346,7 @@ class _AboutState extends State<About> {
                                     child: Container(
                                       alignment: Alignment.bottomCenter,
                                       margin: EdgeInsets.all(10),
-                                      child: Text(model.name,style: TextStyle(color: Colors.white),),
+                                      child: Text(language=="English"?model.name:model.name_ar,style: TextStyle(color: Colors.white),),
                                     ),
                                   );
                                 }).toList(),

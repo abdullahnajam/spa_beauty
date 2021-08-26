@@ -10,6 +10,7 @@ import 'package:spa_beauty/values/constants.dart';
 import 'package:spa_beauty/values/sharedPref.dart';
 import 'package:spa_beauty/widget/appbar.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SelectGender extends StatefulWidget {
   String screen;
@@ -27,6 +28,124 @@ class _SelectGenderState extends State<SelectGender> {
   bool dataLoading=true;
   List<GenderModel> gender=[];
   void back(){Navigator.pop(context);}
+  String? language;
+  void checkLanguage(){
+    String languageCode=context.locale.toLanguageTag().toString();
+    languageCode="${languageCode[languageCode.length-2]}${languageCode[languageCode.length-1]}";
+    if(languageCode=="US")
+      language="English";
+    else
+      language="Arabic";
+    print("language $language $languageCode");
+  }
+  SharedPref sharedPref=new SharedPref();
+  void showPopups(String gender){
+    showDialog(
+        context: context,
+        builder: (BuildContext context){
+          return StatefulBuilder(
+            builder: (context,setState){
+              return Dialog(
+                shape: RoundedRectangleBorder(
+                  borderRadius: const BorderRadius.all(
+                    Radius.circular(10.0),
+                  ),
+                ),
+                insetAnimationDuration: const Duration(seconds: 1),
+                insetAnimationCurve: Curves.fastOutSlowIn,
+                elevation: 2,
+                child: Container(
+                    padding: EdgeInsets.all(10),
+                    height: MediaQuery.of(context).size.height,
+                    width: MediaQuery.of(context).size.width,
+                    child: Column(
+                      children: [
+                        Stack(
+                          children: [
+                            Align(
+                              alignment: Alignment.center,
+                              child: Text("POPUP ADS",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 20),),
+                            ),
+                            Align(
+                                alignment: Alignment.centerRight,
+                                child: InkWell(
+                                  onTap: (){
+                                    Navigator.pop(context);
+                                  },
+                                  child: Icon(Icons.close),
+                                )
+                            )
+                          ],
+                        ),
+                        Expanded(
+                          child: StreamBuilder<QuerySnapshot>(
+                            stream: FirebaseFirestore.instance.collection('popups')
+                                .where("gender",isEqualTo: gender)
+                                .where("language",isEqualTo: language)
+                                .snapshots(),
+                            builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                              if (snapshot.hasError) {
+                                return Center(
+                                  child: Column(
+                                    children: [
+                                      Image.asset("assets/images/wrong.png",width: 150,height: 150,),
+                                      Text("Something Went Wrong",style: TextStyle(color: Colors.black))
+
+                                    ],
+                                  ),
+                                );
+                              }
+
+                              if (snapshot.connectionState == ConnectionState.waiting) {
+                                return Center(
+                                  child: CircularProgressIndicator(),
+                                );
+                              }
+                              if (snapshot.data!.size==0){
+                                Navigator.pop(context);
+
+                              }
+
+                              return new ListView(
+                                shrinkWrap: true,
+                                children: snapshot.data!.docs.map((DocumentSnapshot document) {
+                                  Map<String, dynamic> data = document.data() as Map<String, dynamic>;
+
+                                  return new Padding(
+                                    padding: const EdgeInsets.only(top: 15.0),
+                                    child: InkWell(
+                                      onTap: ()async{
+                                        await canLaunch(data['link']) ? await launch(data['link']) : throw 'Could not launch ${data['link']}';
+                                      },
+                                      child: Column(
+                                        children: [
+                                          Container(
+                                            child: Text(language=="English"?data['title']:data['title_ar']),
+                                          ),
+                                          Image.network(
+                                            data['image'],
+                                            height: MediaQuery.of(context).size.height*0.7,
+                                            width: MediaQuery.of(context).size.width,
+                                          )
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    )
+                ),
+              );
+            },
+          );
+        }
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -36,6 +155,7 @@ class _SelectGenderState extends State<SelectGender> {
         GenderModel model=GenderModel(
           doc.reference.id,
           doc['gender'],
+            doc['gender_ar'],
           doc['image']
         );
         setState(() {
@@ -55,8 +175,8 @@ class _SelectGenderState extends State<SelectGender> {
   }
   @override
   Widget build(BuildContext context) {
+    checkLanguage();
     return Scaffold(
-
       backgroundColor: Colors.grey[200],
       body: SafeArea(
         child: Container(
@@ -110,7 +230,7 @@ class _SelectGenderState extends State<SelectGender> {
                           return Column(
                             children: [
                               SizedBox(height: MediaQuery.of(context).size.height*0.05,),
-                              Text(gender[position].gender,style: TextStyle(fontSize: 25,fontWeight: FontWeight.bold,color: darkBrown),),
+                              Text(language=="English"?gender[position].gender:gender[position].gender_ar,style: TextStyle(fontSize: 25,fontWeight: FontWeight.bold,color: darkBrown),),
                               Container(
                                 height: MediaQuery.of(context).size.height*0.4,
                                 width: MediaQuery.of(context).size.width,
@@ -130,7 +250,7 @@ class _SelectGenderState extends State<SelectGender> {
                               InkWell(
                                 onTap: (){
                                   SharedPref shared=SharedPref();
-                                  shared.setGenderPref(gender[position].gender);
+                                  shared.setGenderPref(gender[position].gender,gender[position].image);
                                   if(widget.screen=="Home"){
                                     Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => BottomBar()));
 

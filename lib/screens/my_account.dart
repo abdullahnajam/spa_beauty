@@ -15,6 +15,7 @@ import 'package:spa_beauty/screens/account_info.dart';
 import 'package:spa_beauty/screens/invite.dart';
 import 'package:spa_beauty/screens/notifications.dart';
 import 'package:spa_beauty/screens/privacy_policy.dart';
+import 'package:spa_beauty/screens/redeem_points.dart';
 import 'package:spa_beauty/values/constants.dart';
 import 'package:spa_beauty/widget/appbar.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -268,7 +269,7 @@ class _MyAccountState extends State<MyAccount> {
               Center(
                 child: CircularProgressIndicator()
               ):
-              user!=null?Container(
+              FirebaseAuth.instance.currentUser!=null?Container(
                 height: MediaQuery.of(context).size.height*0.85,
                 child: Column(
                   children: [
@@ -333,6 +334,9 @@ class _MyAccountState extends State<MyAccount> {
 
                                     ),
                                     ListTile(
+                                      onTap: (){
+                                        Navigator.push(context, new MaterialPageRoute(builder: (context) => RedeemPoints()));
+                                      },
                                       leading: CircleAvatar(
                                         backgroundColor: darkBrown,
                                         child: Icon(Icons.monetization_on,color: Colors.white,),
@@ -516,19 +520,27 @@ class _MyAccountState extends State<MyAccount> {
   void initState() {
     super.initState();
 
-      FirebaseFirestore.instance.collection('customer').doc(FirebaseAuth.instance.currentUser!.uid).get().then((DocumentSnapshot documentSnapshot) {
-      if (documentSnapshot.exists) {
-        Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
-        setState(() {
-          user=UserModel.fromMap(data, documentSnapshot.reference.id);
-          dataLoading=false;
-          emailController.text=user!.email;
-          phoneController.text=user!.phone;
-          usernameController.text=user!.username;
-          profileImage=user!.profilePicture;
+      if(FirebaseAuth.instance.currentUser!=null){
+        FirebaseFirestore.instance.collection('customer').doc(FirebaseAuth.instance.currentUser!.uid).get().then((DocumentSnapshot documentSnapshot) {
+          if (documentSnapshot.exists) {
+            Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
+            setState(() {
+              user=UserModel.fromMap(data, documentSnapshot.reference.id);
+              dataLoading=false;
+              emailController.text=user!.email;
+              phoneController.text=user!.phone;
+              usernameController.text=user!.username;
+              profileImage=user!.profilePicture;
+            });
+          }
         });
       }
-    });
+      else{
+        setState(() {
+          dataLoading=false;
+        });
+      }
+
    
   }
 }

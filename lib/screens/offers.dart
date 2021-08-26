@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:spa_beauty/model/offer_model.dart';
 import 'package:spa_beauty/model/service_model.dart';
 import 'package:spa_beauty/navigator/navigation_drawer.dart';
+import 'package:spa_beauty/screens/offer_details.dart';
 import 'package:spa_beauty/screens/reservation.dart';
 import 'package:spa_beauty/values/constants.dart';
 import 'package:spa_beauty/widget/appbar.dart';
@@ -166,9 +167,15 @@ class _OffersState extends State<Offers> {
                       children: snapshot.data!.docs.map((DocumentSnapshot document) {
                         Map<String, dynamic> data = document.data() as Map<String, dynamic>;
                         OfferModel model= OfferModel.fromMap(data, document.reference.id);
-                        return new Padding(
-                            padding: const EdgeInsets.only(top: 15.0),
-                            child: InkWell(
+                        int year= int.parse("${model.endDate[6]}${model.endDate[7]}${model.endDate[8]}${model.endDate[9]}");
+                        int day= int.parse("${model.endDate[0]}${model.endDate[1]}");
+                        int month= int.parse("${model.endDate[3]}${model.endDate[4]}");
+                        final date = DateTime(year,month,day);
+                        final difference = DateTime.now().difference(date).inDays;
+                        print("diff $difference");
+                          return new Padding(
+                            padding: const EdgeInsets.only(top: 0.0),
+                            child: difference>0?InkWell(
                               onTap: (){
                                 ServiceModel model2=new ServiceModel(
                                   model.id,
@@ -188,8 +195,10 @@ class _OffersState extends State<Offers> {
                                   true,
                                   0,
                                     "",
+                                  false,
+                                  0
                                 );
-                                Navigator.push(context, new MaterialPageRoute(builder: (context) => Reservation(model2,true)));
+                                Navigator.push(context, new MaterialPageRoute(builder: (context) => OfferDetail(model2,model)));
                               },
                               child: Container(
                                   decoration: BoxDecoration(
@@ -229,7 +238,7 @@ class _OffersState extends State<Offers> {
                                             children: [
                                               Text(data['name'],style: TextStyle(fontSize: 18,fontWeight: FontWeight.w500),),
                                               SizedBox(height: 5,),
-                                              Text("Price",style: TextStyle(fontSize: 12,fontWeight: FontWeight.w300),),
+                                              Text('price'.tr(),style: TextStyle(fontSize: 12,fontWeight: FontWeight.w300),),
                                               Text(data['discount'],style: TextStyle(fontSize: 12,fontWeight: FontWeight.w200),),
                                               SizedBox(height: 5,),
 
@@ -256,7 +265,7 @@ class _OffersState extends State<Offers> {
                                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                           children: [
                                             Container(
-                                              child: Text(data['endDate'],style: TextStyle(color: red),),
+                                              child: Text("$difference days left",style: TextStyle(color: red),),
                                             ),
                                             Row(
                                               children: [
@@ -272,7 +281,7 @@ class _OffersState extends State<Offers> {
                                     ],
                                   )
                               ),
-                            )
+                            ):Container()
                         );
                       }).toList(),
                     );

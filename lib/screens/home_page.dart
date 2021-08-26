@@ -11,6 +11,7 @@ import 'package:spa_beauty/model/portrait_model.dart';
 import 'package:spa_beauty/model/service_model.dart';
 import 'package:spa_beauty/navigator/bottom_navigation.dart';
 import 'package:spa_beauty/navigator/navigation_drawer.dart';
+import 'package:spa_beauty/screens/all_categories.dart';
 import 'package:spa_beauty/screens/reservation.dart';
 import 'package:spa_beauty/screens/select_gender.dart';
 import 'package:spa_beauty/screens/services_detail.dart';
@@ -19,6 +20,7 @@ import 'package:spa_beauty/search/search_service.dart';
 import 'package:spa_beauty/values/constants.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:spa_beauty/values/sharedPref.dart';
+import 'package:url_launcher/url_launcher.dart';
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
 
@@ -37,10 +39,31 @@ class _HomePageState extends State<HomePage> {
   }
   bool isFilterTabOpened=false;
   int? rating=5;
+  String genderImageUrl="";
   var reviewController=TextEditingController();
   @override
   void initState() {
     super.initState();
+    sharedPref.getGenderPref().then((value){
+      print("gender pref : $value");
+      sharedPref.getPopupPref().then((popPref){
+        print("pop pref : $popPref");
+        if(popPref){
+          WidgetsBinding.instance!.addPostFrameCallback((_) {
+            showPopups(value.toString());
+            sharedPref.setPopupPref(false);
+          });
+        }
+      });
+
+    });
+    sharedPref.getGenderImagePref().then((value){
+      print("gender image $value");
+      setState(() {
+        genderImageUrl=value.toString();
+      });
+    });
+
     FirebaseFirestore.instance
         .collection('appointments')
         .where("status",isEqualTo: "Completed")
@@ -173,6 +196,7 @@ class _HomePageState extends State<HomePage> {
                             final snackBar = SnackBar(content: Text("Database Error : ${error.toString()}"));
                             ScaffoldMessenger.of(context).showSnackBar(snackBar);
                           });
+
                           FirebaseFirestore.instance
                               .collection('services')
                               .doc(model.serviceId)
@@ -183,7 +207,8 @@ class _HomePageState extends State<HomePage> {
                               ServiceModel model=ServiceModel.fromMap(data, documentSnapshot.reference.id);
                               int totalRating=model.rating;
                               totalRating=rating!+totalRating;
-                              int totalUsersRated=model.totalRating++;
+                              int totalUsersRated=model.totalRating+1;
+                              print("total $totalUsersRated");
                               totalRating=(totalRating/2).toInt();
                               FirebaseFirestore.instance.collection('services').doc(model.id).update({
                                 'totalRating': totalUsersRated,
@@ -198,6 +223,38 @@ class _HomePageState extends State<HomePage> {
                             ScaffoldMessenger.of(context).showSnackBar(snackBar);
                           });
                           Navigator.pop(context);
+                        }).onError((error, stackTrace){
+                          final snackBar = SnackBar(content: Text("Database Error : ${error.toString()}"));
+                          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                        });
+                        FirebaseFirestore.instance
+                            .collection('settings')
+                            .doc('points')
+                            .get()
+                            .then((DocumentSnapshot pointSnapshot) {
+                          if (pointSnapshot.exists) {
+                            Map<String, dynamic> point = pointSnapshot.data() as Map<String, dynamic>;
+                            FirebaseFirestore.instance
+                                .collection('customer')
+                                .doc(FirebaseAuth.instance.currentUser!.uid)
+                                .get()
+                                .then((DocumentSnapshot userSnap) {
+                              if (userSnap.exists) {
+                                Map<String, dynamic> user = userSnap.data() as Map<String, dynamic>;
+                                int points=user['points']+point['point'];
+                                FirebaseFirestore.instance.collection('customer').doc(FirebaseAuth.instance.currentUser!.uid).update({
+                                  'points': points,
+                                }).onError((error, stackTrace){
+                                  final snackBar = SnackBar(content: Text("Database Error : ${error.toString()}"));
+                                  ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                                });
+                              }
+                            }).onError((error, stackTrace){
+                              final snackBar = SnackBar(content: Text("Database Error : ${error.toString()}"));
+                              ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                            });
+
+                          }
                         }).onError((error, stackTrace){
                           final snackBar = SnackBar(content: Text("Database Error : ${error.toString()}"));
                           ScaffoldMessenger.of(context).showSnackBar(snackBar);
@@ -231,6 +288,111 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  void showPopups(String gender){
+    showDialog(
+        context: context,
+        builder: (BuildContext context){
+          return StatefulBuilder(
+            builder: (context,setState){
+              return Dialog(
+                shape: RoundedRectangleBorder(
+                  borderRadius: const BorderRadius.all(
+                    Radius.circular(10.0),
+                  ),
+                ),
+                insetAnimationDuration: const Duration(seconds: 1),
+                insetAnimationCurve: Curves.fastOutSlowIn,
+                elevation: 2,
+                child: Container(
+                  padding: EdgeInsets.all(10),
+                  height: MediaQuery.of(context).size.height,
+                  width: MediaQuery.of(context).size.width,
+                  child: Column(
+                    children: [
+                      Stack(
+                        children: [
+                          Align(
+                            alignment: Alignment.center,
+                            child: Text("",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 20),),
+                          ),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: InkWell(
+                              onTap: (){
+                                Navigator.pop(context);
+                              },
+                              child: Icon(Icons.close),
+                            )
+                          )
+                        ],
+                      ),
+                      Expanded(
+                        child: StreamBuilder<QuerySnapshot>(
+                          stream: FirebaseFirestore.instance.collection('popups')
+                              .where("gender",isEqualTo: gender)
+                              .where("language",isEqualTo: language)
+                              .snapshots(),
+                          builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                            if (snapshot.hasError) {
+                              return Center(
+                                child: Column(
+                                  children: [
+                                    Image.asset("assets/images/wrong.png",width: 150,height: 150,),
+                                    Text("Something Went Wrong",style: TextStyle(color: Colors.black))
+
+                                  ],
+                                ),
+                              );
+                            }
+
+                            if (snapshot.connectionState == ConnectionState.waiting) {
+                              return Center(
+                                child: CircularProgressIndicator(),
+                              );
+                            }
+                            if (snapshot.data!.size==0){
+                              Navigator.pop(context);
+
+                            }
+
+                            return new ListView(
+                              shrinkWrap: true,
+                              children: snapshot.data!.docs.map((DocumentSnapshot document) {
+                                Map<String, dynamic> data = document.data() as Map<String, dynamic>;
+                                int year= int.parse("${data['endDate'][6]}${data['endDate'][7]}${data['endDate'][8]}${data['endDate'][9]}");
+                                int day= int.parse("${data['endDate'][0]}${data['endDate'][1]}");
+                                int month= int.parse("${data['endDate'][3]}${data['endDate'][4]}");
+                                final date = DateTime(year,month,day);
+                                final difference = DateTime.now().difference(date).inDays;
+                                return new Padding(
+                                  padding: const EdgeInsets.only(top: 0.0),
+                                  child: difference>0?InkWell(
+                                    onTap: ()async{
+                                      await canLaunch(data['link']) ? await launch(data['link']) : throw 'Could not launch ${data['link']}';
+                                    },
+                                    child: Image.network(
+                                      data['image'],
+                                      height: MediaQuery.of(context).size.height*0.6,
+                                      width: MediaQuery.of(context).size.width,
+                                      fit: BoxFit.cover,
+                                    )
+                                  ):Container(),
+                                );
+                              }).toList(),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  )
+                ),
+              );
+            },
+          );
+        }
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -257,108 +419,106 @@ class _HomePageState extends State<HomePage> {
 
                     )
                 ),
-                child: Stack(
+                child: Column(
                   children: [
-                    Column(
-                      children: [
-                        Container(
-                          height: MediaQuery.of(context).size.height*0.45,
-                          child: Stack(
-                            children: [
-                              Container(
-                                height: MediaQuery.of(context).size.height*0.3,
-                                decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                      colors: [
-                                        darkBrown,
-                                        lightBrown,
-                                      ],
-                                    ),
-                                    borderRadius: BorderRadius.only(
-                                      bottomLeft: Radius.circular(50),
-                                      bottomRight: Radius.circular(50),
-                                    )
+                    Container(
+                      height: MediaQuery.of(context).size.height*0.45,
+                      child: Stack(
+                        children: [
+                          Container(
+                            height: MediaQuery.of(context).size.height*0.3,
+                            decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    darkBrown,
+                                    lightBrown,
+                                  ],
                                 ),
-                              ),
-                              Container(
-                                  child: SafeArea(
-                                    child: Column(
-                                      children: [
+                                borderRadius: BorderRadius.only(
+                                  bottomLeft: Radius.circular(50),
+                                  bottomRight: Radius.circular(50),
+                                )
+                            ),
+                          ),
+                          Container(
+                              child: SafeArea(
+                                child: Column(
+                                  children: [
 
-                                        Padding(
-                                          padding: EdgeInsets.all(10),
-                                          child: Row(
-                                            children: [
-                                              IconButton(
-                                                icon: Icon(Icons.menu,color: Colors.white,),
-                                                onPressed: _openDrawer,
-                                              ),
-                                              Expanded(
-                                                child: InkWell(
-                                                  onTap: ()async{
-                                                    List<ServiceModel> services=[];
-                                                    FirebaseFirestore.instance.collection('services')
-                                                        .where("gender",isEqualTo: prefshot.data)
-                                                        .where("isActive",isEqualTo: true)
-                                                        .where("isFeatured",isEqualTo: true).get().then((QuerySnapshot querySnapshot) {
-                                                      querySnapshot.docs.forEach((doc) {
-                                                        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-                                                        ServiceModel model=ServiceModel.fromMap(data, doc.reference.id);
-                                                        setState(() {
-                                                          services.add(model);
-                                                        });
-                                                      });
-                                                      print("size1 ${services.length}");
-                                                    }).then((value){
-                                                      showSearch<String>(
-                                                        context: context,
-                                                        delegate: ServiceSearch(services),
-                                                      );
+                                    Padding(
+                                      padding: EdgeInsets.only(top: 10,bottom: 10,left: 10,right: 10),
+                                      child: Row(
+                                        children: [
+                                          IconButton(
+                                            icon: Icon(Icons.menu,color: Colors.white,),
+                                            onPressed: _openDrawer,
+                                          ),
+                                          Expanded(
+                                            child: InkWell(
+                                              onTap: ()async{
+                                                List<ServiceModel> services=[];
+                                                FirebaseFirestore.instance.collection('services')
+                                                    .where("gender",isEqualTo: prefshot.data)
+                                                    .where("isActive",isEqualTo: true)
+                                                    .where("isFeatured",isEqualTo: true).get().then((QuerySnapshot querySnapshot) {
+                                                  querySnapshot.docs.forEach((doc) {
+                                                    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+                                                    ServiceModel model=ServiceModel.fromMap(data, doc.reference.id);
+                                                    setState(() {
+                                                      services.add(model);
                                                     });
-                                                    print("size ${services.length}");
+                                                  });
+                                                  print("size1 ${services.length}");
+                                                }).then((value){
+                                                  showSearch<String>(
+                                                    context: context,
+                                                    delegate: ServiceSearch(services),
+                                                  );
+                                                });
+                                                print("size ${services.length}");
 
-                                                  },
-                                                  child: Container(
-                                                    width: MediaQuery.of(context).size.width*0.63,
-                                                    height: 50,
-                                                    margin: EdgeInsets.only(right: 5),
-                                                    child: Container(
-                                                      decoration: BoxDecoration(
-                                                          color: Colors.white,
-                                                          borderRadius: BorderRadius.circular(40)
-                                                      ),
-                                                      child: Row(
-                                                        children: [
-                                                          SizedBox(
-                                                            width: 10,
-                                                          ),
-                                                          Icon(Icons.search),
-                                                          SizedBox(
-                                                            width: 5,
-                                                          ),
-                                                          Text('search'.tr())
-                                                        ],
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              InkWell(
-                                                onTap: (){
-                                                  Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => SelectGender("Home")));
-                                                },
+                                              },
+                                              child: Container(
+                                                width: MediaQuery.of(context).size.width*0.63,
+                                                height: 50,
+                                                margin: EdgeInsets.only(right: 5),
                                                 child: Container(
-                                                  height: 50,
-                                                  width: MediaQuery.of(context).size.width*0.15,
-                                                  child: CircleAvatar(
-                                                    backgroundColor: Colors.white,
-                                                    child: Image.asset('assets/images/sort.png',width: 25,height: 25,),
+                                                  decoration: BoxDecoration(
+                                                      color: Colors.white,
+                                                      borderRadius: BorderRadius.circular(40)
+                                                  ),
+                                                  child: Row(
+                                                    children: [
+                                                      SizedBox(
+                                                        width: 10,
+                                                      ),
+                                                      Icon(Icons.search),
+                                                      SizedBox(
+                                                        width: 5,
+                                                      ),
+                                                      Text('search'.tr())
+                                                    ],
                                                   ),
                                                 ),
                                               ),
-                                              InkWell(
+                                            ),
+                                          ),
+                                          InkWell(
+                                            onTap: (){
+                                              Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => SelectGender("Home")));
+                                            },
+                                            child: Container(
+                                              height: 50,
+                                              width: MediaQuery.of(context).size.width*0.15,
+                                              child: CircleAvatar(
+                                                backgroundColor: Colors.white,
+                                                child: Image.network(genderImageUrl,width: 25,height: 25,),
+                                              ),
+                                            ),
+                                          ),
+                                          /*InkWell(
                                                 onTap: (){
                                                   setState(() {
                                                     isFilterTabOpened=true;
@@ -372,581 +532,450 @@ class _HomePageState extends State<HomePage> {
                                                     child: Image.asset('assets/images/filter.png',width: 25,height: 25,),
                                                   ),
                                                 ),
-                                              )
-                                            ],
-                                          ),
-                                        ),
-                                        Expanded(
-                                          child: StreamBuilder<QuerySnapshot>(
-                                            stream: FirebaseFirestore.instance.collection('banner')
-                                                .where("gender",isEqualTo: prefshot.data.toString())
-                                                .where("language",isEqualTo: language).snapshots(),
-                                            builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-                                              if (snapshot.hasError) {
-                                                return Center(
-                                                  child: Column(
-                                                    children: [
-                                                      Image.asset("assets/images/wrong.png",width: 150,height: 150,),
-                                                      Text("Something Went Wrong")
+                                              )*/
+                                        ],
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: StreamBuilder<QuerySnapshot>(
+                                        stream: FirebaseFirestore.instance.collection('banner')
+                                            .where("gender",isEqualTo: prefshot.data.toString())
+                                            .where("language",isEqualTo: language).snapshots(),
+                                        builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                                          if (snapshot.hasError) {
+                                            return Center(
+                                              child: Column(
+                                                children: [
+                                                  Image.asset("assets/images/wrong.png",width: 150,height: 150,),
+                                                  Text("Something Went Wrong")
 
-                                                    ],
+                                                ],
+                                              ),
+                                            );
+                                          }
+
+                                          if (snapshot.connectionState == ConnectionState.waiting) {
+                                            return Center(
+                                              child: CircularProgressIndicator(),
+                                            );
+                                          }
+                                          if (snapshot.data!.size==0){
+                                            return Container(
+                                                alignment: Alignment.center,
+                                                child:Column(
+                                                  children: [
+                                                    Container(
+                                                      height: MediaQuery.of(context).size.height*0.27,
+                                                      child: Image.asset("assets/images/logo.png"),
+                                                    ),
+                                                    SizedBox(height: 10,),
+                                                    Text('noBanner'.tr())
+                                                  ],
+                                                )
+
+                                            );
+
+                                          }
+
+                                          return new ListView(
+                                            scrollDirection: Axis.horizontal,
+                                            children: snapshot.data!.docs.map((DocumentSnapshot document) {
+                                              Map<String, dynamic> data = document.data() as Map<String, dynamic>;
+                                              return Container(
+                                                height: MediaQuery.of(context).size.height*0.32,
+                                                width: MediaQuery.of(context).size.width,
+                                                margin: EdgeInsets.only(left: 10,right: 10),
+                                                decoration: BoxDecoration(
+                                                    borderRadius: BorderRadius.circular(20)
+                                                ),
+                                                child: ClipRRect(
+                                                  borderRadius: BorderRadius.circular(20),
+                                                  child: CachedNetworkImage(
+                                                    imageUrl: data['image'],
+                                                    width: MediaQuery.of(context).size.width,
+                                                    fit: BoxFit.cover,
+                                                    placeholder: (context, url) => Center(
+                                                      child: CircularProgressIndicator(),
+                                                    ),
+                                                    errorWidget: (context, url, error) => Icon(Icons.error),
                                                   ),
-                                                );
-                                              }
-
-                                              if (snapshot.connectionState == ConnectionState.waiting) {
-                                                return Center(
-                                                  child: CircularProgressIndicator(),
-                                                );
-                                              }
-                                              if (snapshot.data!.size==0){
-                                                return Container(
-                                                    alignment: Alignment.center,
-                                                    child:Column(
-                                                      children: [
-                                                        Container(
-                                                          height: MediaQuery.of(context).size.height*0.28,
-                                                          child: Image.asset("assets/images/logo.png"),
-                                                        ),
-                                                        SizedBox(height: 10,),
-                                                        Text('noBanner'.tr())
-                                                      ],
-                                                    )
-
-                                                );
-
-                                              }
-
-                                              return new ListView(
-                                                scrollDirection: Axis.horizontal,
-                                                children: snapshot.data!.docs.map((DocumentSnapshot document) {
-                                                  Map<String, dynamic> data = document.data() as Map<String, dynamic>;
-                                                  return Container(
-                                                    height: MediaQuery.of(context).size.height*0.32,
-                                                    width: MediaQuery.of(context).size.width*0.85,
-                                                    margin: EdgeInsets.only(top: 10,left: 10),
-                                                    decoration: BoxDecoration(
-                                                        borderRadius: BorderRadius.circular(20)
-                                                    ),
-                                                    child: ClipRRect(
-                                                      borderRadius: BorderRadius.circular(20),
-                                                      child: CachedNetworkImage(
-                                                        imageUrl: data['image'],
-                                                        width: MediaQuery.of(context).size.width*0.85,
-                                                        fit: BoxFit.cover,
-                                                        placeholder: (context, url) => Center(
-                                                          child: CircularProgressIndicator(),
-                                                        ),
-                                                        errorWidget: (context, url, error) => Icon(Icons.error),
-                                                      ),
-                                                    ),
-                                                  );
-                                                }).toList(),
+                                                ),
                                               );
-                                            },
-                                          ),
-                                        )
+                                            }).toList(),
+                                          );
+                                        },
+                                      ),
+                                    )
 
+
+                                  ],
+                                ),
+                              )
+                          )
+
+                        ],
+                      ),
+                    ),
+
+                    Expanded(
+                      child: ListView(
+                        children:[
+                          Container(
+                            margin: EdgeInsets.only(left: 10,right: 10),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text('categories'.tr(),style: TextStyle(fontWeight: FontWeight.w500,fontSize: 18),),
+                                InkWell(
+                                  onTap: (){
+                                    Navigator.push(context, new MaterialPageRoute(builder: (context) => AllCategories()));
+                                  },
+                                  child: Text('viewAll'.tr(),style: TextStyle(fontWeight: FontWeight.w300,fontSize: 15),),
+                                )
+                              ],
+                            ),
+                          ),
+                          Container(
+                            height: MediaQuery.of(context).size.height*0.15,
+                            child: StreamBuilder<QuerySnapshot>(
+                              stream: FirebaseFirestore.instance.collection('categories')
+                                  .where("gender",isEqualTo: prefshot.data.toString())
+                                  .where('isFeatured',isEqualTo: true).snapshots(),
+                              builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                                if (snapshot.hasError) {
+                                  return Center(
+                                    child: Column(
+                                      children: [
+                                        Text("Something Went Wrong")
 
                                       ],
                                     ),
-                                  )
-                              )
+                                  );
+                                }
 
-                            ],
-                          ),
-                        ),
+                                if (snapshot.connectionState == ConnectionState.waiting) {
+                                  return Center(
+                                    child: CircularProgressIndicator(),
+                                  );
+                                }
+                                if (snapshot.data!.size==0){
+                                  return Center(
+                                    child: Column(
+                                      children: [
+                                        Image.asset("assets/images/empty.png",width: 50,height:50,),
+                                        Text("No categories found")
 
-                        Expanded(
-                          child: ListView(
-                            children:[
-                              Container(
-                                height: MediaQuery.of(context).size.height*0.15,
-                                child: StreamBuilder<QuerySnapshot>(
-                                  stream: FirebaseFirestore.instance.collection('categories')
-                                      .where("gender",isEqualTo: prefshot.data.toString())
-                                      .where('isFeatured',isEqualTo: true).snapshots(),
-                                  builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-                                    if (snapshot.hasError) {
-                                      return Center(
+                                      ],
+                                    ),
+                                  );
+
+                                }
+
+                                return new ListView(
+
+                                  scrollDirection: Axis.horizontal,
+                                  children: snapshot.data!.docs.map((DocumentSnapshot document) {
+                                    Map<String, dynamic> data = document.data() as Map<String, dynamic>;
+
+                                    return  InkWell(
+                                      onTap: (){
+                                        Navigator.push(context, new MaterialPageRoute(builder: (context) => AllServicesList(document.reference.id,data['name'])));
+                                      },
+                                      child: Container(
+                                        height: 100,
+                                        width: 80,
+                                        margin: EdgeInsets.all(5),
                                         child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
                                           children: [
-                                            Image.asset("assets/images/wrong.png",width: 50,height:50,),
-                                            Text("Something Went Wrong")
-
-                                          ],
-                                        ),
-                                      );
-                                    }
-
-                                    if (snapshot.connectionState == ConnectionState.waiting) {
-                                      return Center(
-                                        child: CircularProgressIndicator(),
-                                      );
-                                    }
-                                    if (snapshot.data!.size==0){
-                                      return Center(
-                                        child: Column(
-                                          children: [
-                                            Image.asset("assets/images/empty.png",width: 50,height:50,),
-                                            Text("No categories found")
-
-                                          ],
-                                        ),
-                                      );
-
-                                    }
-
-                                    return new ListView(
-
-                                      scrollDirection: Axis.horizontal,
-                                      children: snapshot.data!.docs.map((DocumentSnapshot document) {
-                                        Map<String, dynamic> data = document.data() as Map<String, dynamic>;
-
-                                        return  InkWell(
-                                          onTap: (){
-                                            Navigator.push(context, new MaterialPageRoute(builder: (context) => AllServicesList(document.reference.id,data['name'])));
-                                          },
-                                          child: Container(
-                                            height: 100,
-                                            width: 80,
-                                            margin: EdgeInsets.all(5),
-                                            child: Column(
-                                              mainAxisAlignment: MainAxisAlignment.center,
-                                              children: [
-                                                Container(
-                                                  decoration: BoxDecoration(
+                                            Container(
+                                              decoration: BoxDecoration(
+                                                  color: Colors.grey,
+                                                  shape: BoxShape.circle,
+                                                  boxShadow: [
+                                                    BoxShadow(
                                                       color: Colors.grey,
-                                                      shape: BoxShape.circle,
-                                                      boxShadow: [
-                                                        BoxShadow(
-                                                          color: Colors.grey,
-                                                          blurRadius: 5.0,
-                                                          spreadRadius: 2.0,
-                                                        ),
-                                                      ]
-                                                  ),
-                                                  height: 50,
-                                                  width: 50,
-                                                  margin: EdgeInsets.all(5),
-                                                  child: CircleAvatar(
-                                                    backgroundColor: Colors.white,
-                                                    child: CachedNetworkImage(
-                                                      imageUrl: data['image'],
-                                                      height: 30,
-                                                      width: 30,
-                                                      fit: BoxFit.cover,
-                                                      placeholder: (context, url) => CircularProgressIndicator(),
-                                                      errorWidget: (context, url, error) => Icon(Icons.error),
+                                                      blurRadius: 5.0,
+                                                      spreadRadius: 2.0,
                                                     ),
-                                                  ),
+                                                  ]
+                                              ),
+                                              height: 50,
+                                              width: 50,
+                                              margin: EdgeInsets.all(5),
+                                              child: CircleAvatar(
+                                                backgroundColor: Colors.white,
+                                                child: CachedNetworkImage(
+                                                  imageUrl: data['image'],
+                                                  height: 30,
+                                                  width: 30,
+                                                  fit: BoxFit.cover,
+                                                  placeholder: (context, url) => CircularProgressIndicator(),
+                                                  errorWidget: (context, url, error) => Icon(Icons.error),
                                                 ),
-                                                Text(language=="English"?data['name']:data['name_ar'],textAlign: TextAlign.center, maxLines: 1,style: TextStyle(
-                                                    fontSize: 12,
-                                                    fontWeight: FontWeight.w300
-                                                ),)
-                                              ],
-                                            ),
-                                          ),
-                                        );
-                                      }).toList(),
-                                    );
-                                  },
-                                ),
-                              ),
-                              StreamBuilder<QuerySnapshot>(
-                                stream: FirebaseFirestore.instance.collection('portrait_banner')
-                                    .where('type', isEqualTo: 'Category')
-                                    .where('gender', isEqualTo: prefshot.data.toString())
-                                    .where('language', isEqualTo: language)
-                                    .snapshots(),
-                                builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-                                  if (snapshot.hasError) {
-                                    return Center(
-                                      child: Column(
-                                        children: [
-                                          Image.asset("assets/images/wrong.png",width: 150,height: 150,),
-                                          Text("Something Went Wrong")
-
-                                        ],
-                                      ),
-                                    );
-                                  }
-
-                                  if (snapshot.connectionState == ConnectionState.waiting) {
-                                    return Center(
-                                      child: CircularProgressIndicator(),
-                                    );
-                                  }
-                                  if (snapshot.data!.size==0){
-                                    return Container(
-                                      alignment: Alignment.center,
-
-                                    );
-
-                                  }
-
-                                  return new ListView(
-                                    shrinkWrap: true,
-                                    physics: NeverScrollableScrollPhysics(),
-                                    //scrollDirection: Axis.horizontal,
-                                    children: snapshot.data!.docs.map((DocumentSnapshot document) {
-                                      Map<String, dynamic> data = document.data() as Map<String, dynamic>;
-                                      PortraitModel model= PortraitModel.fromMap(data, document.reference.id);
-
-                                      return new Padding(
-                                        padding: const EdgeInsets.only(top: 15.0),
-                                        child: InkWell(
-                                          onTap: (){
-                                            Navigator.push(context, new MaterialPageRoute(
-                                                builder: (context) => AllServicesList(model.name,model.linkId)));
-                                          },
-                                          child: Container(
-                                            margin: EdgeInsets.all(10),
-                                            height: MediaQuery.of(context).size.height*0.4,
-                                            width: MediaQuery.of(context).size.width*0.9,
-                                            decoration: BoxDecoration(
-                                              borderRadius: BorderRadius.circular(10),
-                                              image: DecorationImage(
-                                                  image: NetworkImage(model.image),
-                                                  fit: BoxFit.cover
                                               ),
                                             ),
+                                            Text(language=="English"?data['name']:data['name_ar'],textAlign: TextAlign.center, maxLines: 1,style: TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w300
+                                            ),)
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  }).toList(),
+                                );
+                              },
+                            ),
+                          ),
+                          StreamBuilder<QuerySnapshot>(
+                            stream: FirebaseFirestore.instance.collection('portrait_banner')
+                                .where('type', isEqualTo: 'Category')
+                                .where('gender', isEqualTo: prefshot.data.toString())
+                                .where('language', isEqualTo: language)
+                                .snapshots(),
+                            builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                              if (snapshot.hasError) {
+                                return Center(
+                                  child: Column(
+                                    children: [
+                                      Image.asset("assets/images/wrong.png",width: 150,height: 150,),
+                                      Text("Something Went Wrong")
+
+                                    ],
+                                  ),
+                                );
+                              }
+
+                              if (snapshot.connectionState == ConnectionState.waiting) {
+                                return Center(
+                                  child: CircularProgressIndicator(),
+                                );
+                              }
+                              if (snapshot.data!.size==0){
+                                return Container(
+                                  alignment: Alignment.center,
+
+                                );
+
+                              }
+
+                              return new ListView(
+                                shrinkWrap: true,
+                                physics: NeverScrollableScrollPhysics(),
+                                children: snapshot.data!.docs.map((DocumentSnapshot document) {
+                                  Map<String, dynamic> data = document.data() as Map<String, dynamic>;
+                                  PortraitModel model= PortraitModel.fromMap(data, document.reference.id);
+
+                                  return new Padding(
+                                    padding: const EdgeInsets.only(top: 15.0),
+                                    child: InkWell(
+                                      onTap: (){
+                                        Navigator.push(context, new MaterialPageRoute(
+                                            builder: (context) => AllServicesList(model.name,model.linkId)));
+                                      },
+                                      child: Container(
+                                        margin: EdgeInsets.all(10),
+                                        height: MediaQuery.of(context).size.height*0.4,
+                                        width: MediaQuery.of(context).size.width*0.9,
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(10),
+                                          image: DecorationImage(
+                                              image: NetworkImage(model.image),
+                                              fit: BoxFit.cover
                                           ),
                                         ),
-                                      );
-                                    }).toList(),
+                                      ),
+                                    ),
                                   );
-                                },
-                              ),
+                                }).toList(),
+                              );
+                            },
+                          ),
+                          Container(
+                            height: 120,
+                            child: StreamBuilder<QuerySnapshot>(
+                              stream: FirebaseFirestore.instance.collection('services')
+                                  .where('gender', isEqualTo: prefshot.data.toString())
+                                  .where('isFeatured',isEqualTo: true)
+                                  .where('isActive',isEqualTo: true).snapshots(),
+                              builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                                if (snapshot.hasError) {
+                                  return Center(
+                                    child: Column(
+                                      children: [
+                                        Image.asset("assets/images/wrong.png",width: 150,height: 150,),
+                                        Text("Something Went Wrong")
 
-                              Expanded(
-                                child: StreamBuilder<QuerySnapshot>(
-                                  stream: FirebaseFirestore.instance.collection('categories')
-                                      .where('gender',isEqualTo: prefshot.data.toString())
-                                      .where('isFeatured',isEqualTo: true).snapshots(),
-                                  builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-                                    if (snapshot.hasError) {
-                                      return Center(
-                                        child: Column(
-                                          children: [
-                                            Image.asset("assets/images/wrong.png",width: 150,height: 150,),
-                                            Text("Something Went Wrong")
+                                      ],
+                                    ),
+                                  );
+                                }
 
-                                          ],
-                                        ),
-                                      );
-                                    }
+                                if (snapshot.connectionState == ConnectionState.waiting) {
+                                  return Center(
+                                    child: CircularProgressIndicator(),
+                                  );
+                                }
+                                if (snapshot.data!.size==0){
+                                  return Container();
 
-                                    if (snapshot.connectionState == ConnectionState.waiting) {
-                                      return Center(
-                                        child: CircularProgressIndicator(),
-                                      );
-                                    }
-                                    if (snapshot.data!.size==0){
-                                      return Center(
-                                        child: Column(
-                                          children: [
-                                            Image.asset("assets/images/empty.png",width: 150,height: 150,),
-                                            Text("No Categories Found")
+                                }
 
-                                          ],
-                                        ),
-                                      );
-
-                                    }
-
-                                    return new ListView(
-                                      shrinkWrap: true,
-                                      physics: NeverScrollableScrollPhysics(),
-                                      children: snapshot.data!.docs.map((DocumentSnapshot document) {
-                                        Map<String, dynamic> data = document.data() as Map<String, dynamic>;
-                                        CategoryModel model= CategoryModel.fromMap(data, document.reference.id);
-                                        return new Padding(
-                                          padding: const EdgeInsets.only(top: 15.0),
-                                          child: Column(
+                                return new ListView(
+                                  scrollDirection: Axis.horizontal,
+                                  children: snapshot.data!.docs.map((DocumentSnapshot document) {
+                                    Map<String, dynamic> data = document.data() as Map<String, dynamic>;
+                                    ServiceModel model= ServiceModel.fromMap(data, document.reference.id);
+                                    print("service gender : ${model.gender} ${snapshot.data.toString()}");
+                                    return new Padding(
+                                      padding: const EdgeInsets.only(top: 15.0),
+                                      child: InkWell(
+                                        onTap: (){
+                                          Navigator.push(context, new MaterialPageRoute(
+                                              builder: (context) => ServiceDetail(model,language!)));
+                                        },
+                                        child: Container(
+                                          margin: EdgeInsets.all(5),
+                                          decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              borderRadius: BorderRadius.circular(15)
+                                          ),
+                                          child: Row(
                                             children: [
                                               Container(
-                                                margin: EdgeInsets.only(left: 10,right: 10),
-                                                child: Row(
-                                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                  children: [
-                                                    Text(language=="English"?data['name']:data['name_ar'],style: TextStyle(fontWeight: FontWeight.w500,fontSize: 18),),
-                                                    InkWell(
-                                                      onTap: (){
-                                                        Navigator.push(context, new MaterialPageRoute(builder: (context) => AllServicesList(model.id,model.name)));
-                                                      },
-                                                      child: Text('viewAll'.tr(),style: TextStyle(fontWeight: FontWeight.w300,fontSize: 15),),
-                                                    )
-                                                  ],
+                                                margin: EdgeInsets.all(10),
+                                                height: 100,
+                                                width: 100,
+                                                decoration: BoxDecoration(
+                                                  borderRadius: BorderRadius.circular(10),
+                                                  image: DecorationImage(
+                                                      image: NetworkImage(data['image']),
+                                                      fit: BoxFit.cover
+                                                  ),
                                                 ),
                                               ),
-                                              SizedBox(height: 5,),
-                                              Container(
-                                                height: 120,
-                                                child: StreamBuilder<QuerySnapshot>(
-                                                  stream: FirebaseFirestore.instance.collection('services')
-                                                      .where('categoryId', isEqualTo: document.reference.id)
-                                                      .where('gender', isEqualTo: prefshot.data.toString())
-                                                      .where('isFeatured',isEqualTo: true)
-                                                      .where('isActive',isEqualTo: true).snapshots(),
-                                                  builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-                                                    if (snapshot.hasError) {
-                                                      return Center(
-                                                        child: Column(
-                                                          children: [
-                                                            Image.asset("assets/images/wrong.png",width: 150,height: 150,),
-                                                            Text("Something Went Wrong")
-
-                                                          ],
-                                                        ),
-                                                      );
-                                                    }
-
-                                                    if (snapshot.connectionState == ConnectionState.waiting) {
-                                                      return Center(
-                                                        child: CircularProgressIndicator(),
-                                                      );
-                                                    }
-                                                    if (snapshot.data!.size==0){
-                                                      return Container(
-                                                          alignment: Alignment.center,
-                                                          child:Text("No Services")
-
-                                                      );
-
-                                                    }
-
-                                                    return new ListView(
-                                                      scrollDirection: Axis.horizontal,
-                                                      children: snapshot.data!.docs.map((DocumentSnapshot document) {
-                                                        Map<String, dynamic> data = document.data() as Map<String, dynamic>;
-                                                        ServiceModel model= ServiceModel.fromMap(data, document.reference.id);
-                                                        print("service gender : ${model.gender} ${snapshot.data.toString()}");
-                                                        return new Padding(
-                                                          padding: const EdgeInsets.only(top: 15.0),
-                                                          child: InkWell(
-                                                            onTap: (){
-                                                              Navigator.push(context, new MaterialPageRoute(
-                                                                  builder: (context) => ServiceDetail(model,language!)));
-                                                            },
-                                                            child: Container(
-                                                              margin: EdgeInsets.all(5),
-                                                              decoration: BoxDecoration(
-                                                                  color: Colors.white,
-                                                                  borderRadius: BorderRadius.circular(15)
-                                                              ),
-                                                              child: Row(
-                                                                children: [
-                                                                  Container(
-                                                                    margin: EdgeInsets.all(10),
-                                                                    height: 100,
-                                                                    width: 100,
-                                                                    decoration: BoxDecoration(
-                                                                      borderRadius: BorderRadius.circular(10),
-                                                                      image: DecorationImage(
-                                                                          image: NetworkImage(data['image']),
-                                                                          fit: BoxFit.cover
-                                                                      ),
-                                                                    ),
-                                                                  ),
-                                                                  SizedBox(width: 5,),
-                                                                  Column(
-                                                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                                                    mainAxisAlignment: MainAxisAlignment.center,
-                                                                    children: [
-                                                                      Text(language=="English"?data['name']:data['name_ar'],style: TextStyle(fontSize: 18,fontWeight: FontWeight.w500),),
-                                                                      SizedBox(height: 10,),
-                                                                      Text("\$${data['price']}",style: TextStyle(fontSize: 12,fontWeight: FontWeight.w300),),
-                                                                      RatingBar(
-                                                                        initialRating: data['rating'].toDouble(),
-                                                                        direction: Axis.horizontal,
-                                                                        allowHalfRating: true,
-                                                                        itemCount: 5,
-                                                                        ratingWidget: RatingWidget(
-                                                                          full: Icon(Icons.star,color: darkBrown),
-                                                                          half: Icon(Icons.star_half,color: darkBrown),
-                                                                          empty:Icon(Icons.star_border,color: darkBrown,),
-                                                                        ),
-                                                                        ignoreGestures: true,
-                                                                        itemSize: 15,
-                                                                        itemPadding: EdgeInsets.symmetric(horizontal: 1.0),
-                                                                        onRatingUpdate: (rating) {
-                                                                          print(rating);
-                                                                        },
-                                                                      ),
-                                                                    ],
-                                                                  ),
-                                                                  SizedBox(width: 20,)
-                                                                ],
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        );
-                                                      }).toList(),
-                                                    );
-                                                  },
-                                                ),
+                                              SizedBox(width: 5,),
+                                              Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                mainAxisAlignment: MainAxisAlignment.center,
+                                                children: [
+                                                  Text(language=="English"?data['name']:data['name_ar'],style: TextStyle(fontSize: 18,fontWeight: FontWeight.w500),),
+                                                  SizedBox(height: 10,),
+                                                  Text("\$${data['price']}",style: TextStyle(fontSize: 12,fontWeight: FontWeight.w300),),
+                                                  RatingBar(
+                                                    initialRating: data['rating'].toDouble(),
+                                                    direction: Axis.horizontal,
+                                                    allowHalfRating: true,
+                                                    itemCount: 5,
+                                                    ratingWidget: RatingWidget(
+                                                      full: Icon(Icons.star,color: darkBrown),
+                                                      half: Icon(Icons.star_half,color: darkBrown),
+                                                      empty:Icon(Icons.star_border,color: darkBrown,),
+                                                    ),
+                                                    ignoreGestures: true,
+                                                    itemSize: 15,
+                                                    itemPadding: EdgeInsets.symmetric(horizontal: 1.0),
+                                                    onRatingUpdate: (rating) {
+                                                      print(rating);
+                                                    },
+                                                  ),
+                                                ],
                                               ),
-
-
-                                              /*Container(
-                                            margin: EdgeInsets.all(10),
-                                            height: 50,
-                                            color: Colors.white,
-                                            alignment: Alignment.center,
-                                            child: Text("Ad Banner Here"),
-                                          )*/
+                                              SizedBox(width: 20,)
                                             ],
                                           ),
-
-                                        );
-                                      }).toList(),
-                                    );
-                                  },
-                                ),
-                              ),
-                              StreamBuilder<QuerySnapshot>(
-                                stream: FirebaseFirestore.instance.collection('portrait_banner')
-                                    .where('type', isEqualTo: 'Service')
-                                    .where('gender', isEqualTo: prefshot.data.toString())
-                                    .where('language', isEqualTo: language)
-                                    .snapshots(),
-                                builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-                                  if (snapshot.hasError) {
-                                    return Center(
-                                      child: Column(
-                                        children: [
-                                          Image.asset("assets/images/wrong.png",width: 150,height: 150,),
-                                          Text("Something Went Wrong")
-
-                                        ],
+                                        ),
                                       ),
                                     );
-                                  }
+                                  }).toList(),
+                                );
+                              },
+                            ),
+                          ),
+                          StreamBuilder<QuerySnapshot>(
+                            stream: FirebaseFirestore.instance.collection('portrait_banner')
+                                .where('type', isEqualTo: 'Service')
+                                .where('gender', isEqualTo: prefshot.data.toString())
+                                .where('language', isEqualTo: language)
+                                .snapshots(),
+                            builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                              if (snapshot.hasError) {
+                                return Center(
+                                  child: Column(
+                                    children: [
+                                      Image.asset("assets/images/wrong.png",width: 150,height: 150,),
+                                      Text("Something Went Wrong")
 
-                                  if (snapshot.connectionState == ConnectionState.waiting) {
-                                    return Center(
-                                      child: CircularProgressIndicator(),
-                                    );
-                                  }
-                                  if (snapshot.data!.size==0){
-                                    return Container(
-                                      alignment: Alignment.center,
+                                    ],
+                                  ),
+                                );
+                              }
 
-                                    );
+                              if (snapshot.connectionState == ConnectionState.waiting) {
+                                return Center(
+                                  child: CircularProgressIndicator(),
+                                );
+                              }
+                              if (snapshot.data!.size==0){
+                                return Container(
+                                  alignment: Alignment.center,
 
-                                  }
+                                );
 
-                                  return new ListView(
-                                    shrinkWrap: true,
-                                    physics: NeverScrollableScrollPhysics(),
-                                    //scrollDirection: Axis.horizontal,
-                                    children: snapshot.data!.docs.map((DocumentSnapshot document) {
-                                      Map<String, dynamic> data = document.data() as Map<String, dynamic>;
+                              }
 
-                                      PortraitModel model= PortraitModel.fromMap(data, document.reference.id);
-                                      return new Padding(
-                                        padding: const EdgeInsets.only(top: 15.0),
-                                        child: InkWell(
-                                          onTap: (){
-                                            FirebaseFirestore.instance
-                                                .collection('services')
-                                                .doc(model.linkId)
-                                                .get()
-                                                .then((DocumentSnapshot documentSnapshot) {
-                                              if (documentSnapshot.exists) {
-                                                Map<String, dynamic> serivceData = documentSnapshot.data() as Map<String, dynamic>;
-                                                ServiceModel serviceModel= ServiceModel.fromMap(serivceData, document.reference.id);
-                                                Navigator.push(context, new MaterialPageRoute(
-                                                    builder: (context) => ServiceDetail(serviceModel,language!)));
-                                              }
-                                            });
+                              return new ListView(
+                                shrinkWrap: true,
+                                physics: NeverScrollableScrollPhysics(),
+                                //scrollDirection: Axis.horizontal,
+                                children: snapshot.data!.docs.map((DocumentSnapshot document) {
+                                  Map<String, dynamic> portraitData = document.data() as Map<String, dynamic>;
 
-                                          },
-                                          child: Container(
-                                            margin: EdgeInsets.all(10),
-                                            height: MediaQuery.of(context).size.height*0.4,
-                                            width: MediaQuery.of(context).size.width*0.9,
-                                            decoration: BoxDecoration(
-                                              borderRadius: BorderRadius.circular(10),
-                                              image: DecorationImage(
-                                                  image: NetworkImage(model.image),
-                                                  fit: BoxFit.cover
-                                              ),
-                                            ),
+                                  PortraitModel portrait= PortraitModel.fromMap(portraitData, document.reference.id);
+                                  return new Padding(
+                                    padding: const EdgeInsets.only(top: 15.0),
+                                    child: InkWell(
+                                      onTap: (){
+                                        FirebaseFirestore.instance.collection('services').doc(portrait.linkId).get().then((DocumentSnapshot documentSnapshot) {
+                                          if (documentSnapshot.exists) {
+                                            Map<String, dynamic> serivceData = documentSnapshot.data() as Map<String, dynamic>;
+                                            ServiceModel serviceModel= ServiceModel.fromMap(serivceData, document.reference.id);
+                                            Navigator.push(context, new MaterialPageRoute(builder: (context) => ServiceDetail(serviceModel,language!)));
+                                          }
+                                        });
+
+                                      },
+                                      child: Container(
+                                        margin: EdgeInsets.all(10),
+                                        height: MediaQuery.of(context).size.height*0.4,
+                                        width: MediaQuery.of(context).size.width*0.9,
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(10),
+                                          image: DecorationImage(
+                                              image: NetworkImage(portrait.image),
+                                              fit: BoxFit.cover
                                           ),
                                         ),
-                                      );
-                                    }).toList(),
-                                  );
-                                },
-                              ),
-                            ],
-
-                          ),
-                        ),
-
-                        SizedBox(
-                          height: 10,
-                        ),
-
-
-                      ],
-                    ),
-                    Align(
-                      alignment: Alignment.bottomCenter,
-                      child: AnimatedContainer(
-                        width: MediaQuery.of(context).size.width,
-                        height: isFilterTabOpened?MediaQuery.of(context).size.height*0.6:0,
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(30),
-                              topRight: Radius.circular(30)
-                            ),
-                            color: Colors.white,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey,
-                                blurRadius: 5.0,
-                                spreadRadius: 2.0,
-                              ),
-                            ]
-                        ),
-                        padding: EdgeInsets.all(10),
-                        duration: Duration(milliseconds: 800),
-                        curve: Curves.easeInOut,
-                        child: Column(
-                          children: [
-                            Stack(
-                              children: [
-                                Align(
-                                  alignment: Alignment.center,
-                                  child: Container(
-                                    child: Text('filter'.tr(),style: TextStyle(fontSize: 20,fontWeight: FontWeight.bold),),
-                                  ),
-                                ),
-                                Align(
-                                  alignment: Alignment.centerRight,
-                                  child: Container(
-                                    child: IconButton(
-                                      onPressed: (){
-                                        setState(() {
-                                          isFilterTabOpened=false;
-                                        });
-                                      },
-                                      icon: Icon(Icons.close),
+                                      ),
                                     ),
-                                  ),
-                                )
-                              ],
-                            )
-                          ],
-                        ),
+                                  );
+                                }).toList(),
+                              );
+                            },
+                          ),
+                        ],
+
                       ),
-                    )
+                    ),
+
+                    SizedBox(
+                      height: 10,
+                    ),
+
+
                   ],
-                )
+                ),
               );
             }
             else {

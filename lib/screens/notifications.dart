@@ -3,8 +3,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:spa_beauty/model/notification_model.dart';
+import 'package:spa_beauty/model/user_model.dart';
 import 'package:spa_beauty/values/constants.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:spa_beauty/values/sharedPref.dart';
 
 class Notifications extends StatefulWidget {
   const Notifications({Key? key}) : super(key: key);
@@ -48,6 +50,40 @@ class _NotificationsState extends State<Notifications> {
     } else {
       return 'Just now';
     }
+  }
+  String? gender="";
+  @override
+  void initState() {
+    super.initState();
+    SharedPref sharedPref=new SharedPref();
+    sharedPref.getGenderPref().then((value){
+      setState(() {
+        gender=value.toString();
+      });
+    });
+    /*FirebaseFirestore.instance
+        .collection('customer')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .get()
+        .then((DocumentSnapshot documentSnapshot) {
+      if (documentSnapshot.exists) {
+        Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
+        setState(() {
+          gender=data['gender'];
+        });
+      }
+    });*/
+  }
+
+  String? language;
+  void checkLanguage(){
+    String languageCode=context.locale.toLanguageTag().toString();
+    languageCode="${languageCode[languageCode.length-2]}${languageCode[languageCode.length-1]}";
+    if(languageCode=="US")
+      language="English";
+    else
+      language="Arabic";
+    print("language $language $languageCode");
   }
   @override
   Widget build(BuildContext context) {
@@ -97,8 +133,11 @@ class _NotificationsState extends State<Notifications> {
               ),
               Expanded(
                 child: StreamBuilder<QuerySnapshot>(
-                  stream: FirebaseFirestore.instance.collection('notifications').where('userId', whereIn: [FirebaseAuth.instance.currentUser!.uid,'none']).snapshots(),
+                  stream: FirebaseFirestore.instance.collection('notifications')
+                      //.where('userId', isEqualTo: [FirebaseAuth.instance.currentUser!.uid,'none'])
+                      .where('gender', whereIn: ["All",gender]).snapshots(),
                   builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                    checkLanguage();
                     if (snapshot.hasError) {
                       return Center(
                         child: Text("Something Went Wrong")
@@ -126,9 +165,6 @@ class _NotificationsState extends State<Notifications> {
                         return new Padding(
                           padding: const EdgeInsets.only(top: 5.0),
                           child: InkWell(
-                            onTap: (){
-
-                            },
                             child: Container(
                               margin: EdgeInsets.all(10),
                               decoration: BoxDecoration(
@@ -148,7 +184,7 @@ class _NotificationsState extends State<Notifications> {
                                           topRight: Radius.circular(10)
                                         )
                                     ),
-                                    child: Text(model.type,style: TextStyle(fontWeight: FontWeight.w600),),
+                                    child: Text(language=="English"?model.type_ar:model.type_ar,style: TextStyle(fontWeight: FontWeight.w600),),
                                   ),
                                   Container(
                                     child: Column(
@@ -169,13 +205,13 @@ class _NotificationsState extends State<Notifications> {
 
                                             ),
                                             Expanded(
-                                              child: Text(model.title,style: TextStyle(fontWeight: FontWeight.w500),maxLines: 1,),
+                                              child: Text(language=="English"?model.title:model.title_ar,style: TextStyle(fontWeight: FontWeight.w500),maxLines: 1,),
                                             )
                                           ],
                                         ),
                                         Container(
                                           margin: EdgeInsets.all(10),
-                                          child: Text(model.detail),
+                                          child: Text(language=="English"?model.detail:model.detail_ar),
                                         )
                                       ],
                                     ),

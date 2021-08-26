@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_open_whatsapp/flutter_open_whatsapp.dart';
 import 'package:spa_beauty/auth/auth_selection.dart';
 import 'package:spa_beauty/model/user_model.dart';
+import 'package:spa_beauty/navigator/bottom_navigation.dart';
 import 'package:spa_beauty/screens/About.dart';
 import 'package:spa_beauty/screens/all_categories.dart';
 import 'package:spa_beauty/screens/all_services_list.dart';
@@ -58,7 +59,7 @@ class MenuDrawerState extends State<MenuDrawer> {
                   onTap: (){
                     context.locale = Locale('ar', 'EG');
                     Navigator.pushReplacement(context, new MaterialPageRoute(
-                        builder: (context) => HomePage()));
+                        builder: (context) => BottomBar()));
                   },
                   title: Text("عربى"),
                 ),
@@ -66,7 +67,7 @@ class MenuDrawerState extends State<MenuDrawer> {
                   onTap: (){
                     context.locale = Locale('en', 'US');
                     Navigator.pushReplacement(context, new MaterialPageRoute(
-                        builder: (context) => HomePage()));
+                        builder: (context) => BottomBar()));
                   },
                   title: Text("English"),
                 ),

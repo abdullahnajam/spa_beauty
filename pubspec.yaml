@@ -58,6 +58,8 @@ dependencies:
   shared_preferences: ^2.0.6
   image_picker: ^0.8.1+3
   flutter_open_whatsapp: ^0.1.2
+  network_to_file_image: ^3.0.0
+  path_provider: ^2.0.2
 
 
 flutter_icons:
@@ -114,6 +116,10 @@ flutter:
     - family: Georgia Bold
       fonts:
         - asset: assets/fonts/georgia bold.ttf
+
+    - family: Nunito
+      fonts:
+        - asset: assets/fonts/nunito.ttf
 
     - family: Georgia Seriffic
       fonts:

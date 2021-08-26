@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class AppointmentModel{
   String id,name,userId,date,time,specialistId,specialistName,serviceId,serviceName,status,paymentMethod,amount;
   bool isRated,paid;
+  String datePosted;
   int rating,points;
 
 
@@ -22,6 +23,7 @@ class AppointmentModel{
         rating = map['rating'],
         paid = map['paid'],paymentMethod = map['paymentMethod'],
         amount = map['amount'],
+        datePosted = map['datePosted'],
         points = map['points'];
 
 
@@ -40,7 +42,7 @@ class AppointmentModel{
       this.isRated,
       this.paid,
       this.rating,
-      this.amount,this.points);
+      this.amount,this.points,this.datePosted);
 
   AppointmentModel.fromSnapshot(DocumentSnapshot snapshot )
       : this.fromMap(snapshot.data() as Map<String, dynamic>,snapshot.reference.id);

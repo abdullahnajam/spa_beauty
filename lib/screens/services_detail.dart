@@ -1,9 +1,13 @@
+import 'dart:io';
+import 'package:network_to_file_image/network_to_file_image.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share/share.dart';
 import 'package:sn_progress_dialog/progress_dialog.dart';
 import 'package:spa_beauty/auth/auth_selection.dart';
 import 'package:spa_beauty/model/review_model.dart';
@@ -85,6 +89,15 @@ class _ServiceDetailState extends State<ServiceDetail> {
 
   }
 
+ /* Future<File> file(String filename) async {
+    Directory dir = await getApplicationDocumentsDirectory();
+    String pathName="";
+    f.join(dir.path, filename);
+    return File(pathName);
+  }*/
+
+
+
   @override
   Widget build(BuildContext context) {
     final orientation = MediaQuery.of(context).orientation;
@@ -136,7 +149,9 @@ class _ServiceDetailState extends State<ServiceDetail> {
                 Positioned(
                   left: 20,
                   top: 40,
-                  child: InkWell(onTap: ()=>Navigator.pop(context),child: Icon(Icons.arrow_back_ios_sharp,color:Colors.black54,size: 25,)),
+                  child: InkWell(onTap: ()=>Navigator.pop(context),child: CircleAvatar(
+                    child: Icon(Icons.arrow_back_ios_sharp,color:Colors.white,size: 25,),
+                  )),
                 )
               ],
             ),
@@ -186,19 +201,53 @@ class _ServiceDetailState extends State<ServiceDetail> {
                         Container(
                           margin: EdgeInsets.all(10),
                           padding: EdgeInsets.only(right: 10),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                          child: ListView(
+                            //crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('serviceTitle'.tr(),style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w500
-                              ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text('serviceTitle'.tr(),style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w500
+                                  ),
+                                  ),
+                                  IconButton(
+                                    icon: Icon(Icons.share_outlined),
+                                    onPressed: (){
+                                      Share.share('${widget.model.name}');
+                                    },
+                                  )
+                                ],
                               ),
                               SizedBox(height: 5,),
                               Text(widget.Language=="English"?widget.model.name:widget.model.name_ar,style: TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.w300
                               ),
+                              ),
+                              SizedBox(height: 10,),
+                              Text('rating'.tr(),style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w500
+                              ),
+                              ),
+                              RatingBar(
+                                initialRating: widget.model.rating.toDouble(),
+                                direction: Axis.horizontal,
+                                allowHalfRating: true,
+                                itemCount: 5,
+                                ratingWidget: RatingWidget(
+                                  full: Icon(Icons.star,color: darkBrown),
+                                  half: Icon(Icons.star_half,color: darkBrown),
+                                  empty:Icon(Icons.star_border,color: darkBrown,),
+                                ),
+                                ignoreGestures: true,
+                                itemSize: 15,
+                                itemPadding: EdgeInsets.symmetric(horizontal: 1.0),
+                                onRatingUpdate: (rating) {
+                                  print(rating);
+                                },
                               ),
                               SizedBox(height: 10,),
                               Text('serviceDescription'.tr(),style: TextStyle(
@@ -231,16 +280,17 @@ class _ServiceDetailState extends State<ServiceDetail> {
                               ),
                               ),
                               Container(
-                                height: 100,
+                                height: MediaQuery.of(context).size.height*0.1,
                                 child: StreamBuilder<QuerySnapshot>(
-                                  stream: FirebaseFirestore.instance.collection('specialists').where("serviceId",isEqualTo: widget.model.id).snapshots(),
+                                  stream: FirebaseFirestore.instance.collection('specialists')
+                                      //.where("serviceIds",arrayContains: widget.model.id)
+                                      .snapshots(),
                                   builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
                                     if (snapshot.hasError) {
                                       return Center(
                                         child: Column(
                                           children: [
-                                            Image.asset("assets/images/wrong.png",width: 150,height: 150,),
-                                            Text("Something Went Wrong")
+                                            Text("Something Went Wrong",style: TextStyle(color: Colors.black),)
 
                                           ],
                                         ),
@@ -255,7 +305,7 @@ class _ServiceDetailState extends State<ServiceDetail> {
                                     if (snapshot.data!.size==0){
                                       return Container(
                                           alignment: Alignment.center,
-                                          child:Text('noSpecialist'.tr())
+                                          child:Text('noSpecialist'.tr(),style: TextStyle(color: Colors.black),)
 
                                       );
 
@@ -264,10 +314,8 @@ class _ServiceDetailState extends State<ServiceDetail> {
                                       scrollDirection: Axis.horizontal,
                                       children: snapshot.data!.docs.map((DocumentSnapshot document) {
                                         Map<String, dynamic> data = document.data() as Map<String, dynamic>;
-                                        //ServiceModel model= ServiceModel.fromMap(data, document.reference.id);
                                         return Container(
-                                          margin: EdgeInsets.all(5),
-                                          height: 100,
+                                          height: MediaQuery.of(context).size.height*0.1,
                                           width: 80,
                                           decoration: BoxDecoration(
                                               borderRadius: BorderRadius.circular(10),
@@ -468,7 +516,7 @@ class _ServiceDetailState extends State<ServiceDetail> {
             )..show();
           }
           else
-            Navigator.push(context, new MaterialPageRoute(builder: (context) => Reservation(widget.model,false)));
+            Navigator.push(context, new MaterialPageRoute(builder: (context) => Reservation(widget.model,false,"")));
         },
         child: Container(
           color: lightBrown,
@@ -489,5 +537,6 @@ class _ServiceDetailState extends State<ServiceDetail> {
     super.initState();
     print("id ${widget.model.id}");
     checkFavouriteFromDatabase();
+    //var myFile = file("myFileName.png");
   }
 }

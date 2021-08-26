@@ -3,7 +3,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:date_picker_timeline/date_picker_widget.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:sn_progress_dialog/progress_dialog.dart';
 import 'package:spa_beauty/model/appointment_model.dart';
@@ -11,26 +10,20 @@ import 'package:spa_beauty/model/service_model.dart';
 import 'package:spa_beauty/model/specialist_model.dart';
 import 'package:spa_beauty/model/time_model.dart';
 import 'package:spa_beauty/navigator/bottom_navigation.dart';
-import 'package:spa_beauty/payment/payment-service.dart';
-import 'package:spa_beauty/screens/checkout.dart';
 import 'package:spa_beauty/values/constants.dart';
-class Reservation extends StatefulWidget {
-  ServiceModel model;
-  bool isOffer;
-  String offerId;
+
+class PointServiceReservation extends StatefulWidget {
+  int myPoints;ServiceModel model;
 
 
-  Reservation(this.model,this.isOffer,this.offerId);
+  PointServiceReservation(this.myPoints, this.model);
 
   @override
-  _ReservationState createState() => _ReservationState();
+  _PointServiceReservationState createState() => _PointServiceReservationState();
 }
 
-
-class _ReservationState extends State<Reservation> {
-
+class _PointServiceReservationState extends State<PointServiceReservation> {
   List<TimeModel> time=[];
-  String payment='Cash on delivery';
   int? amount;
   String? username;
   List<SpecialistModel> specialist=[];
@@ -61,7 +54,7 @@ class _ReservationState extends State<Reservation> {
       });
     });
   }
-
+  String payment='Points Redemption';
   bool isTimeLoading=true;
   bool isSpecialistLoading=true;
   final f = new DateFormat('dd-MM-yyyy');
@@ -71,22 +64,32 @@ class _ReservationState extends State<Reservation> {
   List<bool> timeSelected=[];
   String specialistName="none";
   String specialistId="none";
-  String? langLocale;
-  void checkLanguage(){
-    String languageCode=context.locale.toLanguageTag().toString();
-    languageCode="${languageCode[languageCode.length-2]}${languageCode[languageCode.length-1]}";
-    if(languageCode=="US")
-      langLocale="en_US";
-    else
-      langLocale="ar_EG";
-
+  int userTotalPoints=0;
+  @override
+  void initState() {
+    super.initState();
+    getTimeSlots();
+    getSpecialists();
+    setState(() {
+      amount=int.parse(widget.model.price);
+    });
+    FirebaseFirestore.instance.collection('customer')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .get()
+        .then((DocumentSnapshot documentSnapshot) {
+      if (documentSnapshot.exists) {
+        Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
+        setState(() {
+          username=data['username'];
+          userTotalPoints=data['points']-widget.model.redeemPoints;
+        });
+      }
+    });
   }
   @override
   Widget build(BuildContext context) {
-    checkLanguage();
     final orientation = MediaQuery.of(context).orientation;
     var size = MediaQuery.of(context).size;
-    /*24 is for notification bar on Android*/
     final double itemHeight = (size.height - kToolbarHeight - 24) / 7;
     final double itemWidth = size.width / 2;
     return Scaffold(
@@ -109,18 +112,18 @@ class _ReservationState extends State<Reservation> {
             Container(
               height: MediaQuery.of(context).size.height*0.33,
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    darkBrown,
-                    lightBrown,
-                  ],
-                ),
-                borderRadius: BorderRadius.only(
-                  bottomRight: Radius.circular(50),
-                  bottomLeft: Radius.circular(50)
-                )
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      darkBrown,
+                      lightBrown,
+                    ],
+                  ),
+                  borderRadius: BorderRadius.only(
+                      bottomRight: Radius.circular(50),
+                      bottomLeft: Radius.circular(50)
+                  )
               ),
               child: Column(
                 children: [
@@ -138,21 +141,17 @@ class _ReservationState extends State<Reservation> {
                       ),
                       Align(
                           alignment: Alignment.center,
-                        child: Container(
-                          alignment: Alignment.center,
-                          margin: EdgeInsets.all(12),
-                          child:Text('select'.tr().toUpperCase(),style: TextStyle(color: Colors.white,fontSize: 17,fontWeight: FontWeight.w600),),
-                        )
+                          child: Container(
+                            alignment: Alignment.center,
+                            margin: EdgeInsets.all(12),
+                            child:Text('select'.tr().toUpperCase(),style: TextStyle(color: Colors.white,fontSize: 17,fontWeight: FontWeight.w600),),
+                          )
                       )
                     ],
                   ),
                   SizedBox(height: 10,),
                   DatePicker(
                     DateTime.now(),
-                    //locale: langu,
-                    locale: langLocale!,
-                    height: 120,
-                    width: 80,
                     initialSelectedDate: DateTime.now(),
                     selectionColor: lightBrown,
                     selectedTextColor: Colors.white,
@@ -171,63 +170,63 @@ class _ReservationState extends State<Reservation> {
               ),
             ),
             Container(
-              height: MediaQuery.of(context).size.height*0.33,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    margin: EdgeInsets.only(left: 10,top: 10),
-                    child: Text('availableSlot'.tr(),style: TextStyle(fontWeight: FontWeight.w500,fontSize: 18),),
-                  ),
-                  isTimeLoading?
-                  Container(
-                    alignment: Alignment.center,
-                    margin: EdgeInsets.all(10),
-                    child: CircularProgressIndicator(),
-                  ):Expanded(
-                    child: GridView.builder(
-                      itemCount: time.length,
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          childAspectRatio: (itemWidth / itemHeight),
-                          crossAxisCount: (orientation == Orientation.portrait) ? 3 : 4),
-                      itemBuilder: (BuildContext context, int index) {
-                        return new Card(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10.0),
-                          ),
-                          child: InkWell(
-                            onTap: (){
-
-                              for(int i=0;i<time.length;i++){
-                                if(i==index){
-                                  setState(() {
-                                    time[i].isSelected=true;
-                                    appointmentTimeSelected=time[i].time;
-                                  });
-                                }
-                                else{
-                                  setState(() {
-                                    time[i].isSelected=false;
-                                  });
-                                }
-
-                              }
-                            },
-                            child: Container(
-                              decoration: BoxDecoration(
-                                  color: time[index].isSelected?lightBrown:Colors.white,
-                                  borderRadius: BorderRadius.circular(10)
-                              ),
-                              alignment: Alignment.center,
-                              child: Text(time[index].time,style: TextStyle(fontWeight: FontWeight.w400,fontSize: 15),maxLines: 1,),
-                            ),
-                          ),
-                        );
-                      },
+                height: MediaQuery.of(context).size.height*0.33,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      margin: EdgeInsets.only(left: 10,top: 10),
+                      child: Text('availableSlot'.tr(),style: TextStyle(fontWeight: FontWeight.w500,fontSize: 18),),
                     ),
-                  )
-                ],
-              )
+                    isTimeLoading?
+                    Container(
+                      alignment: Alignment.center,
+                      margin: EdgeInsets.all(10),
+                      child: CircularProgressIndicator(),
+                    ):Expanded(
+                      child: GridView.builder(
+                        itemCount: time.length,
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                            childAspectRatio: (itemWidth / itemHeight),
+                            crossAxisCount: (orientation == Orientation.portrait) ? 3 : 4),
+                        itemBuilder: (BuildContext context, int index) {
+                          return new Card(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10.0),
+                            ),
+                            child: InkWell(
+                              onTap: (){
+
+                                for(int i=0;i<time.length;i++){
+                                  if(i==index){
+                                    setState(() {
+                                      time[i].isSelected=true;
+                                      appointmentTimeSelected=time[i].time;
+                                    });
+                                  }
+                                  else{
+                                    setState(() {
+                                      time[i].isSelected=false;
+                                    });
+                                  }
+
+                                }
+                              },
+                              child: Container(
+                                decoration: BoxDecoration(
+                                    color: time[index].isSelected?lightBrown:Colors.white,
+                                    borderRadius: BorderRadius.circular(10)
+                                ),
+                                alignment: Alignment.center,
+                                child: Text(time[index].time,style: TextStyle(fontWeight: FontWeight.w400,fontSize: 15),maxLines: 1,),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    )
+                  ],
+                )
             ),
             Container(
               height: MediaQuery.of(context).size.height*0.34,
@@ -283,49 +282,54 @@ class _ReservationState extends State<Reservation> {
                       }
 
                       else{
-                        AppointmentModel model=new AppointmentModel(
-                          "",
-                          username!,
-                            FirebaseAuth.instance.currentUser!.uid,
-                          f.format(_selectedDate).toString(),
-                          appointmentTimeSelected!,
-                            specialistId,
-                            specialistName,
-                          widget.model.id,
-                          widget.model.name,
-                          "Pending",
-                          payment,
-                          false,
-                          false,
-                          0,
-                          amount.toString(),
-                          widget.isOffer?0:widget.model.points,
-                          DateTime.now().toString()
-                        );
-                        if(widget.isOffer){
-                          FirebaseFirestore.instance.collection('redeemedOffers').doc(FirebaseAuth.instance.currentUser!.uid)
-                              .get().then((DocumentSnapshot documentSnapshot) {
-                            if (documentSnapshot.exists) {
-                              Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
-                              List offers = data['offers'];
-                              offers.add(widget.offerId);
-                              FirebaseFirestore.instance.collection('redeemedOffers').doc(FirebaseAuth.instance.currentUser!.uid).set({
-                                'offers':offers
-                              });
-                            }
-                            else{
-                              List offers=[];
-                              offers.add(widget.offerId);
-                              FirebaseFirestore.instance.collection('redeemedOffers').doc(FirebaseAuth.instance.currentUser!.uid).set({
-                                'offers':offers
-                              });
-                            }
-                          });
-
-                        }
                         print("res amount $amount");
-                        Navigator.push(context, new MaterialPageRoute(
-                            builder: (context) => Checkout(model)));
+                        final ProgressDialog pr = ProgressDialog(context: context);
+                        pr.show(max: 100, msg: "Adding");
+                        FirebaseFirestore.instance.collection('appointments').add({
+                          'name': username!,
+                          'amount':"0",
+                          'userId': FirebaseAuth.instance.currentUser!.uid,
+                          'date': f.format(_selectedDate).toString(),
+                          'time': appointmentTimeSelected!,
+                          'specialistId': specialistId,
+                          'specialistName': specialistName,
+                          'serviceId':widget.model.id,
+                          'serviceName': widget.model.name,
+                          'status': "Pending",
+                          'isRated':false,
+                          'rating':0,
+                          'points':0,
+                          'paid':true,
+                          'paymentMethod':payment,
+                          'datePosted':DateTime.now().toString(),
+                        }).then((value) {
+                          FirebaseFirestore.instance.collection('customer').doc(FirebaseAuth.instance.currentUser!.uid).update({
+                            'points':userTotalPoints
+                          });
+                          pr.close();
+                          AwesomeDialog(
+                            context: context,
+                            dialogType: DialogType.SUCCES,
+                            animType: AnimType.BOTTOMSLIDE,
+                            title: 'Your booking was successful',
+                            desc: 'Please wait for the approval of appointment',
+                            btnOkOnPress: () {
+
+                              Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => BottomBar()));
+                            },
+                          )..show();
+                        }).onError((error, stackTrace) {
+                          AwesomeDialog(
+                            context: context,
+                            dialogType: DialogType.ERROR,
+                            animType: AnimType.BOTTOMSLIDE,
+                            title: 'Error',
+                            desc: '${error.toString()}',
+                            btnOkOnPress: () {
+                              Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) => PointServiceReservation(widget.myPoints,widget.model)));
+                            },
+                          )..show();
+                        });
                       }
 
                     },
@@ -354,27 +358,5 @@ class _ReservationState extends State<Reservation> {
         ),
       ),
     );
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    StripeService.init();
-    getTimeSlots();
-    getSpecialists();
-    setState(() {
-      amount=int.parse(widget.model.price);
-    });
-    FirebaseFirestore.instance.collection('customer')
-        .doc(FirebaseAuth.instance.currentUser!.uid)
-        .get()
-        .then((DocumentSnapshot documentSnapshot) {
-      if (documentSnapshot.exists) {
-        Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
-        setState(() {
-          username=data['username'];
-        });
-      }
-    });
   }
 }

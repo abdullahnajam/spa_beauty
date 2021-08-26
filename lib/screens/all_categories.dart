@@ -22,10 +22,23 @@ class _AllCategoriesState extends State<AllCategories> {
   void _openDrawer () {
     _drawerKey.currentState!.openDrawer();
   }
+
+  @override
+  void initState() {
+    super.initState();
+    sharedPref.getGenderImagePref().then((value){
+      print("gender image $value");
+      setState(() {
+        genderImageUrl=value.toString();
+      });
+    });
+  }
+
   void routing(){
     Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) => AllCategories()));
 
   }
+  String genderImageUrl="";
   SharedPref sharedPref=new SharedPref();
   String? language;
   void checkLanguage(){
@@ -126,7 +139,7 @@ class _AllCategoriesState extends State<AllCategories> {
                               width: MediaQuery.of(context).size.width*0.15,
                               child: CircleAvatar(
                                 backgroundColor: Colors.white,
-                                child: Image.asset('assets/images/sort.png',width: 25,height: 25,),
+                                child: Image.network(genderImageUrl,width: 25,height: 25,),
                               ),
                             ),
                           ),

@@ -2,15 +2,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ServiceModel{
   String id,name,name_ar,description,description_ar,image,gender,categoryName,categoryId,tags;
-  bool isActive,isFeatured;
+  bool isActive,isFeatured,isRedeemable;
   int rating;
 
-  int totalRating,points;
+  int totalRating,points,redeemPoints;
   String price,genderId;
 
 
   ServiceModel(this.id, this.name,this.name_ar,this.description,this.description_ar,this.isFeatured, this.image, this.gender, this.categoryName,
-      this.categoryId, this.rating, this.price,this.totalRating,this.tags,this.isActive,this.points,this.genderId);
+      this.categoryId, this.rating, this.price,this.totalRating,this.tags,this.isActive,this.points,this.genderId,this.isRedeemable,this.redeemPoints);
 
   ServiceModel.fromMap(Map<String,dynamic> map,String key)
       : id=key,
@@ -29,6 +29,8 @@ class ServiceModel{
         tags = map['tags'],
         isActive = map['isActive'],
         points = map['points'],
+        isRedeemable = map['isRedeemable'],
+        redeemPoints = map['redeemPoints'],
         genderId = map['genderId'];
 
 

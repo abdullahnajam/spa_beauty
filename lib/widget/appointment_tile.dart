@@ -5,11 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:sn_progress_dialog/progress_dialog.dart';
 import 'package:spa_beauty/model/appointment_model.dart';
+import 'package:spa_beauty/model/service_model.dart';
 import 'package:spa_beauty/screens/appointments.dart';
 import 'package:spa_beauty/screens/my_account.dart';
 import 'package:spa_beauty/screens/reservation.dart';
+import 'package:spa_beauty/screens/services_detail.dart';
 import 'package:spa_beauty/values/constants.dart';
-
+import 'package:easy_localization/easy_localization.dart';
 class AppointmentTile extends StatefulWidget {
   AppointmentModel model;
 
@@ -22,8 +24,60 @@ class AppointmentTile extends StatefulWidget {
 class _AppointmentTileState extends State<AppointmentTile> {
   int? rating=5;
   var reviewController=TextEditingController();
+/*"Pending": "قيد الانتظار",
+  "Approved": "وافق",
+  "Completed": "مكتمل",
+  "Cancelled": "ألغيت",*/
+  String? language;
+  void checkLanguage(){
+    String languageCode=context.locale.toLanguageTag().toString();
+    languageCode="${languageCode[languageCode.length-2]}${languageCode[languageCode.length-1]}";
+    if(languageCode=="US"){
+      language="English";
+    }
+    else {
+      if(widget.model.status=="Pending")
+        setState(() {
+          widget.model.status="قيد الانتظار";
+        });
+      else if(widget.model.status=="Approved")
+        setState(() {
+          widget.model.status="وافق";
+        });
+      else if(widget.model.status=="Completed")
+        setState(() {
+          widget.model.status="مكتمل";
+        });
+      else if(widget.model.status=="Cancelled")
+        setState(() {
+          widget.model.status="ألغيت";
+        });
+      if(widget.model.paymentMethod=="Points Redemption")
+        setState(() {
+          widget.model.paymentMethod="استبدال النقاط";
+        });
+      else if(widget.model.paymentMethod=="Cash Payment")
+        setState(() {
+          widget.model.paymentMethod="دفع نقدا";
+        });
+      else if(widget.model.paymentMethod=="Card Payment")
+        setState(() {
+          widget.model.paymentMethod="بطاقه ائتمان";
+        });
 
+      language = "Arabic";
+      FirebaseFirestore.instance.collection("services").doc(widget.model.serviceId).get().then((DocumentSnapshot documentSnapshot) {
+        if (documentSnapshot.exists) {
+          Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
+          setState(() {
+            widget.model.serviceName=data['name_ar'];
+          });
 
+        }
+      });
+    }
+    print("language $language $languageCode");
+  }
   Future<void> _showRatingDialog() async {
     return showDialog<void>(
       context: context,
@@ -154,6 +208,7 @@ class _AppointmentTileState extends State<AppointmentTile> {
 
   @override
   Widget build(BuildContext context) {
+    checkLanguage();
     Size size = MediaQuery.of(context).size;
     return Padding(
       padding: const EdgeInsets.only(top: 15.0),
@@ -187,7 +242,6 @@ class _AppointmentTileState extends State<AppointmentTile> {
           }
         },
         child: Container(
-          height: size.height*0.08,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10),
             color: Colors.white,
@@ -195,84 +249,234 @@ class _AppointmentTileState extends State<AppointmentTile> {
           ),
 
           margin: EdgeInsets.all(5),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-
-              Container(
-                alignment: Alignment.centerLeft,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(height: size.height*0.01,),
-                    Text(widget.model.serviceName,style: TextStyle(
-                      color: Colors.black87,
-                      //fontFamily: 'Georgia Regular',
-                      fontWeight: FontWeight.w700,
-                      fontSize: 17,
-                    ),),
-                    SizedBox(height: size.height*0.0055,),
-                    Text("${widget.model.date}   ${widget.model.time}",style: TextStyle(
-                      color: Colors.black87,
-                      //fontFamily: 'Georgia Regular',
-                      fontWeight: FontWeight.w500,
-                      fontSize: 12,
-                    ),),
-                  ],
-                ),
-              ),
-
-              VerticalDivider(
-                indent: 10,
-                endIndent: 10,
-                thickness: 1.3,
-                color: Colors.black54,
-              ),
-
-
+          child: widget.model.status == 'Completed' || widget.model.status == 'Cancelled'?
               Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-
                 children: [
-                  Container(
-                    margin: EdgeInsets.fromLTRB(0,8, 0, 0),
+                  IntrinsicHeight(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
 
-                    //width: MediaQuery.of(context).size.width*0.2,
-                    child: Container(
-                      height: 25,
-                      padding: EdgeInsets.fromLTRB(10, 2, 10, 2),
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
-                          color: darkBrown
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(widget.model.status,style: TextStyle(color: Colors.white),),
+                        Container(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              SizedBox(height: size.height*0.01,),
+                              Text(widget.model.serviceName,style: TextStyle(
+                                color: Colors.black87,
+                                //fontFamily: 'Georgia Regular',
+                                fontWeight: FontWeight.w700,
+                                fontSize: 17,
+                              ),),
+                              SizedBox(height: size.height*0.0055,),
+                              Text(widget.model.paymentMethod,style: TextStyle(
+                                color: Colors.black87,
+                                //fontFamily: 'Georgia Regular',
+                                fontWeight: FontWeight.w300,
+                                fontSize: 12,
+                              ),),
+                              SizedBox(height: size.height*0.0055,),
+                              Text("${widget.model.date}   ${widget.model.time}",style: TextStyle(
+                                color: Colors.black87,
+                                //fontFamily: 'Georgia Regular',
+                                fontWeight: FontWeight.w500,
+                                fontSize: 12,
+                              ),),
+                              SizedBox(height: size.height*0.0055,),
+                            ],
+                          ),
+                        ),
+
+                        Container(
+                          padding: EdgeInsets.only(top: 5,bottom: 5),
+                          child: VerticalDivider(
+                            thickness: 0.3,
+                            width: 2,
+                            color: Colors.black,
+                          ),
+                        ),
+
+                        Container(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+
+                            children: [
+                              Container(
+                                margin: EdgeInsets.fromLTRB(0,8, 0, 0),
+
+                                //width: MediaQuery.of(context).size.width*0.2,
+                                child: Container(
+                                  height: 25,
+                                  padding: EdgeInsets.fromLTRB(10, 2, 10, 2),
+                                  decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(20),
+                                      color: darkBrown
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: Text(widget.model.status,style: TextStyle(color: Colors.white),),
+                                ),
+                              ),
+                              SizedBox(height: size.height*0.005,),
+                              widget.model.status == 'Completed' ?
+                              widget.model.isRated ? RatingBar(
+                                initialRating: widget.model.rating.toDouble(),
+                                direction: Axis.horizontal,
+                                allowHalfRating: true,
+                                itemCount: 5,
+                                ratingWidget: RatingWidget(
+                                  full: Icon(Icons.star,color: darkBrown),
+                                  half: Icon(Icons.star_half,color: darkBrown),
+                                  empty:Icon(Icons.star_border,color: darkBrown),
+                                ),
+                                ignoreGestures: true,
+                                itemSize: 14,
+                                itemPadding: EdgeInsets.symmetric(horizontal: 1.0),
+                                onRatingUpdate: (rating) {
+                                  print(rating);
+                                },
+                              ) : Container(child: Text("NOT RATED",style: TextStyle(fontSize: 10,color: Colors.grey),) , )
+                                  :Container(),
+
+                            ],
+                          ),
+                        )
+
+
+                      ],
                     ),
                   ),
-                  SizedBox(height: size.height*0.005,),
-                  widget.model.status == 'Completed' ? widget.model.isRated ? RatingBar(
-                    initialRating: widget.model.rating.toDouble(),
-                    direction: Axis.horizontal,
-                    allowHalfRating: true,
-                    itemCount: 5,
-                    ratingWidget: RatingWidget(
-                      full: Icon(Icons.star,color: darkBrown),
-                      half: Icon(Icons.star_half,color: darkBrown),
-                      empty:Icon(Icons.star_border,color: darkBrown),
-                    ),
-                    ignoreGestures: true,
-                    itemSize: 14,
-                    itemPadding: EdgeInsets.symmetric(horizontal: 1.0),
-                    onRatingUpdate: (rating) {
-                      print(rating);
+                  InkWell(
+                    onTap: (){
+                      String language;
+                      String languageCode=context.locale.toLanguageTag().toString();
+                      languageCode="${languageCode[languageCode.length-2]}${languageCode[languageCode.length-1]}";
+                      if(languageCode=="US")
+                        language="English";
+                      else
+                        language="Arabic";
+                      FirebaseFirestore.instance
+                          .collection('services')
+                          .doc(widget.model.serviceId)
+                          .get()
+                          .then((DocumentSnapshot documentSnapshot) {
+                        if (documentSnapshot.exists) {
+                          Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
+                          ServiceModel service=ServiceModel.fromMap(data, documentSnapshot.reference.id);
+                          Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => ServiceDetail(service,language)));
+                        }
+                      });
+
                     },
-                  ) : Container(child: Text("NOT RATED",style: TextStyle(fontSize: 10,color: Colors.grey),) , ) :Container(),
+                    child: Container(
+                      alignment: Alignment.center,
+                      height: 30,
+                      width: MediaQuery.of(context).size.width,
+                      decoration: BoxDecoration(
+                          color: lightBrown,
+                          borderRadius: BorderRadius.only(
+                            bottomRight: Radius.circular(10),
+                            bottomLeft: Radius.circular(10),
+                          )
+                      ),
+                      child: Text('bookAgain'.tr(),style: TextStyle(color: Colors.white),),
+                    ),
+                  )
                 ],
-              ),
+              )
+              :IntrinsicHeight(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+
+                Container(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(height: size.height*0.01,),
+                      Text(widget.model.serviceName,style: TextStyle(
+                        color: Colors.black87,
+                        //fontFamily: 'Georgia Regular',
+                        fontWeight: FontWeight.w700,
+                        fontSize: 17,
+                      ),),
+                      SizedBox(height: size.height*0.0055,),
+                      Text(widget.model.paymentMethod,style: TextStyle(
+                        color: Colors.black87,
+                        //fontFamily: 'Georgia Regular',
+                        fontWeight: FontWeight.w300,
+                        fontSize: 12,
+                      ),),
+                      SizedBox(height: size.height*0.0055,),
+                      Text("${widget.model.date}   ${widget.model.time}",style: TextStyle(
+                        color: Colors.black87,
+                        //fontFamily: 'Georgia Regular',
+                        fontWeight: FontWeight.w500,
+                        fontSize: 12,
+                      ),),
+                      SizedBox(height: size.height*0.0055,),
+                    ],
+                  ),
+                ),
+
+                Container(
+                  padding: EdgeInsets.only(top: 5,bottom: 5),
+                  child: VerticalDivider(
+                    thickness: 0.3,
+                    width: 2,
+                    color: Colors.black,
+                  ),
+                ),
+
+                Container(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+
+                    children: [
+                      Container(
+                        margin: EdgeInsets.fromLTRB(0,8, 0, 0),
+
+                        //width: MediaQuery.of(context).size.width*0.2,
+                        child: Container(
+                          height: 25,
+                          padding: EdgeInsets.fromLTRB(10, 2, 10, 2),
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(20),
+                              color: darkBrown
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(widget.model.status,style: TextStyle(color: Colors.white),),
+                        ),
+                      ),
+                      SizedBox(height: size.height*0.005,),
+                      widget.model.status == 'Completed' ?
+                      widget.model.isRated ? RatingBar(
+                        initialRating: widget.model.rating.toDouble(),
+                        direction: Axis.horizontal,
+                        allowHalfRating: true,
+                        itemCount: 5,
+                        ratingWidget: RatingWidget(
+                          full: Icon(Icons.star,color: darkBrown),
+                          half: Icon(Icons.star_half,color: darkBrown),
+                          empty:Icon(Icons.star_border,color: darkBrown),
+                        ),
+                        ignoreGestures: true,
+                        itemSize: 14,
+                        itemPadding: EdgeInsets.symmetric(horizontal: 1.0),
+                        onRatingUpdate: (rating) {
+                          print(rating);
+                        },
+                      ) : Container(child: Text("NOT RATED",style: TextStyle(fontSize: 10,color: Colors.grey),) , )
+                          :Container(),
+
+                    ],
+                  ),
+                )
 
 
-            ],
+              ],
+            ),
           ),
         ),
       ),

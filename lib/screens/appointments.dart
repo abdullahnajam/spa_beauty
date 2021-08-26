@@ -198,7 +198,23 @@ class _AppointmentsState extends State<Appointments> {
                           if (snapshot.data!.size==0){
                             return Container(
                                 alignment: Alignment.center,
-                                child:Text('noAppointment'.tr())
+                                child:Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text('noAppointment'.tr(),style: TextStyle(fontSize: 20),),
+                                    SizedBox(height: 10,),
+                                    Container(
+                                      height: 50,
+                                      width: MediaQuery.of(context).size.width*0.8,
+                                      alignment: Alignment.center,
+                                      decoration: BoxDecoration(
+                                        color: lightBrown,
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: Text('bookNext'.tr(),style: TextStyle(fontSize: 20,color: Colors.white),),
+                                    )
+                                  ],
+                                )
 
                             );
 
@@ -240,7 +256,23 @@ class _AppointmentsState extends State<Appointments> {
                           if (snapshot.data!.size==0){
                             return Container(
                                 alignment: Alignment.center,
-                                child:Text("No Appointments")
+                                child:Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text('noAppointment'.tr(),style: TextStyle(fontSize: 20),),
+                                    SizedBox(height: 10,),
+                                    Container(
+                                      height: 50,
+                                      width: MediaQuery.of(context).size.width*0.8,
+                                      alignment: Alignment.center,
+                                      decoration: BoxDecoration(
+                                        color: lightBrown,
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: Text('bookNext'.tr(),style: TextStyle(fontSize: 20,color: Colors.white),),
+                                    )
+                                  ],
+                                )
 
                             );
 
@@ -286,7 +318,23 @@ class _AppointmentsState extends State<Appointments> {
                           if (snapshot.data!.size==0){
                             return Container(
                                 alignment: Alignment.center,
-                                child:Text("No Appointments")
+                                child:Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text('noAppointment'.tr(),style: TextStyle(fontSize: 20),),
+                                    SizedBox(height: 10,),
+                                    Container(
+                                      height: 50,
+                                      width: MediaQuery.of(context).size.width*0.8,
+                                      alignment: Alignment.center,
+                                      decoration: BoxDecoration(
+                                        color: lightBrown,
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: Text('bookNext'.tr(),style: TextStyle(fontSize: 20,color: Colors.white),),
+                                    )
+                                  ],
+                                )
 
                             );
 
@@ -328,7 +376,23 @@ class _AppointmentsState extends State<Appointments> {
                           if (snapshot.data!.size==0){
                             return Container(
                                 alignment: Alignment.center,
-                                child:Text("No Appointments")
+                                child:Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text('noAppointment'.tr(),style: TextStyle(fontSize: 20),),
+                                    SizedBox(height: 10,),
+                                    Container(
+                                      height: 50,
+                                      width: MediaQuery.of(context).size.width*0.8,
+                                      alignment: Alignment.center,
+                                      decoration: BoxDecoration(
+                                        color: lightBrown,
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: Text('bookNext'.tr(),style: TextStyle(fontSize: 20,color: Colors.white),),
+                                    )
+                                  ],
+                                )
 
                             );
 
@@ -373,7 +437,23 @@ class _AppointmentsState extends State<Appointments> {
                      if (snapshot.data!.size==0){
                        return Container(
                            alignment: Alignment.center,
-                           child:Text("No Appointments")
+                           child:Column(
+                             mainAxisAlignment: MainAxisAlignment.center,
+                             children: [
+                               Text('noAppointment'.tr(),style: TextStyle(fontSize: 20),),
+                               SizedBox(height: 10,),
+                               Container(
+                                 height: 50,
+                                 width: MediaQuery.of(context).size.width*0.8,
+                                 alignment: Alignment.center,
+                                 decoration: BoxDecoration(
+                                   color: lightBrown,
+                                   borderRadius: BorderRadius.circular(10),
+                                 ),
+                                 child: Text('bookNext'.tr(),style: TextStyle(fontSize: 20,color: Colors.white),),
+                               )
+                             ],
+                           )
 
                        );
 
@@ -415,7 +495,23 @@ class _AppointmentsState extends State<Appointments> {
                      if (snapshot.data!.size==0){
                        return Container(
                            alignment: Alignment.center,
-                           child:Text("No Appointments")
+                           child:Column(
+                             mainAxisAlignment: MainAxisAlignment.center,
+                             children: [
+                               Text('noAppointment'.tr(),style: TextStyle(fontSize: 20),),
+                               SizedBox(height: 10,),
+                               Container(
+                                 height: 50,
+                                 width: MediaQuery.of(context).size.width*0.8,
+                                 alignment: Alignment.center,
+                                 decoration: BoxDecoration(
+                                   color: lightBrown,
+                                   borderRadius: BorderRadius.circular(10),
+                                 ),
+                                 child: Text('bookNext'.tr(),style: TextStyle(fontSize: 20,color: Colors.white),),
+                               )
+                             ],
+                           )
 
                        );
 

@@ -30,6 +30,7 @@ class MyApp extends StatelessWidget {
       locale: context.locale,
       title: 'Spa Beauty',
       theme: ThemeData(
+        fontFamily: 'Nunito',
         primarySwatch: Colors.brown,
       ),
       home: SplashScreen(),

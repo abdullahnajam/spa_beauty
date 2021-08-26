@@ -84,5 +84,18 @@
   "redeem": "يسترد",
   "completeBooking": "الحجز الكامل",
   "proceed": "يتابع",
-  "confirmTheBookingDetail": "قم بتأكيد تفاصيل الحجز"
+  "confirmTheBookingDetail": "قم بتأكيد تفاصيل الحجز",
+  "redeemPoints": "استبدال النقاط",
+  "noServices": "لا توجد خدمات",
+  "reservation": "حجز",
+  "terms": "الأحكام والشروط",
+  "workingTime": "وقت العمل",
+  "contactInfo": "معلومات الاتصال",
+  "offerDetail": "عرض التفاصيل",
+  "offerTitle": "عنوان العرض",
+  "rating": "تقييم",
+  "bookNext": "احجز خدمتك التالية",
+  "bookAgain": "احجز مرة أخرى",
+  "cardPayment": "بطاقه ائتمان",
+  "cashPayment": "دفع نقدا"
 }

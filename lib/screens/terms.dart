@@ -8,16 +8,16 @@ import 'package:spa_beauty/search/search_category.dart';
 import 'package:spa_beauty/values/constants.dart';
 import 'package:spa_beauty/widget/appbar.dart';
 import 'package:easy_localization/easy_localization.dart';
-class PrivacyPolicy extends StatefulWidget {
-  const PrivacyPolicy({Key? key}) : super(key: key);
+class TermsAndCondition extends StatefulWidget {
+  const TermsAndCondition({Key? key}) : super(key: key);
 
   @override
-  _PrivacyPolicyState createState() => _PrivacyPolicyState();
+  _TermsAndConditionState createState() => _TermsAndConditionState();
 }
 
-class _PrivacyPolicyState extends State<PrivacyPolicy> {
+class _TermsAndConditionState extends State<TermsAndCondition> {
   final GlobalKey<ScaffoldState> _drawerKey = GlobalKey();
-  String privacy="",privacy_ar="";
+  String terms="",terms_ar="";
   String? language;
   void checkLanguage(){
     String languageCode=context.locale.toLanguageTag().toString();
@@ -62,7 +62,7 @@ class _PrivacyPolicyState extends State<PrivacyPolicy> {
                     ),
                     Align(
                       alignment: Alignment.center,
-                      child: Text('privacy'.tr()),
+                      child: Text('terms'.tr()),
                     )
                   ],
                 ),
@@ -70,7 +70,7 @@ class _PrivacyPolicyState extends State<PrivacyPolicy> {
               Container(
                 margin: EdgeInsets.all(10),
                 child: Text(
-                  language=="English"?privacy:privacy_ar,
+                  language=="English"?terms:terms_ar,
                   style: TextStyle(fontSize: 15,fontWeight: FontWeight.w300),),
               ),
               
@@ -87,14 +87,14 @@ class _PrivacyPolicyState extends State<PrivacyPolicy> {
     super.initState();
     FirebaseFirestore.instance
         .collection('settings')
-        .doc('privacy')
+        .doc('terms')
         .get()
         .then((DocumentSnapshot documentSnapshot) {
       if (documentSnapshot.exists) {
         Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
         setState(() {
-          privacy=data['privacyPolicy'];
-          privacy_ar=data['privacyPolicy_ar'];
+          terms=data['termAndCondition'];
+          terms_ar=data['termAndCondition_ar'];
         });
       }
     });

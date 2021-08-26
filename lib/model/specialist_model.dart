@@ -1,19 +1,19 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class SpecialistModel{
-  String id,name,email,phone,serviceName,serviceId,image,status;
+  String id,name,name_ar,email,phone,image,status;
+  List serviceIds;
 
 
-  SpecialistModel(this.id, this.name, this.email, this.phone, this.serviceName,
-      this.serviceId, this.image, this.status);
+  SpecialistModel(this.id, this.name,this.name_ar, this.email, this.phone, this.image, this.status,this.serviceIds);
 
   SpecialistModel.fromMap(Map<String,dynamic> map,String key)
       :id=key,
         name = map['name'],
+        name_ar = map['name_ar'],
         email = map['email'],
         phone = map['phone'],
-        serviceName = map['serviceName'],
-        serviceId = map['serviceId'],
+        serviceIds = map['serviceIds'],
         image = map['image'],
         status = map['status'];
 

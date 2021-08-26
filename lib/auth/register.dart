@@ -19,6 +19,7 @@ class _RegisterState extends State<Register> {
   final _formKey = GlobalKey<FormState>();
   var emailController=TextEditingController();
   var passwordController=TextEditingController();
+  var genderController=TextEditingController();
   var usernameController=TextEditingController();
   var phoneNumberController=TextEditingController();
 
@@ -236,6 +237,128 @@ class _RegisterState extends State<Register> {
                               ),
                             ),
                           ),
+                          SizedBox(height: 20,),
+                          Container(
+                            margin: EdgeInsets.only(left: 10,right: 10),
+                            child: TextFormField(
+                              readOnly: true,
+                              onTap: (){
+                                showDialog(
+                                    context: context,
+                                    builder: (BuildContext context){
+                                      return StatefulBuilder(
+                                        builder: (context,setState){
+                                          return Dialog(
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: const BorderRadius.all(
+                                                Radius.circular(10.0),
+                                              ),
+                                            ),
+                                            insetAnimationDuration: const Duration(seconds: 1),
+                                            insetAnimationCurve: Curves.fastOutSlowIn,
+                                            elevation: 2,
+                                            child: Container(
+                                              padding: EdgeInsets.all(10),
+                                              width: MediaQuery.of(context).size.width*0.3,
+                                              child: StreamBuilder<QuerySnapshot>(
+                                                stream: FirebaseFirestore.instance.collection('genders').snapshots(),
+                                                builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                                                  if (snapshot.hasError) {
+                                                    return Center(
+                                                      child: Column(
+                                                        children: [
+                                                          Image.asset("assets/images/wrong.png",width: 150,height: 150,),
+                                                          Text("Something Went Wrong",style: TextStyle(color: Colors.black))
+
+                                                        ],
+                                                      ),
+                                                    );
+                                                  }
+
+                                                  if (snapshot.connectionState == ConnectionState.waiting) {
+                                                    return Center(
+                                                      child: CircularProgressIndicator(),
+                                                    );
+                                                  }
+                                                  if (snapshot.data!.size==0){
+                                                    return Center(
+                                                        child: Text("No Genders Added",style: TextStyle(color: Colors.black))
+                                                    );
+
+                                                  }
+
+                                                  return new ListView(
+                                                    shrinkWrap: true,
+                                                    children: snapshot.data!.docs.map((DocumentSnapshot document) {
+                                                      Map<String, dynamic> data = document.data() as Map<String, dynamic>;
+
+                                                      return new Padding(
+                                                        padding: const EdgeInsets.only(top: 15.0),
+                                                        child: ListTile(
+                                                          onTap: (){
+                                                            setState(() {
+                                                              genderController.text="${data['gender']}";
+                                                            });
+                                                            Navigator.pop(context);
+                                                          },
+                                                          leading: CircleAvatar(
+                                                            radius: 25,
+                                                            backgroundImage: NetworkImage(data['image']),
+                                                            backgroundColor: Colors.indigoAccent,
+                                                            foregroundColor: Colors.white,
+                                                          ),
+                                                          title: Text("${data['gender']}",style: TextStyle(color: Colors.black),),
+                                                        ),
+                                                      );
+                                                    }).toList(),
+                                                  );
+                                                },
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      );
+                                    }
+                                );
+                              },
+                              controller: genderController,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter some text';
+                                }
+                                return null;
+                              },
+
+                              decoration: InputDecoration(
+                                contentPadding: EdgeInsets.all(15),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(30.0),
+                                  borderSide: BorderSide(
+                                    color: darkBrown,
+                                  ),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(30.0),
+                                  borderSide: BorderSide(
+                                      color: darkBrown,
+                                      width: 0.5
+                                  ),
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(30.0),
+                                  borderSide: BorderSide(
+                                    color: darkBrown,
+                                    width: 0.5,
+                                  ),
+                                ),
+                                prefixIcon: Icon(Icons.male_outlined,color: darkBrown,size: 22,),
+                                hintText: "Enter your gender",
+                                // If  you are using latest version of flutter then lable text and hint text shown like this
+                                // if you r using flutter less then 1.20.* then maybe this is not working properly
+                                floatingLabelBehavior: FloatingLabelBehavior.always,
+                              ),
+                            ),
+                          ),
                           SizedBox(height: 10,),
                           InkWell(
                             onTap: ()async{
@@ -256,6 +379,7 @@ class _RegisterState extends State<Register> {
                                         'token': value,
                                         'topic': 'customer',
                                         'email': emailController.text,
+                                        'gender': genderController.text,
                                         'profilePicture':"https://firebasestorage.googleapis.com/v0/b/accesfy-882e6.appspot.com/o/images%2F2021-07-27%2001%3A30%3A51.606.png?alt=media&token=50eaee1a-4878-4ad4-985a-dfdfb19ce78d"
                                       }).then((value) {
                                         pr.close();
