@@ -7,6 +7,7 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:sn_progress_dialog/progress_dialog.dart';
 import 'package:spa_beauty/model/appointment_model.dart';
 import 'package:spa_beauty/model/category_model.dart';
+import 'package:spa_beauty/model/change_model.dart';
 import 'package:spa_beauty/model/portrait_model.dart';
 import 'package:spa_beauty/model/service_model.dart';
 import 'package:spa_beauty/navigator/bottom_navigation.dart';
@@ -37,21 +38,94 @@ class _HomePageState extends State<HomePage> {
     Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) => BottomBar()));
 
   }
+  Future<void> _showChangeNotificationDialog(ChangeModel model) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Alert"),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children:  <Widget>[
+                Text(model.message),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child:  Text('ok'.tr()),
+              onPressed: () {
+                FirebaseFirestore.instance.collection("notification_popup").doc(model.id).update({
+                  "isRead":true
+                });
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
   bool isFilterTabOpened=false;
   int? rating=5;
+  String? align;
+  String? symbol;
   String genderImageUrl="";
   var reviewController=TextEditingController();
   @override
   void initState() {
     super.initState();
+    if(FirebaseAuth.instance.currentUser!=null){
+      FirebaseFirestore.instance
+          .collection('notification_popup')
+          .where("userId",isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+          .where("isRead", isEqualTo:false)
+          .get()
+          .then((QuerySnapshot querySnapshot) {
+        querySnapshot.docs.forEach((doc) {
+          Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+          ChangeModel model=ChangeModel.fromMap(data, doc.reference.id);
+          _showChangeNotificationDialog(model);
+        });
+      });
+    }
+
     sharedPref.getGenderPref().then((value){
       print("gender pref : $value");
       sharedPref.getPopupPref().then((popPref){
         print("pop pref : $popPref");
         if(popPref){
           WidgetsBinding.instance!.addPostFrameCallback((_) {
-            showPopups(value.toString());
-            sharedPref.setPopupPref(false);
+          List<int> diff=[];
+            FirebaseFirestore.instance.collection('popups')
+                .where("gender",isEqualTo: value.toString())
+                .where("language",isEqualTo: language)
+                .get()
+                .then((QuerySnapshot querySnapshot) {
+              querySnapshot.docs.forEach((doc) {
+                int year= int.parse("${doc['endDate'][6]}${doc['endDate'][7]}${doc['endDate'][8]}${doc['endDate'][9]}");
+                int day= int.parse("${doc['endDate'][0]}${doc['endDate'][1]}");
+                int month= int.parse("${doc['endDate'][3]}${doc['endDate'][4]}");
+                diff.add(DateTime(year,month,day).difference(DateTime.now()).inDays);
+              });
+            });
+            int j=0,n=0;
+
+            for(int i=0;i<diff.length;i++){
+              if(diff[i]>0){
+                j++;
+              }
+              else
+                n++;
+            }
+            print("greater : $j , lesser : $n");
+            if(j>0){
+
+            }
+          showPopups(value.toString());
+          sharedPref.setPopupPref(false);
+
           });
         }
       });
@@ -75,6 +149,21 @@ class _HomePageState extends State<HomePage> {
         AppointmentModel model=AppointmentModel.fromMap(data, doc.reference.id);
         _showRatingDialog(model);
       });
+    });
+
+    FirebaseFirestore.instance
+        .collection('settings')
+        .doc('currency')
+        .get()
+        .then((DocumentSnapshot documentSnapshot) {
+      if (documentSnapshot.exists) {
+        Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
+        setState(() {
+          symbol=data['symbol'];
+          align=data['align'];
+        });
+
+      }
     });
   }
   Future<void> _showRatingDialog(AppointmentModel model) async {
@@ -227,21 +316,14 @@ class _HomePageState extends State<HomePage> {
                           final snackBar = SnackBar(content: Text("Database Error : ${error.toString()}"));
                           ScaffoldMessenger.of(context).showSnackBar(snackBar);
                         });
-                        FirebaseFirestore.instance
-                            .collection('settings')
-                            .doc('points')
-                            .get()
-                            .then((DocumentSnapshot pointSnapshot) {
+                        FirebaseFirestore.instance.collection('settings').doc('points').get().then((DocumentSnapshot pointSnapshot) {
                           if (pointSnapshot.exists) {
                             Map<String, dynamic> point = pointSnapshot.data() as Map<String, dynamic>;
-                            FirebaseFirestore.instance
-                                .collection('customer')
-                                .doc(FirebaseAuth.instance.currentUser!.uid)
-                                .get()
-                                .then((DocumentSnapshot userSnap) {
+                            FirebaseFirestore.instance.collection('customer').doc(FirebaseAuth.instance.currentUser!.uid).get().then((DocumentSnapshot userSnap) {
                               if (userSnap.exists) {
                                 Map<String, dynamic> user = userSnap.data() as Map<String, dynamic>;
                                 int points=user['points']+point['point'];
+                                print("points $points ${user['points']} ${point['point']}");
                                 FirebaseFirestore.instance.collection('customer').doc(FirebaseAuth.instance.currentUser!.uid).update({
                                   'points': points,
                                 }).onError((error, stackTrace){
@@ -295,6 +377,7 @@ class _HomePageState extends State<HomePage> {
           return StatefulBuilder(
             builder: (context,setState){
               return Dialog(
+
                 shape: RoundedRectangleBorder(
                   borderRadius: const BorderRadius.all(
                     Radius.circular(10.0),
@@ -305,8 +388,6 @@ class _HomePageState extends State<HomePage> {
                 elevation: 2,
                 child: Container(
                   padding: EdgeInsets.all(10),
-                  height: MediaQuery.of(context).size.height,
-                  width: MediaQuery.of(context).size.width,
                   child: Column(
                     children: [
                       Stack(
@@ -351,8 +432,7 @@ class _HomePageState extends State<HomePage> {
                               );
                             }
                             if (snapshot.data!.size==0){
-                              Navigator.pop(context);
-
+                               Navigator.pop(context);
                             }
 
                             return new ListView(
@@ -363,7 +443,8 @@ class _HomePageState extends State<HomePage> {
                                 int day= int.parse("${data['endDate'][0]}${data['endDate'][1]}");
                                 int month= int.parse("${data['endDate'][3]}${data['endDate'][4]}");
                                 final date = DateTime(year,month,day);
-                                final difference = DateTime.now().difference(date).inDays;
+                                final difference = date.difference(DateTime.now()).inDays;
+                                print("${DateTime.now()} - $date = $difference");
                                 return new Padding(
                                   padding: const EdgeInsets.only(top: 0.0),
                                   child: difference>0?InkWell(
@@ -483,7 +564,7 @@ class _HomePageState extends State<HomePage> {
                                               child: Container(
                                                 width: MediaQuery.of(context).size.width*0.63,
                                                 height: 50,
-                                                margin: EdgeInsets.only(right: 5),
+                                                margin: EdgeInsets.only(right: 5,left: 5),
                                                 child: Container(
                                                   decoration: BoxDecoration(
                                                       color: Colors.white,
@@ -539,15 +620,17 @@ class _HomePageState extends State<HomePage> {
                                     Expanded(
                                       child: StreamBuilder<QuerySnapshot>(
                                         stream: FirebaseFirestore.instance.collection('banner')
+
                                             .where("gender",isEqualTo: prefshot.data.toString())
-                                            .where("language",isEqualTo: language).snapshots(),
+                                            .where("language",isEqualTo: language)
+                                            .orderBy("position")
+                                            .snapshots(),
                                         builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
                                           if (snapshot.hasError) {
                                             return Center(
                                               child: Column(
                                                 children: [
-                                                  Image.asset("assets/images/wrong.png",width: 150,height: 150,),
-                                                  Text("Something Went Wrong")
+                                                  Text("Something Went Wrong ${snapshot.error.toString()}")
 
                                                 ],
                                               ),
@@ -733,6 +816,7 @@ class _HomePageState extends State<HomePage> {
                                 .where('type', isEqualTo: 'Category')
                                 .where('gender', isEqualTo: prefshot.data.toString())
                                 .where('language', isEqualTo: language)
+                                .orderBy("position")
                                 .snapshots(),
                             builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
                               if (snapshot.hasError) {
@@ -794,7 +878,9 @@ class _HomePageState extends State<HomePage> {
                           ),
                           Container(
                             height: 120,
-                            child: StreamBuilder<QuerySnapshot>(
+                            child: symbol==""?Center(
+                              child: CircularProgressIndicator(),
+                            ):StreamBuilder<QuerySnapshot>(
                               stream: FirebaseFirestore.instance.collection('services')
                                   .where('gender', isEqualTo: prefshot.data.toString())
                                   .where('isFeatured',isEqualTo: true)
@@ -862,24 +948,33 @@ class _HomePageState extends State<HomePage> {
                                                 children: [
                                                   Text(language=="English"?data['name']:data['name_ar'],style: TextStyle(fontSize: 18,fontWeight: FontWeight.w500),),
                                                   SizedBox(height: 10,),
-                                                  Text("\$${data['price']}",style: TextStyle(fontSize: 12,fontWeight: FontWeight.w300),),
-                                                  RatingBar(
-                                                    initialRating: data['rating'].toDouble(),
-                                                    direction: Axis.horizontal,
-                                                    allowHalfRating: true,
-                                                    itemCount: 5,
-                                                    ratingWidget: RatingWidget(
-                                                      full: Icon(Icons.star,color: darkBrown),
-                                                      half: Icon(Icons.star_half,color: darkBrown),
-                                                      empty:Icon(Icons.star_border,color: darkBrown,),
-                                                    ),
-                                                    ignoreGestures: true,
-                                                    itemSize: 15,
-                                                    itemPadding: EdgeInsets.symmetric(horizontal: 1.0),
-                                                    onRatingUpdate: (rating) {
-                                                      print(rating);
-                                                    },
-                                                  ),
+                                                  if(align=="Left")
+                                                    Text("$symbol${data['price']}",style: TextStyle(fontSize: 12,fontWeight: FontWeight.w300),)
+                                                  else
+                                                    Text("${data['price']}$symbol",style: TextStyle(fontSize: 12,fontWeight: FontWeight.w300),),
+                                                  Row(
+                                                    children: [
+                                                      RatingBar(
+                                                        initialRating: data['rating'].toDouble(),
+                                                        direction: Axis.horizontal,
+                                                        allowHalfRating: true,
+                                                        itemCount: 5,
+                                                        ratingWidget: RatingWidget(
+                                                          full: Icon(Icons.star,color: darkBrown),
+                                                          half: Icon(Icons.star_half,color: darkBrown),
+                                                          empty:Icon(Icons.star_border,color: darkBrown,),
+                                                        ),
+                                                        ignoreGestures: true,
+                                                        itemSize: 15,
+                                                        itemPadding: EdgeInsets.symmetric(horizontal: 1.0),
+                                                        onRatingUpdate: (rating) {
+                                                          print(rating);
+                                                        },
+                                                      ),
+
+                                                      Text("( ${data['totalRating']} )",style: TextStyle(fontSize: 10,color: darkBrown),)
+                                                    ],
+                                                  )
                                                 ],
                                               ),
                                               SizedBox(width: 20,)
@@ -898,6 +993,7 @@ class _HomePageState extends State<HomePage> {
                                 .where('type', isEqualTo: 'Service')
                                 .where('gender', isEqualTo: prefshot.data.toString())
                                 .where('language', isEqualTo: language)
+                                .orderBy("position")
                                 .snapshots(),
                             builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
                               if (snapshot.hasError) {

@@ -7,6 +7,7 @@ import 'package:lottie/lottie.dart';
 import 'package:spa_beauty/auth/auth_selection.dart';
 import 'package:spa_beauty/model/appointment_model.dart';
 import 'package:spa_beauty/navigator/navigation_drawer.dart';
+import 'package:spa_beauty/screens/all_categories.dart';
 import 'package:spa_beauty/values/constants.dart';
 import 'package:spa_beauty/widget/appbar.dart';
 import 'package:spa_beauty/widget/appointment_tile.dart';
@@ -203,15 +204,20 @@ class _AppointmentsState extends State<Appointments> {
                                   children: [
                                     Text('noAppointment'.tr(),style: TextStyle(fontSize: 20),),
                                     SizedBox(height: 10,),
-                                    Container(
-                                      height: 50,
-                                      width: MediaQuery.of(context).size.width*0.8,
-                                      alignment: Alignment.center,
-                                      decoration: BoxDecoration(
-                                        color: lightBrown,
-                                        borderRadius: BorderRadius.circular(10),
+                                    InkWell(
+                                      onTap: (){
+                                        Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => AllCategories()));
+                                      },
+                                      child: Container(
+                                        height: 50,
+                                        width: MediaQuery.of(context).size.width*0.8,
+                                        alignment: Alignment.center,
+                                        decoration: BoxDecoration(
+                                          color: lightBrown,
+                                          borderRadius: BorderRadius.circular(10),
+                                        ),
+                                        child: Text('bookNext'.tr(),style: TextStyle(fontSize: 20,color: Colors.white),),
                                       ),
-                                      child: Text('bookNext'.tr(),style: TextStyle(fontSize: 20,color: Colors.white),),
                                     )
                                   ],
                                 )

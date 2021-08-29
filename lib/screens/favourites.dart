@@ -65,21 +65,48 @@ class _FavouritesState extends State<Favourites> {
                           child: Row(
                             children: [
                               Expanded(
-                                flex: 2,
-                                child: Image.network(services[index].image),
+                                flex: 3,
+                                child: Container(
+                                  height: 100,
+                                  width: 100,
+                                  decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(10),
+                                    image: DecorationImage(
+                                      image: NetworkImage(services[index].image),
+                                      fit: BoxFit.cover
+                                    )
+                                  ),
+                                )
                               ),
                               Expanded(
-                                flex: 8,
+                                flex: 7,
                                 child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     ListTile(
-
                                       title: Text(services[index].name,style: TextStyle(fontSize: 15,fontWeight: FontWeight.w500),),
                                       subtitle:Text('service'.tr(),style: TextStyle(fontSize: 12,fontWeight: FontWeight.w300),),
                                     ),
+                                    InkWell(
+                                      onTap: (){
+                                        Navigator.push(context, new MaterialPageRoute(builder: (context) => Reservation(services[index],false,"")));
+                                      },
+                                      child: Container(
+                                        margin: EdgeInsets.only(left: 15,right: 10,top: 5,bottom: 10),
+                                        width: MediaQuery.of(context).size.width*0.3,
+                                        padding: EdgeInsets.only(left: 10,right: 10,top: 5,bottom: 5),
+                                        decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.circular(20),
+                                            color: darkBrown
+                                        ),
+                                        alignment: Alignment.center,
+                                        child: Text('bookNow'.tr(),textAlign: TextAlign.center,style: TextStyle(color: Colors.white),),
+                                      ),
+                                    ),
                                     Row(
-                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      mainAxisAlignment: MainAxisAlignment.start,
                                       children: [
+                                        SizedBox(width: 15,),
                                         Text(services[index].totalRating.toString()),
                                         Container(height: 10, child: VerticalDivider(color: Colors.grey)),
                                         RatingBar(
@@ -99,25 +126,10 @@ class _FavouritesState extends State<Favourites> {
                                             print(rating);
                                           },
                                         ),
-                                        SizedBox(width: 20,),
-                                        InkWell(
-                                          onTap: (){
-                                            Navigator.push(context, new MaterialPageRoute(builder: (context) => Reservation(services[index],false,"")));
-                                          },
-                                          child: Container(
-                                            padding: EdgeInsets.only(left: 10,right: 10,top: 5,bottom: 5),
-                                            decoration: BoxDecoration(
-                                                borderRadius: BorderRadius.circular(20),
-                                                color: darkBrown
-                                            ),
-                                            alignment: Alignment.center,
-                                            child: Text('bookNow'.tr(),textAlign: TextAlign.center,style: TextStyle(color: Colors.white),),
-                                          ),
-                                        ),
                                         SizedBox(width: 10,)
-
                                       ],
                                     ),
+
                                     SizedBox(height: 10,)
                                   ],
                                 ),

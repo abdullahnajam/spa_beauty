@@ -109,6 +109,26 @@ class _OffersState extends State<Offers> {
       },
     );
   }
+  String? symbol,align;
+  @override
+  void initState() {
+    super.initState();
+    FirebaseFirestore.instance
+        .collection('settings')
+        .doc('currency')
+        .get()
+        .then((DocumentSnapshot documentSnapshot) {
+      if (documentSnapshot.exists) {
+        Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
+        setState(() {
+          symbol=data['symbol'];
+          align=data['align'];
+        });
+
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -171,11 +191,11 @@ class _OffersState extends State<Offers> {
                         int day= int.parse("${model.endDate[0]}${model.endDate[1]}");
                         int month= int.parse("${model.endDate[3]}${model.endDate[4]}");
                         final date = DateTime(year,month,day);
-                        final difference = DateTime.now().difference(date).inDays;
+                        final difference = date.difference(DateTime.now()).inDays;
                         print("diff $difference");
-                          return new Padding(
+                          return  difference>0?Padding(
                             padding: const EdgeInsets.only(top: 0.0),
-                            child: difference>0?InkWell(
+                            child: InkWell(
                               onTap: (){
                                 ServiceModel model2=new ServiceModel(
                                   model.id,
@@ -239,7 +259,11 @@ class _OffersState extends State<Offers> {
                                               Text(data['name'],style: TextStyle(fontSize: 18,fontWeight: FontWeight.w500),),
                                               SizedBox(height: 5,),
                                               Text('price'.tr(),style: TextStyle(fontSize: 12,fontWeight: FontWeight.w300),),
-                                              Text(data['discount'],style: TextStyle(fontSize: 12,fontWeight: FontWeight.w200),),
+                                              symbol==""?Container():
+
+                                              align=="Left"?
+                                              Text("$symbol${data['discount']}",style: TextStyle(fontSize: 12,fontWeight: FontWeight.w200),):
+                                              Text("${data['discount']}$symbol",style: TextStyle(fontSize: 12,fontWeight: FontWeight.w200),),
                                               SizedBox(height: 5,),
 
                                               InkWell(
@@ -264,9 +288,14 @@ class _OffersState extends State<Offers> {
                                         child: Row(
                                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                           children: [
-                                            Container(
-                                              child: Text("$difference days left",style: TextStyle(color: red),),
-                                            ),
+                                            if(difference>0)
+                                              Container(
+                                                child: Text("$difference days left",style: TextStyle(color: red),),
+                                              )
+                                            else
+                                              Container(
+                                                child: Text("Expired",style: TextStyle(color: red),),
+                                              ),
                                             Row(
                                               children: [
                                                 Container(
@@ -281,8 +310,8 @@ class _OffersState extends State<Offers> {
                                     ],
                                   )
                               ),
-                            ):Container()
-                        );
+                            )
+                        ):Container();
                       }).toList(),
                     );
                   },

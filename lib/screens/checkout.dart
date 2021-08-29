@@ -23,6 +23,7 @@ class Checkout extends StatefulWidget {
 class _CheckoutState extends State<Checkout> {
   String payment='cardPayment'.tr();
   String couponId="";
+  String? symbol,align;
   List ids=[];
   void back(){
     Navigator.pop(context);
@@ -42,6 +43,20 @@ class _CheckoutState extends State<Checkout> {
         setState(() {
           pointForService=data['point'];
         });
+      }
+    });
+    FirebaseFirestore.instance
+        .collection('settings')
+        .doc('currency')
+        .get()
+        .then((DocumentSnapshot documentSnapshot) {
+      if (documentSnapshot.exists) {
+        Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
+        setState(() {
+          symbol=data['symbol'];
+          align=data['align'];
+        });
+
       }
     });
     setState(() {
@@ -66,7 +81,7 @@ class _CheckoutState extends State<Checkout> {
 
   }
   bookAppointment(bool paid){
-
+    final f = new DateFormat('dd-MM-yyyy');
     final ProgressDialog pr = ProgressDialog(context: context);
     pr.show(max: 100, msg: "Adding");
     FirebaseFirestore.instance.collection('appointments').add({
@@ -85,7 +100,11 @@ class _CheckoutState extends State<Checkout> {
       'points':pointForService,
       'paid':paid,
       'paymentMethod':payment=='cashPayment'.tr()?"Cash Payment":"Card Payment",
-      'datePosted':DateTime.now().toString(),
+      'datePosted':DateTime.now().millisecondsSinceEpoch,
+      'formattedDate':f.format(DateTime.now()).toString(),
+      'day':DateTime.now().day,
+      'month':DateTime.now().month,
+      'year':DateTime.now().year,
     }).then((value) {
       pr.close();
       if(couponId!=""){
@@ -253,10 +272,18 @@ class _CheckoutState extends State<Checkout> {
                             'price'.tr(),
                             style: Theme.of(context).textTheme.bodyText1!.apply(color: Colors.black),
                           ),
+                          symbol==""?Container():
+
+                          align=="Left"?
                           Text(
-                            "$amount",
+                            "$symbol$amount",
+                            style: Theme.of(context).textTheme.bodyText1!.apply(color: Colors.grey),
+                          ):
+                          Text(
+                            "$amount$symbol",
                             style: Theme.of(context).textTheme.bodyText1!.apply(color: Colors.grey),
                           ),
+
                         ],
                       ),
                       SizedBox(height: 10,),

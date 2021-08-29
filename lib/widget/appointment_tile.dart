@@ -24,10 +24,6 @@ class AppointmentTile extends StatefulWidget {
 class _AppointmentTileState extends State<AppointmentTile> {
   int? rating=5;
   var reviewController=TextEditingController();
-/*"Pending": "قيد الانتظار",
-  "Approved": "وافق",
-  "Completed": "مكتمل",
-  "Cancelled": "ألغيت",*/
   String? language;
   void checkLanguage(){
     String languageCode=context.locale.toLanguageTag().toString();
@@ -206,6 +202,26 @@ class _AppointmentTileState extends State<AppointmentTile> {
   }
 
 
+  String? symbol,align;
+  @override
+  void initState() {
+    super.initState();
+    FirebaseFirestore.instance
+        .collection('settings')
+        .doc('currency')
+        .get()
+        .then((DocumentSnapshot documentSnapshot) {
+      if (documentSnapshot.exists) {
+        Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
+        setState(() {
+          symbol=data['symbol'];
+          align=data['align'];
+        });
+
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     checkLanguage();
@@ -214,31 +230,47 @@ class _AppointmentTileState extends State<AppointmentTile> {
       padding: const EdgeInsets.only(top: 15.0),
       child:   InkWell(
         onTap: (){
-          if (widget.model.isRated == false && widget.model.status == 'Completed')
-            {
+          if (widget.model.isRated == false && widget.model.status == 'Completed') {
               _showRatingDialog();
-            }
-          if(widget.model.status == 'Pending'){
-            AwesomeDialog(
+          }
+          if(widget.model.status == 'Pending' || widget.model.status=="قيد الانتظار" ||
+              widget.model.status == 'Approved' || widget.model.status=="وافق"){
+            showDialog<void>(
               context: context,
-              dialogType: DialogType.QUESTION,
-              animType: AnimType.BOTTOMSLIDE,
-              title: 'Cancel booking',
-              desc: 'Are you sure you want to cancel your appointment?',
-              btnCancelOnPress: (){
-                Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) => Appointments()));
+              barrierDismissible: true, // user must tap button!
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: Text("Cancel Booking"),
+                  content: SingleChildScrollView(
+                    child: ListBody(
+                      children:  <Widget>[
+                        Text("Are you sure you want to cancel your appointment?"),
+                      ],
+                    ),
+                  ),
+                  actions: <Widget>[
+                    TextButton(
+                      child:  Text('ok'.tr()),
+                      onPressed: () {
+                        FirebaseFirestore.instance.collection("cancelled").doc(widget.model.id).set({
+                          'user':widget.model.name,
+                          'userId':FirebaseAuth.instance.currentUser!.uid,
+                          'service': widget.model.serviceName,
+                          'dateTime': "${widget.model.time}, ${widget.model.date}"
+                        }).then((value) {
+                          final snackBar = SnackBar(content: Text("Request submitted. Please wait for admin approval"));
+                          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                          Navigator.of(context).pop();
+                          //Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) => Appointments()));
+                        });
+
+                      },
+                    ),
+                  ],
+                );
               },
+            );
 
-
-              btnOkOnPress: () {
-                FirebaseFirestore.instance.collection("appointments").doc(widget.model.id).update({
-                  'status':"Cancelled",
-                }).then((value) {
-                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) => Appointments()));
-                });
-
-              },
-            )..show();
           }
         },
         child: Container(
@@ -249,7 +281,8 @@ class _AppointmentTileState extends State<AppointmentTile> {
           ),
 
           margin: EdgeInsets.all(5),
-          child: widget.model.status == 'Completed' || widget.model.status == 'Cancelled'?
+          child: widget.model.status == 'Completed' || widget.model.status == 'Cancelled' ||
+              widget.model.status == 'مكتمل' || widget.model.status == 'ألغيت'?
               Column(
                 children: [
                   IntrinsicHeight(
@@ -269,12 +302,32 @@ class _AppointmentTileState extends State<AppointmentTile> {
                                 fontSize: 17,
                               ),),
                               SizedBox(height: size.height*0.0055,),
-                              Text(widget.model.paymentMethod,style: TextStyle(
-                                color: Colors.black87,
-                                //fontFamily: 'Georgia Regular',
-                                fontWeight: FontWeight.w300,
-                                fontSize: 12,
-                              ),),
+                              Row(
+                                children: [
+                                  symbol==""?Container():
+
+                                  align=="Left"?
+                                  Text("$symbol${widget.model.amount}",style: TextStyle(
+                                    color: Colors.black87,
+                                    //fontFamily: 'Georgia Regular',
+                                    fontWeight: FontWeight.w300,
+                                    fontSize: 12,
+                                  ),):
+                                  Text("${widget.model.amount}$symbol",style: TextStyle(
+                                    color: Colors.black87,
+                                    //fontFamily: 'Georgia Regular',
+                                    fontWeight: FontWeight.w300,
+                                    fontSize: 12,
+                                  ),),
+                                  SizedBox(width: 10,),
+                                  Text(widget.model.paymentMethod,style: TextStyle(
+                                    color: Colors.black87,
+                                    //fontFamily: 'Georgia Regular',
+                                    fontWeight: FontWeight.w300,
+                                    fontSize: 12,
+                                  ),),
+                                ],
+                              ),
                               SizedBox(height: size.height*0.0055,),
                               Text("${widget.model.date}   ${widget.model.time}",style: TextStyle(
                                 color: Colors.black87,
@@ -307,18 +360,17 @@ class _AppointmentTileState extends State<AppointmentTile> {
 
                                 //width: MediaQuery.of(context).size.width*0.2,
                                 child: Container(
-                                  height: 25,
                                   padding: EdgeInsets.fromLTRB(10, 2, 10, 2),
                                   decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(20),
                                       color: darkBrown
                                   ),
                                   alignment: Alignment.center,
-                                  child: Text(widget.model.status,style: TextStyle(color: Colors.white),),
+                                  child: Text(widget.model.status,textAlign: TextAlign.center,style: TextStyle(color: Colors.white),),
                                 ),
                               ),
                               SizedBox(height: size.height*0.005,),
-                              widget.model.status == 'Completed' ?
+                              widget.model.status == 'Completed' || widget.model.status == 'مكتمل'?
                               widget.model.isRated ? RatingBar(
                                 initialRating: widget.model.rating.toDouble(),
                                 direction: Axis.horizontal,
@@ -401,12 +453,32 @@ class _AppointmentTileState extends State<AppointmentTile> {
                         fontSize: 17,
                       ),),
                       SizedBox(height: size.height*0.0055,),
-                      Text(widget.model.paymentMethod,style: TextStyle(
-                        color: Colors.black87,
-                        //fontFamily: 'Georgia Regular',
-                        fontWeight: FontWeight.w300,
-                        fontSize: 12,
-                      ),),
+                      Row(
+                        children: [
+                          symbol==""?Container():
+
+                          align=="Left"?
+                          Text("$symbol${widget.model.amount}",style: TextStyle(
+                            color: Colors.black87,
+                            //fontFamily: 'Georgia Regular',
+                            fontWeight: FontWeight.w300,
+                            fontSize: 12,
+                          ),):
+                          Text("${widget.model.amount}$symbol",style: TextStyle(
+                            color: Colors.black87,
+                            //fontFamily: 'Georgia Regular',
+                            fontWeight: FontWeight.w300,
+                            fontSize: 12,
+                          ),),
+                          SizedBox(width: 10,),
+                          Text(widget.model.paymentMethod,style: TextStyle(
+                            color: Colors.black87,
+                            //fontFamily: 'Georgia Regular',
+                            fontWeight: FontWeight.w300,
+                            fontSize: 12,
+                          ),),
+                        ],
+                      ),
                       SizedBox(height: size.height*0.0055,),
                       Text("${widget.model.date}   ${widget.model.time}",style: TextStyle(
                         color: Colors.black87,

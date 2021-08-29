@@ -92,6 +92,14 @@ class _OfferDetailState extends State<OfferDetail> {
               ),
               Container(
                 padding: EdgeInsets.all(10),
+                child: Text('description'.tr(),style: TextStyle(fontWeight: FontWeight.bold,fontSize: 18),),
+              ),
+              Container(
+                padding: EdgeInsets.all(5),
+                child: Text(widget.offer.description,style: TextStyle(fontWeight: FontWeight.w300,fontSize: 15),),
+              ),
+              Container(
+                padding: EdgeInsets.all(10),
                 child: Text('service'.tr(),style: TextStyle(fontWeight: FontWeight.bold,fontSize: 18),),
               ),
               Expanded(

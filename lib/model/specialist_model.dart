@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class SpecialistModel{
-  String id,name,name_ar,email,phone,image,status;
+  String id,name,name_ar,email,phone,image;bool status;
   List serviceIds;
 
 

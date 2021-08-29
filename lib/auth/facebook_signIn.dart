@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_facebook_login/flutter_facebook_login.dart';
@@ -21,7 +22,20 @@ class _FacebookSignInState extends State<FacebookSignIn> {
   Widget build(BuildContext context) {
     return  InkWell(
       onTap: () async{
-        await handleLogin();
+        await handleLogin().then((value){
+          FirebaseFirestore.instance.collection('customer').doc(FirebaseAuth.instance.currentUser!.uid).set({
+            'username': FirebaseAuth.instance.currentUser!.displayName,
+            'phone': FirebaseAuth.instance.currentUser!.phoneNumber,
+            'token': "none",
+            'topic': 'customer',
+            'status':'Active',
+            'email': FirebaseAuth.instance.currentUser!.email,
+            'profilePicture':FirebaseAuth.instance.currentUser!.photoURL,
+            'gender':"None",
+            'points':0,
+            'wallet':0
+          });
+        });
       },
       child: Container(
           height: 50,

@@ -35,7 +35,8 @@ class _ReservationState extends State<Reservation> {
   String? username;
   List<SpecialistModel> specialist=[];
   getSpecialists(){
-    FirebaseFirestore.instance.collection('specialists').where("serviceId",isEqualTo: widget.model.id).get().then((QuerySnapshot querySnapshot) {
+    FirebaseFirestore.instance.collection('specialists')
+        .where("serviceIds",arrayContains: widget.model.id).get().then((QuerySnapshot querySnapshot) {
       querySnapshot.docs.forEach((doc) {
         Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
         SpecialistModel model=SpecialistModel.fromMap(data,doc.reference.id);
@@ -258,6 +259,7 @@ class _ReservationState extends State<Reservation> {
                               borderRadius: BorderRadius.circular(10),
                               border: Border.all(),
                               image: DecorationImage(
+                                  colorFilter: new ColorFilter.mode(Colors.black.withOpacity(0.3), BlendMode.darken),
                                   image: NetworkImage(specialist[index].image),
                                   fit: BoxFit.cover
                               )
@@ -300,7 +302,7 @@ class _ReservationState extends State<Reservation> {
                           0,
                           amount.toString(),
                           widget.isOffer?0:widget.model.points,
-                          DateTime.now().toString()
+                          DateTime.now().millisecondsSinceEpoch
                         );
                         if(widget.isOffer){
                           FirebaseFirestore.instance.collection('redeemedOffers').doc(FirebaseAuth.instance.currentUser!.uid)

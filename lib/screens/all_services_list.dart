@@ -151,7 +151,12 @@ class _AllServicesState extends State<AllServices> {
                                       children: [
                                         Text(data['name'],style: TextStyle(fontSize: 18,fontWeight: FontWeight.w500),),
                                         SizedBox(height: 10,),
-                                        Text("\$${data['price']}",style: TextStyle(fontSize: 12,fontWeight: FontWeight.w300),),
+                                        if(align=="Left")
+                                          Text("$symbol${data['price']}",style: TextStyle(fontSize: 12,fontWeight: FontWeight.w300),)
+                                        else
+                                          Text("${data['price']}$symbol",style: TextStyle(fontSize: 12,fontWeight: FontWeight.w300),),
+
+
                                         RatingBar(
                                           initialRating: data['rating'].toDouble(),
                                           direction: Axis.horizontal,
@@ -187,5 +192,24 @@ class _AllServicesState extends State<AllServices> {
         ),
       ),
     );
+  }
+  String? symbol,align;
+  @override
+  void initState() {
+    super.initState();
+    FirebaseFirestore.instance
+        .collection('settings')
+        .doc('currency')
+        .get()
+        .then((DocumentSnapshot documentSnapshot) {
+      if (documentSnapshot.exists) {
+        Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
+        setState(() {
+          symbol=data['symbol'];
+          align=data['align'];
+        });
+
+      }
+    });
   }
 }

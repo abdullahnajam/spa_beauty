@@ -276,6 +276,7 @@ class _PointServiceReservationState extends State<PointServiceReservation> {
                   ),
                   InkWell(
                     onTap: (){
+                      final f = new DateFormat('dd-MM-yyyy');
                       if(appointmentTimeSelected==null){
                         final snackBar = SnackBar(content: Text("Please select a time slot"));
                         ScaffoldMessenger.of(context).showSnackBar(snackBar);
@@ -301,7 +302,11 @@ class _PointServiceReservationState extends State<PointServiceReservation> {
                           'points':0,
                           'paid':true,
                           'paymentMethod':payment,
-                          'datePosted':DateTime.now().toString(),
+                          'datePosted':DateTime.now().millisecondsSinceEpoch,
+                          'formattedDate':f.format(DateTime.now()).toString(),
+                          'day':DateTime.now().day,
+                          'month':DateTime.now().month,
+                          'year':DateTime.now().year,
                         }).then((value) {
                           FirebaseFirestore.instance.collection('customer').doc(FirebaseAuth.instance.currentUser!.uid).update({
                             'points':userTotalPoints

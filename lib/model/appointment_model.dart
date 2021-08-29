@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class AppointmentModel{
   String id,name,userId,date,time,specialistId,specialistName,serviceId,serviceName,status,paymentMethod,amount;
   bool isRated,paid;
-  String datePosted;
+  int datePosted;
   int rating,points;
 
 

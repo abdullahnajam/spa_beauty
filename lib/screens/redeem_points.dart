@@ -80,6 +80,15 @@ class _RedeemPointsState extends State<RedeemPoints> {
                     Align(
                       alignment: Alignment.center,
                       child: Text('redeemPoints'.tr()),
+                    ),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: IconButton(
+                        onPressed: (){
+                          Navigator.pop(context);
+                        },
+                        icon: Icon(Icons.arrow_back_sharp,color: darkBrown,),
+                      )
                     )
                   ],
                 ),

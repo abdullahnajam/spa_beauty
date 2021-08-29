@@ -31,6 +31,7 @@ class _ServiceDetailState extends State<ServiceDetail> {
   IconData _iconData=Icons.favorite_border;
   Color _color=Colors.white;
   bool isFavourite = false;
+  String? symbol,align;
   checkFavouriteFromDatabase()async{
 
     FirebaseFirestore.instance
@@ -100,6 +101,8 @@ class _ServiceDetailState extends State<ServiceDetail> {
 
   @override
   Widget build(BuildContext context) {
+    String languageCode=context.locale.toLanguageTag().toString();
+    languageCode="${languageCode[languageCode.length-2]}${languageCode[languageCode.length-1]}";
     final orientation = MediaQuery.of(context).orientation;
     Size size = MediaQuery.of(context).size;
     return Scaffold(
@@ -136,22 +139,98 @@ class _ServiceDetailState extends State<ServiceDetail> {
                     errorWidget: (context, url, error) => Icon(Icons.error),
                   ),
                 ),
-                Positioned(
-                  right: 20,
-                  top: 40,
-                  child: IconButton(
-                    icon: Icon(_iconData),
-                    color: _color,
-                    onPressed: checkFavourite,
+
+                  Align(
+                    alignment: languageCode=="US"?Alignment.centerRight:Alignment.centerLeft,
+                      //align:
+                  child: Container(
+                    margin: EdgeInsets.only(left: 10,right: 10,top: 30),
+                    child: CircleAvatar(
+                      backgroundColor: lightBrown,
+                      child: IconButton(
+                        icon: Icon(_iconData),
+                        color: _color,
+                        onPressed: checkFavourite,
+                      ),
+                    ),
+                  )
+                ),
+                Align(
+                  alignment: languageCode=="US"?Alignment.centerLeft:Alignment.centerRight,
+                  child: Container(
+                    margin: EdgeInsets.only(left: 10,right: 10,top: 30),
+                    child: InkWell(onTap: ()=>Navigator.pop(context),child: CircleAvatar(
+                      backgroundColor: lightBrown,
+                      child: Icon(Icons.arrow_back_ios_sharp,color:Colors.white,size: 25,),
+                    )),
                   ),
                 ),
+                Container(
+                  padding: EdgeInsets.all(10),
+                  margin: EdgeInsets.only(top:size.height*0.27,left: size.width*0.1,right: size.width*0.1 ),
+                  decoration: BoxDecoration(
+                    color: Color(0xffFFF6EC),
+                    borderRadius: BorderRadius.circular(10)
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(widget.Language=="English"?widget.model.name:widget.model.name_ar,style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w900
+                          ),
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.share_outlined),
+                            onPressed: (){
+                              Share.share('${widget.model.name}');
+                            },
+                          )
+                        ],
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          RatingBar(
+                            initialRating: widget.model.rating.toDouble(),
+                            direction: Axis.horizontal,
+                            allowHalfRating: true,
+                            itemCount: 5,
+                            ratingWidget: RatingWidget(
+                              full: Icon(Icons.star,color: darkBrown),
+                              half: Icon(Icons.star_half,color: darkBrown),
+                              empty:Icon(Icons.star_border,color: darkBrown,),
+                            ),
+                            ignoreGestures: true,
+                            itemSize: 20,
+                            itemPadding: EdgeInsets.symmetric(horizontal: 1.0),
+                            onRatingUpdate: (rating) {
+                              print(rating);
+                            },
+                          ),
+                          symbol==""?Container():
 
-                Positioned(
-                  left: 20,
-                  top: 40,
-                  child: InkWell(onTap: ()=>Navigator.pop(context),child: CircleAvatar(
-                    child: Icon(Icons.arrow_back_ios_sharp,color:Colors.white,size: 25,),
-                  )),
+                          align=="Left"?Text("$symbol${widget.model.price}",style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                            color: darkBrown
+                          ),
+                          ):
+                          Text("${widget.model.price}$symbol",style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                              color: darkBrown
+                          ),
+                          ),
+                        ],
+                      ),
+
+                    ],
+                  ),
                 )
               ],
             ),
@@ -195,148 +274,97 @@ class _ServiceDetailState extends State<ServiceDetail> {
 
                     Container(
                       //height of TabBarView
-                      height: MediaQuery.of(context).size.height*0.465,
+                      height: MediaQuery.of(context).size.height*0.4,
 
                       child: TabBarView(children: <Widget>[
                         Container(
                           margin: EdgeInsets.all(10),
                           padding: EdgeInsets.only(right: 10),
-                          child: ListView(
-                            //crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          child: MediaQuery.removePadding(
+                            removeTop: true,
+                              context: context,
+                              child: ListView(
                                 children: [
-                                  Text('serviceTitle'.tr(),style: TextStyle(
+                                  Text('serviceDescription'.tr(),style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.w500
                                   ),
                                   ),
-                                  IconButton(
-                                    icon: Icon(Icons.share_outlined),
-                                    onPressed: (){
-                                      Share.share('${widget.model.name}');
-                                    },
-                                  )
+                                  SizedBox(height: 5,),
+                                  Text(widget.Language=="English"?widget.model.description:widget.model.description_ar,style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w300
+                                  ),
+                                  ),
+
+                                  SizedBox(height: 10,),
+                                  Text('specialist'.tr(),style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w500
+                                  ),
+                                  ),
+                                  Container(
+                                    height: MediaQuery.of(context).size.height*0.15,
+                                    child: StreamBuilder<QuerySnapshot>(
+                                      stream: FirebaseFirestore.instance.collection('specialists')
+                                          .where("serviceIds",arrayContains: widget.model.id)
+                                          .snapshots(),
+                                      builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                                        if (snapshot.hasError) {
+                                          return Center(
+                                            child: Column(
+                                              children: [
+                                                Text("Something Went Wrong",style: TextStyle(color: Colors.black),)
+
+                                              ],
+                                            ),
+                                          );
+                                        }
+
+                                        if (snapshot.connectionState == ConnectionState.waiting) {
+                                          return Center(
+                                            child: CircularProgressIndicator(),
+                                          );
+                                        }
+                                        if (snapshot.data!.size==0){
+                                          return Container(
+                                              alignment: Alignment.center,
+                                              child:Text('noSpecialist'.tr(),style: TextStyle(color: Colors.black),)
+
+                                          );
+
+                                        }
+                                        print("sp size ${snapshot.data!.size}");
+                                        return new ListView(
+                                          scrollDirection: Axis.horizontal,
+                                          children: snapshot.data!.docs.map((DocumentSnapshot document) {
+                                            Map<String, dynamic> data = document.data() as Map<String, dynamic>;
+                                            return Container(
+                                              height: MediaQuery.of(context).size.height*0.1,
+                                              width: 80,
+                                              margin: EdgeInsets.only(left: 10),
+                                              decoration: BoxDecoration(
+                                                  borderRadius: BorderRadius.circular(10),
+                                                  image: DecorationImage(
+                                                    image: NetworkImage(data['image']),
+                                                    fit: BoxFit.cover,
+                                                    colorFilter: new ColorFilter.mode(Colors.black.withOpacity(0.3), BlendMode.darken),
+                                                  )
+                                              ),
+                                              child: Container(
+                                                alignment: Alignment.bottomCenter,
+                                                margin: EdgeInsets.all(10),
+                                                child: Text(data['name'],style: TextStyle(color: Colors.white),),
+                                              ),
+                                            );
+                                          }).toList(),
+                                        );
+                                      },
+                                    ),
+                                  ),
                                 ],
                               ),
-                              SizedBox(height: 5,),
-                              Text(widget.Language=="English"?widget.model.name:widget.model.name_ar,style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w300
-                              ),
-                              ),
-                              SizedBox(height: 10,),
-                              Text('rating'.tr(),style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w500
-                              ),
-                              ),
-                              RatingBar(
-                                initialRating: widget.model.rating.toDouble(),
-                                direction: Axis.horizontal,
-                                allowHalfRating: true,
-                                itemCount: 5,
-                                ratingWidget: RatingWidget(
-                                  full: Icon(Icons.star,color: darkBrown),
-                                  half: Icon(Icons.star_half,color: darkBrown),
-                                  empty:Icon(Icons.star_border,color: darkBrown,),
-                                ),
-                                ignoreGestures: true,
-                                itemSize: 15,
-                                itemPadding: EdgeInsets.symmetric(horizontal: 1.0),
-                                onRatingUpdate: (rating) {
-                                  print(rating);
-                                },
-                              ),
-                              SizedBox(height: 10,),
-                              Text('serviceDescription'.tr(),style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w500
-                              ),
-                              ),
-                              SizedBox(height: 5,),
-                              Text(widget.Language=="English"?widget.model.description:widget.model.description_ar,style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w300
-                              ),
-                              ),
-                              SizedBox(height: 10,),
-                              Text('servicePrice'.tr(),style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w500
-                              ),
-                              ),
-                              SizedBox(height: 5,),
-                              Text("${widget.model.price}",style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w300
-                              ),
-                              ),
-                              SizedBox(height: 10,),
-                              Text('specialist'.tr(),style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w500
-                              ),
-                              ),
-                              Container(
-                                height: MediaQuery.of(context).size.height*0.1,
-                                child: StreamBuilder<QuerySnapshot>(
-                                  stream: FirebaseFirestore.instance.collection('specialists')
-                                      //.where("serviceIds",arrayContains: widget.model.id)
-                                      .snapshots(),
-                                  builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-                                    if (snapshot.hasError) {
-                                      return Center(
-                                        child: Column(
-                                          children: [
-                                            Text("Something Went Wrong",style: TextStyle(color: Colors.black),)
-
-                                          ],
-                                        ),
-                                      );
-                                    }
-
-                                    if (snapshot.connectionState == ConnectionState.waiting) {
-                                      return Center(
-                                        child: CircularProgressIndicator(),
-                                      );
-                                    }
-                                    if (snapshot.data!.size==0){
-                                      return Container(
-                                          alignment: Alignment.center,
-                                          child:Text('noSpecialist'.tr(),style: TextStyle(color: Colors.black),)
-
-                                      );
-
-                                    }
-                                    return new ListView(
-                                      scrollDirection: Axis.horizontal,
-                                      children: snapshot.data!.docs.map((DocumentSnapshot document) {
-                                        Map<String, dynamic> data = document.data() as Map<String, dynamic>;
-                                        return Container(
-                                          height: MediaQuery.of(context).size.height*0.1,
-                                          width: 80,
-                                          decoration: BoxDecoration(
-                                              borderRadius: BorderRadius.circular(10),
-                                              image: DecorationImage(
-                                                  image: AssetImage(data['image']),
-                                                  fit: BoxFit.cover
-                                              )
-                                          ),
-                                          child: Container(
-                                            alignment: Alignment.bottomCenter,
-                                            margin: EdgeInsets.all(10),
-                                            child: Text(data['name'],style: TextStyle(color: Colors.white),),
-                                          ),
-                                        );
-                                      }).toList(),
-                                    );
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
+                          )
                         ),
                         Container(
                           child: StreamBuilder<QuerySnapshot>(
@@ -537,6 +565,20 @@ class _ServiceDetailState extends State<ServiceDetail> {
     super.initState();
     print("id ${widget.model.id}");
     checkFavouriteFromDatabase();
+    FirebaseFirestore.instance
+        .collection('settings')
+        .doc('currency')
+        .get()
+        .then((DocumentSnapshot documentSnapshot) {
+      if (documentSnapshot.exists) {
+        Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
+        setState(() {
+          symbol=data['symbol'];
+          align=data['align'];
+        });
+
+      }
+    });
     //var myFile = file("myFileName.png");
   }
 }

@@ -199,7 +199,8 @@ class _AllServicesListState extends State<AllServicesList> {
                                           border: Border.all(color: lightBrown),
                                           borderRadius: BorderRadius.circular(40)
                                       ),
-                                      child: Text(data['price']),
+                                      child: align=="Left"?Text("$symbol${data['price']}"):
+                                      Text("${data['price']}$symbol"),
                                     ),
                                   )
                                 ],
@@ -216,5 +217,24 @@ class _AllServicesListState extends State<AllServicesList> {
         ),
       ),
     );
+  }
+  String? symbol,align;
+  @override
+  void initState() {
+    super.initState();
+    FirebaseFirestore.instance
+        .collection('settings')
+        .doc('currency')
+        .get()
+        .then((DocumentSnapshot documentSnapshot) {
+      if (documentSnapshot.exists) {
+        Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
+        setState(() {
+          symbol=data['symbol'];
+          align=data['align'];
+        });
+
+      }
+    });
   }
 }

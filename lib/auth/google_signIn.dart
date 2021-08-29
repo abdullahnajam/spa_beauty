@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -12,7 +13,20 @@ class _GoogleSigninState extends State<GoogleSignin> {
   Widget build(BuildContext context) {
     return InkWell(
         onTap: () {
-          signInWithGoogle();
+          signInWithGoogle().then((value){
+            FirebaseFirestore.instance.collection('customer').doc(FirebaseAuth.instance.currentUser!.uid).set({
+              'username': FirebaseAuth.instance.currentUser!.displayName,
+              'phone': FirebaseAuth.instance.currentUser!.phoneNumber,
+              'token': "none",
+              'topic': 'customer',
+              'status':'Active',
+              'email': FirebaseAuth.instance.currentUser!.email,
+              'profilePicture':FirebaseAuth.instance.currentUser!.photoURL,
+              'gender':"None",
+              'points':0,
+              'wallet':0
+            });
+          });
         },
         child: Container(
             height: 50,
