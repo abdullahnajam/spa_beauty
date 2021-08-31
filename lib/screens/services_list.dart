@@ -190,7 +190,7 @@ class _AllServicesListState extends State<AllServicesList> {
                                     alignment: Alignment.bottomCenter,
                                     child: Container(
                                       height: 30,
-                                      width: 80,
+                                      width: 120,
                                       alignment: Alignment.center,
                                       padding: EdgeInsets.only(left: 10,right: 10),
                                       margin: EdgeInsets.only(top: 150),

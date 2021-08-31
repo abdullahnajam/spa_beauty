@@ -97,5 +97,7 @@
   "bookNext": "Book your next service",
   "bookAgain": "Book Again",
   "cardPayment": "Card Payment",
-  "cashPayment": "Cash Payment"
+  "cashPayment": "Cash Payment",
+  "cancelBooking": "Cancel Booking",
+  "cancelConfirm": "Are you sure you want to cancel your appointment"
 }

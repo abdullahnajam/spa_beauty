@@ -240,11 +240,11 @@ class _AppointmentTileState extends State<AppointmentTile> {
               barrierDismissible: true, // user must tap button!
               builder: (BuildContext context) {
                 return AlertDialog(
-                  title: Text("Cancel Booking"),
+                  title: Text('cancelBooking'.tr()),
                   content: SingleChildScrollView(
                     child: ListBody(
                       children:  <Widget>[
-                        Text("Are you sure you want to cancel your appointment?"),
+                        Text('cancelConfirm'.tr()),
                       ],
                     ),
                   ),

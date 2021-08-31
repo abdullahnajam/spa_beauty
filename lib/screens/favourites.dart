@@ -87,46 +87,51 @@ class _FavouritesState extends State<Favourites> {
                                       title: Text(services[index].name,style: TextStyle(fontSize: 15,fontWeight: FontWeight.w500),),
                                       subtitle:Text('service'.tr(),style: TextStyle(fontSize: 12,fontWeight: FontWeight.w300),),
                                     ),
-                                    InkWell(
-                                      onTap: (){
-                                        Navigator.push(context, new MaterialPageRoute(builder: (context) => Reservation(services[index],false,"")));
-                                      },
-                                      child: Container(
-                                        margin: EdgeInsets.only(left: 15,right: 10,top: 5,bottom: 10),
-                                        width: MediaQuery.of(context).size.width*0.3,
-                                        padding: EdgeInsets.only(left: 10,right: 10,top: 5,bottom: 5),
-                                        decoration: BoxDecoration(
-                                            borderRadius: BorderRadius.circular(20),
-                                            color: darkBrown
-                                        ),
-                                        alignment: Alignment.center,
-                                        child: Text('bookNow'.tr(),textAlign: TextAlign.center,style: TextStyle(color: Colors.white),),
-                                      ),
-                                    ),
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.start,
+                                    Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
                                       children: [
-                                        SizedBox(width: 15,),
-                                        Text(services[index].totalRating.toString()),
-                                        Container(height: 10, child: VerticalDivider(color: Colors.grey)),
-                                        RatingBar(
-                                          initialRating: services[index].rating.toDouble(),
-                                          direction: Axis.horizontal,
-                                          allowHalfRating: true,
-                                          itemCount: 5,
-                                          ratingWidget: RatingWidget(
-                                            full: Icon(Icons.star,color: darkBrown),
-                                            half: Icon(Icons.star_half,color: darkBrown),
-                                            empty:Icon(Icons.star_border,color: darkBrown,),
-                                          ),
-                                          ignoreGestures: true,
-                                          itemSize: 18,
-                                          itemPadding: EdgeInsets.symmetric(horizontal: 1.0),
-                                          onRatingUpdate: (rating) {
-                                            print(rating);
+                                        InkWell(
+                                          onTap: (){
+                                            Navigator.push(context, new MaterialPageRoute(builder: (context) => Reservation(services[index],false,"")));
                                           },
+                                          child: Container(
+                                            margin: EdgeInsets.only(left: 15,right: 10,bottom: 10),
+                                            width: MediaQuery.of(context).size.width*0.3,
+                                            padding: EdgeInsets.only(left: 10,right: 10,top: 5,bottom: 5),
+                                            decoration: BoxDecoration(
+                                                borderRadius: BorderRadius.circular(20),
+                                                color: darkBrown
+                                            ),
+                                            alignment: Alignment.center,
+                                            child: Text('bookNow'.tr(),textAlign: TextAlign.center,style: TextStyle(color: Colors.white),),
+                                          ),
                                         ),
-                                        SizedBox(width: 10,)
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            SizedBox(width: 15,),
+                                            Text(services[index].totalRating.toString()),
+                                            Container(height: 10, child: VerticalDivider(color: Colors.grey)),
+                                            RatingBar(
+                                              initialRating: services[index].rating.toDouble(),
+                                              direction: Axis.horizontal,
+                                              allowHalfRating: true,
+                                              itemCount: 5,
+                                              ratingWidget: RatingWidget(
+                                                full: Icon(Icons.star,color: darkBrown),
+                                                half: Icon(Icons.star_half,color: darkBrown),
+                                                empty:Icon(Icons.star_border,color: darkBrown,),
+                                              ),
+                                              ignoreGestures: true,
+                                              itemSize: 18,
+                                              itemPadding: EdgeInsets.symmetric(horizontal: 1.0),
+                                              onRatingUpdate: (rating) {
+                                                print(rating);
+                                              },
+                                            ),
+                                            SizedBox(width: 10,)
+                                          ],
+                                        ),
                                       ],
                                     ),
 

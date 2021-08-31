@@ -25,18 +25,7 @@ class _BottomNavigationState extends State<BottomBar>{
   @override
   void initState() {
     super.initState();
-  /*  UserModel user;
 
-    FirebaseFirestore.instance
-        .collection('customer')
-        .doc(FirebaseAuth.instance.currentUser!.uid)
-        .get()
-        .then((DocumentSnapshot documentSnapshot) {
-      if (documentSnapshot.exists) {
-        Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
-        user=UserModel.fromMap(data, documentSnapshot.reference.id);
-      }
-    });*/
 
     _children = [
       MyAccount(),

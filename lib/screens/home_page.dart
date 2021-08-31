@@ -262,11 +262,11 @@ class _HomePageState extends State<HomePage> {
                     margin: EdgeInsets.all(10),
                     child: RaisedButton(
                       color: darkBrown,
-                      onPressed: (){
+                      onPressed: ()async{
                         print("presed $rating");
                         final ProgressDialog pr = ProgressDialog(context: context);
                         pr.show(max: 100, msg: "Loading");
-                        FirebaseFirestore.instance.collection('reviews').doc(model.id).set({
+                        await FirebaseFirestore.instance.collection('reviews').doc(model.id).set({
                           'username': model.name,
                           'service': model.serviceName,
                           'serviceId': model.serviceId,
@@ -274,6 +274,7 @@ class _HomePageState extends State<HomePage> {
                           'status':"Pending",
                           'rating':rating,
                           'review':reviewController.text,
+                          'datePosted':DateTime.now().millisecondsSinceEpoch,
                           'userId':FirebaseAuth.instance.currentUser!.uid,
                         }).then((value) {
                           pr.close();
@@ -285,42 +286,17 @@ class _HomePageState extends State<HomePage> {
                             final snackBar = SnackBar(content: Text("Database Error : ${error.toString()}"));
                             ScaffoldMessenger.of(context).showSnackBar(snackBar);
                           });
-
-                          FirebaseFirestore.instance
-                              .collection('services')
-                              .doc(model.serviceId)
-                              .get()
-                              .then((DocumentSnapshot documentSnapshot) {
-                            if (documentSnapshot.exists) {
-                              Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
-                              ServiceModel model=ServiceModel.fromMap(data, documentSnapshot.reference.id);
-                              int totalRating=model.rating;
-                              totalRating=rating!+totalRating;
-                              int totalUsersRated=model.totalRating+1;
-                              print("total $totalUsersRated");
-                              totalRating=(totalRating/2).toInt();
-                              FirebaseFirestore.instance.collection('services').doc(model.id).update({
-                                'totalRating': totalUsersRated,
-                                'rating':totalRating,
-                              }).onError((error, stackTrace){
-                                final snackBar = SnackBar(content: Text("Database Error : ${error.toString()}"));
-                                ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                              });
-                            }
-                          }).onError((error, stackTrace){
-                            final snackBar = SnackBar(content: Text("Database Error : ${error.toString()}"));
-                            ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                          });
-                          Navigator.pop(context);
                         }).onError((error, stackTrace){
                           final snackBar = SnackBar(content: Text("Database Error : ${error.toString()}"));
                           ScaffoldMessenger.of(context).showSnackBar(snackBar);
                         });
-                        FirebaseFirestore.instance.collection('settings').doc('points').get().then((DocumentSnapshot pointSnapshot) {
+                        await FirebaseFirestore.instance.collection('settings').doc('points').get().then((DocumentSnapshot pointSnapshot) {
                           if (pointSnapshot.exists) {
+                            print("point exists");
                             Map<String, dynamic> point = pointSnapshot.data() as Map<String, dynamic>;
                             FirebaseFirestore.instance.collection('customer').doc(FirebaseAuth.instance.currentUser!.uid).get().then((DocumentSnapshot userSnap) {
                               if (userSnap.exists) {
+                                print("customer ");
                                 Map<String, dynamic> user = userSnap.data() as Map<String, dynamic>;
                                 int points=user['points']+point['point'];
                                 print("points $points ${user['points']} ${point['point']}");
@@ -341,6 +317,7 @@ class _HomePageState extends State<HomePage> {
                           final snackBar = SnackBar(content: Text("Database Error : ${error.toString()}"));
                           ScaffoldMessenger.of(context).showSnackBar(snackBar);
                         });
+                        Navigator.pop(context);
                       },
                       child: Text('Review'.tr(),style: TextStyle(color: Colors.white),),
                     )

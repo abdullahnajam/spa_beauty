@@ -84,10 +84,8 @@ class _AboutState extends State<About> {
                 Positioned(
                   left: 20,
                   top: 40,
-                  child: InkWell(onTap: ()=> Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => HomePage()),
-                  ),child: Icon(Icons.arrow_back_ios_sharp,color:Colors.black54,size: 25,)),
+                  child: InkWell(onTap: ()=> Navigator.pop(context),
+                      child: Icon(Icons.arrow_back_ios_sharp,color:Colors.black54,size: 25,)),
                 )
               ],
             ),

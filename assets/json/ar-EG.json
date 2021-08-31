@@ -97,5 +97,7 @@
   "bookNext": "احجز خدمتك التالية",
   "bookAgain": "احجز مرة أخرى",
   "cardPayment": "بطاقه ائتمان",
-  "cashPayment": "دفع نقدا"
+  "cashPayment": "دفع نقدا",
+  "cancelBooking": "إلغاء الحجز",
+  "cancelConfirm": "هل أنت متأكد أنك تريد إلغاء موعدك"
 }

@@ -267,15 +267,20 @@ class _AppointmentsState extends State<Appointments> {
                                   children: [
                                     Text('noAppointment'.tr(),style: TextStyle(fontSize: 20),),
                                     SizedBox(height: 10,),
-                                    Container(
-                                      height: 50,
-                                      width: MediaQuery.of(context).size.width*0.8,
-                                      alignment: Alignment.center,
-                                      decoration: BoxDecoration(
-                                        color: lightBrown,
-                                        borderRadius: BorderRadius.circular(10),
+                                    InkWell(
+                                      onTap: (){
+                                        Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => AllCategories()));
+                                      },
+                                      child: Container(
+                                        height: 50,
+                                        width: MediaQuery.of(context).size.width*0.8,
+                                        alignment: Alignment.center,
+                                        decoration: BoxDecoration(
+                                          color: lightBrown,
+                                          borderRadius: BorderRadius.circular(10),
+                                        ),
+                                        child: Text('bookNext'.tr(),style: TextStyle(fontSize: 20,color: Colors.white),),
                                       ),
-                                      child: Text('bookNext'.tr(),style: TextStyle(fontSize: 20,color: Colors.white),),
                                     )
                                   ],
                                 )
@@ -329,15 +334,20 @@ class _AppointmentsState extends State<Appointments> {
                                   children: [
                                     Text('noAppointment'.tr(),style: TextStyle(fontSize: 20),),
                                     SizedBox(height: 10,),
-                                    Container(
-                                      height: 50,
-                                      width: MediaQuery.of(context).size.width*0.8,
-                                      alignment: Alignment.center,
-                                      decoration: BoxDecoration(
-                                        color: lightBrown,
-                                        borderRadius: BorderRadius.circular(10),
+                                    InkWell(
+                                      onTap: (){
+                                        Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => AllCategories()));
+                                      },
+                                      child: Container(
+                                        height: 50,
+                                        width: MediaQuery.of(context).size.width*0.8,
+                                        alignment: Alignment.center,
+                                        decoration: BoxDecoration(
+                                          color: lightBrown,
+                                          borderRadius: BorderRadius.circular(10),
+                                        ),
+                                        child: Text('bookNext'.tr(),style: TextStyle(fontSize: 20,color: Colors.white),),
                                       ),
-                                      child: Text('bookNext'.tr(),style: TextStyle(fontSize: 20,color: Colors.white),),
                                     )
                                   ],
                                 )
@@ -387,15 +397,20 @@ class _AppointmentsState extends State<Appointments> {
                                   children: [
                                     Text('noAppointment'.tr(),style: TextStyle(fontSize: 20),),
                                     SizedBox(height: 10,),
-                                    Container(
-                                      height: 50,
-                                      width: MediaQuery.of(context).size.width*0.8,
-                                      alignment: Alignment.center,
-                                      decoration: BoxDecoration(
-                                        color: lightBrown,
-                                        borderRadius: BorderRadius.circular(10),
+                                    InkWell(
+                                      onTap: (){
+                                        Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => AllCategories()));
+                                      },
+                                      child: Container(
+                                        height: 50,
+                                        width: MediaQuery.of(context).size.width*0.8,
+                                        alignment: Alignment.center,
+                                        decoration: BoxDecoration(
+                                          color: lightBrown,
+                                          borderRadius: BorderRadius.circular(10),
+                                        ),
+                                        child: Text('bookNext'.tr(),style: TextStyle(fontSize: 20,color: Colors.white),),
                                       ),
-                                      child: Text('bookNext'.tr(),style: TextStyle(fontSize: 20,color: Colors.white),),
                                     )
                                   ],
                                 )
@@ -448,15 +463,20 @@ class _AppointmentsState extends State<Appointments> {
                              children: [
                                Text('noAppointment'.tr(),style: TextStyle(fontSize: 20),),
                                SizedBox(height: 10,),
-                               Container(
-                                 height: 50,
-                                 width: MediaQuery.of(context).size.width*0.8,
-                                 alignment: Alignment.center,
-                                 decoration: BoxDecoration(
-                                   color: lightBrown,
-                                   borderRadius: BorderRadius.circular(10),
+                               InkWell(
+                                 onTap: (){
+                                   Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => AllCategories()));
+                                 },
+                                 child: Container(
+                                   height: 50,
+                                   width: MediaQuery.of(context).size.width*0.8,
+                                   alignment: Alignment.center,
+                                   decoration: BoxDecoration(
+                                     color: lightBrown,
+                                     borderRadius: BorderRadius.circular(10),
+                                   ),
+                                   child: Text('bookNext'.tr(),style: TextStyle(fontSize: 20,color: Colors.white),),
                                  ),
-                                 child: Text('bookNext'.tr(),style: TextStyle(fontSize: 20,color: Colors.white),),
                                )
                              ],
                            )
@@ -506,15 +526,20 @@ class _AppointmentsState extends State<Appointments> {
                              children: [
                                Text('noAppointment'.tr(),style: TextStyle(fontSize: 20),),
                                SizedBox(height: 10,),
-                               Container(
-                                 height: 50,
-                                 width: MediaQuery.of(context).size.width*0.8,
-                                 alignment: Alignment.center,
-                                 decoration: BoxDecoration(
-                                   color: lightBrown,
-                                   borderRadius: BorderRadius.circular(10),
+                               InkWell(
+                                 onTap: (){
+                                   Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => AllCategories()));
+                                 },
+                                 child: Container(
+                                   height: 50,
+                                   width: MediaQuery.of(context).size.width*0.8,
+                                   alignment: Alignment.center,
+                                   decoration: BoxDecoration(
+                                     color: lightBrown,
+                                     borderRadius: BorderRadius.circular(10),
+                                   ),
+                                   child: Text('bookNext'.tr(),style: TextStyle(fontSize: 20,color: Colors.white),),
                                  ),
-                                 child: Text('bookNext'.tr(),style: TextStyle(fontSize: 20,color: Colors.white),),
                                )
                              ],
                            )
