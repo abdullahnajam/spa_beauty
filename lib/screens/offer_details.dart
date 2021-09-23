@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:spa_beauty/model/offer_model.dart';
 import 'package:spa_beauty/model/service_model.dart';
 import 'package:spa_beauty/screens/reservation.dart';
-import 'package:spa_beauty/values/constants.dart';
+import 'package:spa_beauty/utils/constants.dart';
 import 'package:spa_beauty/widget/appbar.dart';
 import 'package:easy_localization/easy_localization.dart';
 class OfferDetail extends StatefulWidget {

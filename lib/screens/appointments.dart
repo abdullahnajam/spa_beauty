@@ -5,10 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:lottie/lottie.dart';
 import 'package:spa_beauty/auth/auth_selection.dart';
+import 'package:spa_beauty/auth/register.dart';
 import 'package:spa_beauty/model/appointment_model.dart';
 import 'package:spa_beauty/navigator/navigation_drawer.dart';
 import 'package:spa_beauty/screens/all_categories.dart';
-import 'package:spa_beauty/values/constants.dart';
+import 'package:spa_beauty/utils/constants.dart';
 import 'package:spa_beauty/widget/appbar.dart';
 import 'package:spa_beauty/widget/appointment_tile.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -176,7 +177,7 @@ class _AppointmentsState extends State<Appointments> {
                     //if all is pressed is upcoming choosed ?  true
                     option1 == 1 ? Expanded(
                       child: StreamBuilder<QuerySnapshot>(
-                        stream: FirebaseFirestore.instance.collection('appointments').where('status', whereIn: ['Approved','Pending'] )
+                        stream: FirebaseFirestore.instance.collection('appointments').where('status', whereIn: ['Approved','Pending'])
                           .where('userId', isEqualTo: FirebaseAuth.instance.currentUser!.uid ).snapshots(),
                         builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
                           if (snapshot.hasError) {
@@ -572,7 +573,7 @@ class _AppointmentsState extends State<Appointments> {
             Lottie.asset('assets/json/nouser.json',width: 150,height: 150),
             Container(
               alignment: Alignment.center,
-              child: Text("You are currently not logged In",style: TextStyle(fontSize: 20),),
+              child: Text('notLoggedIn'.tr(),style: TextStyle(fontSize: 20),),
             ),
             SizedBox(height: 20,),
             InkWell(
@@ -594,7 +595,29 @@ class _AppointmentsState extends State<Appointments> {
                 ),
                 alignment: Alignment.center,
                 margin: EdgeInsets.all(12),
-                child:Text("LOGIN",style: TextStyle(color: Colors.white,fontSize: 20,fontWeight: FontWeight.w500),),
+                child:Text('login'.tr(),style: TextStyle(color: Colors.white,fontSize: 20,fontWeight: FontWeight.w500),),
+              ),
+            ),
+            InkWell(
+              onTap: (){
+                Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => Register()));
+              },
+              child: Container(
+                height: 50,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(40),
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      darkBrown,
+                      lightBrown,
+                    ],
+                  ),
+                ),
+                alignment: Alignment.center,
+                margin: EdgeInsets.all(12),
+                child:Text('registerBtn'.tr(),style: TextStyle(color: Colors.white,fontSize: 20,fontWeight: FontWeight.w500),),
               ),
             )
 

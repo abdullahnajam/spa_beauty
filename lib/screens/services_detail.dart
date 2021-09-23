@@ -13,7 +13,7 @@ import 'package:spa_beauty/auth/auth_selection.dart';
 import 'package:spa_beauty/model/review_model.dart';
 import 'package:spa_beauty/model/service_model.dart';
 import 'package:spa_beauty/screens/reservation.dart';
-import 'package:spa_beauty/values/constants.dart';
+import 'package:spa_beauty/utils/constants.dart';
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:easy_localization/easy_localization.dart';
 
@@ -187,7 +187,41 @@ class _ServiceDetailState extends State<ServiceDetail> {
                           IconButton(
                             icon: Icon(Icons.share_outlined),
                             onPressed: (){
-                              Share.share('${widget.model.name}');
+                              String? url;
+                              FirebaseFirestore.instance.collection('settings').doc('points').get().then((DocumentSnapshot pointSnapshot) {
+                                if (pointSnapshot.exists) {
+                                  Map<String, dynamic> point = pointSnapshot.data() as Map<String, dynamic>;
+                                  int sharePoints=int.parse(point['service']);
+                                  FirebaseFirestore.instance.collection('customer').doc(FirebaseAuth.instance.currentUser!.uid)
+                                      .get()
+                                      .then((DocumentSnapshot userSnap) {
+                                    if (userSnap.exists) {
+                                      Map<String, dynamic> user = userSnap.data() as Map<String, dynamic>;
+                                      int userPoints=user['points'];
+                                      int points=userPoints+sharePoints;
+                                      print("points , user $userPoints + share $sharePoints = $points");
+                                      FirebaseFirestore.instance.collection('customer').doc(FirebaseAuth.instance.currentUser!.uid).update({
+                                        'points': points,
+                                      }).onError((error, stackTrace){
+                                        print("Database 1 Error : ${error.toString()}");
+                                        final snackBar = SnackBar(content: Text("Database Error : ${error.toString()}"));
+                                        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                                      });
+                                    }
+                                  }).onError((error, stackTrace){
+                                    print("Database 2 Error : ${error.toString()}");
+                                    final snackBar = SnackBar(content: Text("Database Error : ${error.toString()}"));
+                                    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                                  });
+
+                                }
+                              }).onError((error, stackTrace){
+                                print("Database 3 Error : ${error.toString()}");
+                                final snackBar = SnackBar(content: Text("Database Error : ${error.toString()}"));
+                                ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                              }).then((value) =>Share.share('${widget.model.name}'));
+
+
                             },
                           )
                         ],
@@ -195,22 +229,33 @@ class _ServiceDetailState extends State<ServiceDetail> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          RatingBar(
-                            initialRating: widget.model.rating.toDouble(),
-                            direction: Axis.horizontal,
-                            allowHalfRating: true,
-                            itemCount: 5,
-                            ratingWidget: RatingWidget(
-                              full: Icon(Icons.star,color: darkBrown),
-                              half: Icon(Icons.star_half,color: darkBrown),
-                              empty:Icon(Icons.star_border,color: darkBrown,),
-                            ),
-                            ignoreGestures: true,
-                            itemSize: 20,
-                            itemPadding: EdgeInsets.symmetric(horizontal: 1.0),
-                            onRatingUpdate: (rating) {
-                              print(rating);
-                            },
+                          Row(
+                            children: [
+                              RatingBar(
+                                initialRating: widget.model.rating.toDouble(),
+                                direction: Axis.horizontal,
+                                allowHalfRating: true,
+                                itemCount: 5,
+                                ratingWidget: RatingWidget(
+                                  full: Icon(Icons.star,color: darkBrown),
+                                  half: Icon(Icons.star_half,color: darkBrown),
+                                  empty:Icon(Icons.star_border,color: darkBrown,),
+                                ),
+                                ignoreGestures: true,
+                                itemSize: 20,
+                                itemPadding: EdgeInsets.symmetric(horizontal: 1.0),
+                                onRatingUpdate: (rating) {
+                                  print(rating);
+                                },
+                              ),
+                              Center(
+                                child: Text(" (${widget.model.totalRating})",textAlign:TextAlign.center,style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w400,
+                                    color: darkBrown
+                                )),
+                              )
+                            ],
                           ),
                           symbol==""?Container():
 
@@ -531,7 +576,7 @@ class _ServiceDetailState extends State<ServiceDetail> {
               context: context,
               dialogType: DialogType.QUESTION,
               animType: AnimType.BOTTOMSLIDE,
-              title: 'You are not logged in',
+              title: 'notLoggedIn'.tr(),
               desc: 'To continue with the booking please login',
               btnCancelOnPress: (){
                 Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) => ServiceDetail(widget.model,widget.Language)));

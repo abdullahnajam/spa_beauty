@@ -13,6 +13,7 @@
   "favourite": "المفضلة",
   "search": "بحث",
   "login": "الدخول",
+  "registerBtn": "تسجيل",
   "signin": "تسجيل الدخول",
   "signup": "اشتراك",
   "enterEmail": "أدخل بريدك الإلكتروني",
@@ -66,6 +67,8 @@
   "noFavourite": "لا مفضلات",
   "update": "تحديث",
   "username": "اسم االمستخدم",
+  "firstName": "الاسم الأول",
+  "lastName": "الكنية",
   "phoneNumber": "رقم التليفون",
   "playStore": "متجر Play",
   "appStore": "متجر التطبيقات",
@@ -99,5 +102,13 @@
   "cardPayment": "بطاقه ائتمان",
   "cashPayment": "دفع نقدا",
   "cancelBooking": "إلغاء الحجز",
-  "cancelConfirm": "هل أنت متأكد أنك تريد إلغاء موعدك"
+  "cancelConfirm": "هل أنت متأكد أنك تريد إلغاء موعدك",
+  "noCategories": "لا فئات",
+  "noNotifications": "لا إشعارات",
+  "notLoggedIn": "حاليا لم تقم بتسجيل دخولك",
+  "orWith": "أو مع",
+  "enterPhone":"أدخل رقم هاتفك",
+  "enterGender": "أدخل جنسك",
+  "enterUsername": "أدخل اسم المستخدم الخاص بك",
+  "forgotPassword": "هل نسيت كلمة السر؟"
 }

@@ -7,8 +7,8 @@ import 'package:easy_localization/easy_localization.dart';
 class ServiceSearch extends SearchDelegate<String> {
   final List<ServiceModel> service;
   String? result;
-
-  ServiceSearch(this.service);
+  String? language;
+  ServiceSearch(this.service,this.language);
 
   @override
   List<Widget> buildActions(BuildContext context) {
@@ -35,7 +35,11 @@ class ServiceSearch extends SearchDelegate<String> {
   @override
   Widget buildResults(BuildContext context) {
     final suggestions = service.where((service) {
-      return service.name.contains(query);
+      if(language=="English"){
+        return service.name.contains(query);
+      }
+      else
+        return service.name_ar.contains(query);
     });
 
     return ListView.builder(
@@ -58,8 +62,8 @@ class ServiceSearch extends SearchDelegate<String> {
               leading: ClipRRect(
                 child: Image.network(suggestions.elementAt(index).image),
               ),
-              title: Text(suggestions.elementAt(index).name,style: TextStyle(fontSize: 15,fontWeight: FontWeight.w500),),
-              subtitle: Text(suggestions.elementAt(index).categoryName,style: TextStyle(fontSize: 13,fontWeight: FontWeight.w300),),
+              title: Text(language=="English"?suggestions.elementAt(index).name:suggestions.elementAt(index).name_ar,style: TextStyle(fontSize: 15,fontWeight: FontWeight.w500),),
+              //subtitle: Text(suggestions.elementAt(index).categoryName,style: TextStyle(fontSize: 13,fontWeight: FontWeight.w300),),
 
             ),
           ),
@@ -70,7 +74,13 @@ class ServiceSearch extends SearchDelegate<String> {
 
   @override
   Widget buildSuggestions(BuildContext context) {
-    final suggestions = service.where((service) {return service.name.contains(query);});
+    final suggestions = service.where((service) {
+      if(language=="English"){
+        return service.name.contains(query);
+      }
+      else
+        return service.name_ar.contains(query);
+    });
 
     return ListView.builder(
       itemCount: suggestions.length,
@@ -92,8 +102,8 @@ class ServiceSearch extends SearchDelegate<String> {
               leading: ClipRRect(
                 child: Image.network(suggestions.elementAt(index).image),
               ),
-              title: Text(suggestions.elementAt(index).name,style: TextStyle(fontSize: 15,fontWeight: FontWeight.w500),),
-              subtitle: Text(suggestions.elementAt(index).categoryName,style: TextStyle(fontSize: 13,fontWeight: FontWeight.w300),),
+              title: Text(language=="English"?suggestions.elementAt(index).name:suggestions.elementAt(index).name_ar,style: TextStyle(fontSize: 15,fontWeight: FontWeight.w500),),
+              //subtitle: Text(suggestions.elementAt(index).categoryName,style: TextStyle(fontSize: 13,fontWeight: FontWeight.w300),),
 
             ),
           ),

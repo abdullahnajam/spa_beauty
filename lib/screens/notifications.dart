@@ -4,9 +4,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:spa_beauty/model/notification_model.dart';
 import 'package:spa_beauty/model/user_model.dart';
-import 'package:spa_beauty/values/constants.dart';
+import 'package:spa_beauty/navigator/bottom_navigation.dart';
+import 'package:spa_beauty/utils/constants.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:spa_beauty/values/sharedPref.dart';
+import 'package:spa_beauty/utils/sharedPref.dart';
 
 class Notifications extends StatefulWidget {
   const Notifications({Key? key}) : super(key: key);
@@ -115,11 +116,21 @@ class _NotificationsState extends State<Notifications> {
                 height:  AppBar().preferredSize.height,
                 child: Stack(
                   children: [
+                    context.locale.languageCode=="en"?
                     Align(
                       alignment: Alignment.centerLeft,
                       child: IconButton(
                         onPressed: (){
-                          Navigator.pop(context);
+                          Navigator.push(context, new MaterialPageRoute(builder: (context) => BottomBar()));
+                          },
+                        icon: Icon(Icons.arrow_back_sharp,color: darkBrown,),
+                      ),
+                    ):
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: IconButton(
+                        onPressed: (){
+                          Navigator.push(context, new MaterialPageRoute(builder: (context) => BottomBar()));
                         },
                         icon: Icon(Icons.arrow_back_sharp,color: darkBrown,),
                       ),
@@ -152,7 +163,7 @@ class _NotificationsState extends State<Notifications> {
                     }
                     if (snapshot.data!.size==0){
                       return Center(
-                          child: Text("No Notifications")
+                          child: Text('noNotifications'.tr())
 
                       );
 

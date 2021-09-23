@@ -3,11 +3,12 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:spa_beauty/model/category_model.dart';
 import 'package:spa_beauty/navigator/navigation_drawer.dart';
+import 'package:spa_beauty/screens/all_sub_categories.dart';
 import 'package:spa_beauty/screens/select_gender.dart';
 import 'package:spa_beauty/screens/services_list.dart';
 import 'package:spa_beauty/search/search_category.dart';
-import 'package:spa_beauty/values/constants.dart';
-import 'package:spa_beauty/values/sharedPref.dart';
+import 'package:spa_beauty/utils/constants.dart';
+import 'package:spa_beauty/utils/sharedPref.dart';
 import 'package:spa_beauty/widget/appbar.dart';
 import 'package:easy_localization/easy_localization.dart';
 class AllCategories extends StatefulWidget {
@@ -93,7 +94,8 @@ class _AllCategoriesState extends State<AllCategories> {
                             child: InkWell(
                               onTap: ()async{
                                 List<CategoryModel> category=[];
-                                FirebaseFirestore.instance.collection('categories').get().then((QuerySnapshot querySnapshot) {
+                                FirebaseFirestore.instance.collection('categories')
+                                    .where("isSubCategory", isEqualTo:false).get().then((QuerySnapshot querySnapshot) {
                                   querySnapshot.docs.forEach((doc) {
                                     Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
                                     CategoryModel model= CategoryModel.fromMap(data, doc.reference.id);
@@ -101,11 +103,13 @@ class _AllCategoriesState extends State<AllCategories> {
                                       category.add(model);
                                     });
                                   });
-                                });
-                                await showSearch<String>(
+                                }).then((value) {
+                                  showSearch<String>(
                                   context: context,
-                                  delegate: CategorySearch(category),
-                                );
+                                  delegate: CategorySearch(category,language),
+                                  );
+                                });
+
 
                               },
                               child: Container(
@@ -149,6 +153,7 @@ class _AllCategoriesState extends State<AllCategories> {
                       Expanded(
                         child: StreamBuilder<QuerySnapshot>(
                           stream: FirebaseFirestore.instance.collection('categories')
+                              .where("isSubCategory", isEqualTo:false)
                               .where("gender",isEqualTo: prefshot.data.toString()).snapshots(),
                           builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
                             if (snapshot.hasError) {
@@ -173,7 +178,7 @@ class _AllCategoriesState extends State<AllCategories> {
                                 child: Column(
                                   children: [
                                     Image.asset("assets/images/empty.png",width: 150,height: 150,),
-                                    Text("No Categories Added")
+                                    Text('noCategories'.tr())
 
                                   ],
                                 ),
@@ -188,8 +193,20 @@ class _AllCategoriesState extends State<AllCategories> {
                                 Map<String, dynamic> data = document.data() as Map<String, dynamic>;
                                 CategoryModel model= CategoryModel.fromMap(data, document.reference.id);
                                 return new InkWell(
-                                  onTap: (){
-                                    Navigator.push(context, new MaterialPageRoute(builder: (context) => AllServicesList(model.id,model.name)));
+                                  onTap: ()async{
+                                    int i=0;
+                                    await FirebaseFirestore.instance.collection('categories')
+                                        .where("mainCategoryId", isEqualTo: model.id).get().then((QuerySnapshot querySnapshot) {
+                                      querySnapshot.docs.forEach((doc) {
+                                        i++;
+                                      });
+                                    });
+                                    if(i>0){
+                                      Navigator.push(context, new MaterialPageRoute(builder: (context) => AllSubCategories(model)));
+
+                                    }
+                                    else
+                                    Navigator.push(context, new MaterialPageRoute(builder: (context) => AllServicesList(model.id,language=="English"?model.name:model.name_ar)));
                                   },
                                   child: Card(
                                     shape: RoundedRectangleBorder(
@@ -222,7 +239,7 @@ class _AllCategoriesState extends State<AllCategories> {
                                             ),
                                           ),
                                           alignment: Alignment.center,
-                                          child: Text(model.name,style: TextStyle(color: Colors.white),),
+                                          child: Text(language=="English"?model.name:model.name_ar,style: TextStyle(color: Colors.white),),
                                         )
                                       ],
                                     ),

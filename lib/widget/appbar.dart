@@ -1,7 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:spa_beauty/navigator/bottom_navigation.dart';
-import 'package:spa_beauty/values/constants.dart';
+import 'package:spa_beauty/utils/constants.dart';
+import 'package:easy_localization/easy_localization.dart';
 typedef void MyCallback();
 class CustomAppBar extends StatefulWidget {
   final MyCallback callback;
@@ -26,8 +27,18 @@ class _CustomAppBarState extends State<CustomAppBar> {
       height:  AppBar().preferredSize.height,
       child: Stack(
         children: [
+          context.locale.languageCode=="en"?
           Align(
             alignment: Alignment.centerLeft,
+            child: IconButton(
+              onPressed: (){
+                Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => BottomBar()));
+              },
+              icon: Icon(Icons.arrow_back_sharp,color: darkBrown,),
+            ),
+          ):
+          Align(
+            alignment: Alignment.centerRight,
             child: IconButton(
               onPressed: (){
                 Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => BottomBar()));

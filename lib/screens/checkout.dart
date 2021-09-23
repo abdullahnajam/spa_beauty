@@ -7,7 +7,7 @@ import 'package:spa_beauty/model/appointment_model.dart';
 import 'package:spa_beauty/navigator/bottom_navigation.dart';
 import 'package:spa_beauty/payment/payment-service.dart';
 import 'package:spa_beauty/screens/reservation.dart';
-import 'package:spa_beauty/values/constants.dart';
+import 'package:spa_beauty/utils/constants.dart';
 import 'package:spa_beauty/widget/appbar.dart';
 import 'package:easy_localization/easy_localization.dart';
 
@@ -21,7 +21,7 @@ class Checkout extends StatefulWidget {
 }
 
 class _CheckoutState extends State<Checkout> {
-  String payment='cardPayment'.tr();
+  String payment='cashPayment'.tr();
   String couponId="";
   String? symbol,align;
   List ids=[];
@@ -29,22 +29,10 @@ class _CheckoutState extends State<Checkout> {
     Navigator.pop(context);
   }
   String? amount;
-  int pointForService=0;
   @override
   void initState() {
     super.initState();
-    FirebaseFirestore.instance
-        .collection('settings')
-        .doc('points')
-        .get()
-        .then((DocumentSnapshot documentSnapshot) {
-      if (documentSnapshot.exists) {
-        Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
-        setState(() {
-          pointForService=data['point'];
-        });
-      }
-    });
+
     FirebaseFirestore.instance
         .collection('settings')
         .doc('currency')
@@ -64,23 +52,112 @@ class _CheckoutState extends State<Checkout> {
       print("amount $amount");
     });
   }
-
+  String branchId="",branchName="";
   final _formKey = GlobalKey<FormState>();
   var couponController=TextEditingController();
+  checkForBranch(bool paid)async{
+    List<Branch> branches=[];
+    await FirebaseFirestore.instance.collection('service_branches')
+        .where("serviceId", isEqualTo:widget.model.serviceId).get().then((QuerySnapshot querySnapshot) {
+      querySnapshot.docs.forEach((doc) {
+        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+        Branch _branch=new Branch(data['branchId'],data['name']);
+        branches.add(_branch);
+      });
+    });
+    if(branches.length==1){
+      setState(() {
+        branchId=branches[0].id;
+        branchName=branches[0].name;
+      });
+      bookAppointment(paid);
+    }
+    else if(branches.length==0){
+      setState(() {
+        branchId="none";
+        branchName="none";
+      });
+      bookAppointment(paid);
+    }
+    else{
+      showDialog(
+          context: context,
+          builder: (BuildContext context){
+            return StatefulBuilder(
+              builder: (context,setState){
+                return Dialog(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: const BorderRadius.all(
+                      Radius.circular(10.0),
+                    ),
+                  ),
+                  insetAnimationDuration: const Duration(seconds: 1),
+                  insetAnimationCurve: Curves.fastOutSlowIn,
+                  elevation: 2,
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: branches.length,
+                    itemBuilder: (BuildContext context,int index){
+                      return Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          children: [
+                            InkWell(
+                              onTap: (){
+                                setState(() {
+                                  branchId=branches[index].id;
+                                  branchName=branches[index].name;
+                                });
+                                Navigator.pop(context);
+                                bookAppointment(paid);
+                              },
+                              child: Text(branches[index].name)
+                            ),
+                            Divider(color: Colors.grey,),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                );
+              },
+            );
+          }
+      );
+    }
+  }
   payViaNewCard(BuildContext context) async {
     final ProgressDialog pr = ProgressDialog(context: context);
     pr.show(max: 100, msg: "Please wait");
-
+    int stripeAmount=int.parse(amount!)*100;
     await StripeService.payWithNewCard(
-        amount: '15000',
+        amount: '$stripeAmount',
         currency: 'USD'
-    ).whenComplete(() {
-      bookAppointment(true);
+    ).then((value){
+      if(value.success!){
+        checkForBranch(true);
+        pr.close();
+      }
+      else{
+        pr.close();
+        AwesomeDialog(
+          context: context,
+          dialogType: DialogType.ERROR,
+          animType: AnimType.BOTTOMSLIDE,
+          title: 'Error',
+          desc: '${value.message.toString()}',
+          btnOkOnPress: () {
+            Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) => Checkout(widget.model)));
+          },
+        )..show();
+      }
+
     });
-    pr.close();
+
 
   }
-  bookAppointment(bool paid){
+  bookAppointment(bool paid)async{
+
     final f = new DateFormat('dd-MM-yyyy');
     final ProgressDialog pr = ProgressDialog(context: context);
     pr.show(max: 100, msg: "Adding");
@@ -97,7 +174,7 @@ class _CheckoutState extends State<Checkout> {
       'status': "Pending",
       'isRated':false,
       'rating':0,
-      'points':pointForService,
+      'points':widget.model.points,
       'paid':paid,
       'paymentMethod':payment=='cashPayment'.tr()?"Cash Payment":"Card Payment",
       'datePosted':DateTime.now().millisecondsSinceEpoch,
@@ -105,6 +182,10 @@ class _CheckoutState extends State<Checkout> {
       'day':DateTime.now().day,
       'month':DateTime.now().month,
       'year':DateTime.now().year,
+      'branchName': branchName,
+      'place':"none",
+      'branchId': branchId,
+      'placeId': "none",
     }).then((value) {
       pr.close();
       if(couponId!=""){
@@ -146,7 +227,7 @@ class _CheckoutState extends State<Checkout> {
             if(payment=='cardPayment'.tr())
               payViaNewCard(context);
             else if(payment=='cashPayment'.tr())
-              bookAppointment(false);
+              checkForBranch(false);
 
           }
         },
@@ -186,8 +267,18 @@ class _CheckoutState extends State<Checkout> {
                 height:  AppBar().preferredSize.height,
                 child: Stack(
                   children: [
+                    context.locale.languageCode=="en"?
                     Align(
                       alignment: Alignment.centerLeft,
+                      child: IconButton(
+                        onPressed: (){
+                          Navigator.pop(context);
+                        },
+                        icon: Icon(Icons.arrow_back_sharp,color: darkBrown,),
+                      ),
+                    ):
+                    Align(
+                      alignment: Alignment.centerRight,
                       child: IconButton(
                         onPressed: (){
                           Navigator.pop(context);
@@ -445,7 +536,7 @@ class _CheckoutState extends State<Checkout> {
                               payment = newValue!;
                             });
                           },
-                          items: <String>['cardPayment'.tr(),'cashPayment'.tr()]
+                          items: <String>['cashPayment'.tr(),'cardPayment'.tr()]
                               .map<DropdownMenuItem<String>>((String value) {
                             return DropdownMenuItem<String>(
                               value: value,
@@ -468,4 +559,9 @@ class _CheckoutState extends State<Checkout> {
       ),
     );
   }
+}
+class Branch{
+  String id,name;
+
+  Branch(this.id, this.name);
 }

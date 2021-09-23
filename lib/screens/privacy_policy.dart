@@ -5,7 +5,7 @@ import 'package:spa_beauty/model/category_model.dart';
 import 'package:spa_beauty/navigator/navigation_drawer.dart';
 import 'package:spa_beauty/screens/services_list.dart';
 import 'package:spa_beauty/search/search_category.dart';
-import 'package:spa_beauty/values/constants.dart';
+import 'package:spa_beauty/utils/constants.dart';
 import 'package:spa_beauty/widget/appbar.dart';
 import 'package:easy_localization/easy_localization.dart';
 class PrivacyPolicy extends StatefulWidget {
@@ -51,6 +51,7 @@ class _PrivacyPolicyState extends State<PrivacyPolicy> {
                 height:  AppBar().preferredSize.height,
                 child: Stack(
                   children: [
+                    context.locale.languageCode=="en"?
                     Align(
                       alignment: Alignment.centerLeft,
                       child: IconButton(
@@ -59,7 +60,17 @@ class _PrivacyPolicyState extends State<PrivacyPolicy> {
                         },
                         icon: Icon(Icons.arrow_back_sharp,color: darkBrown,),
                       ),
+                    ):
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: IconButton(
+                        onPressed: (){
+                          Navigator.pop(context);
+                        },
+                        icon: Icon(Icons.arrow_back_sharp,color: darkBrown,),
+                      ),
                     ),
+
                     Align(
                       alignment: Alignment.center,
                       child: Text('privacy'.tr()),

@@ -1,20 +1,24 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class UserModel{
-  String username,email,phone,token,profilePicture,topic;
+  String id,firstName,lastName,email,phone,token,profilePicture,topic,gender,status;
   int wallet,points;
 
-  UserModel(this.username, this.email, this.phone, this.token,
-      this.profilePicture, this.topic,this.points,this.wallet);
+  UserModel(this.id,this.firstName,this.lastName, this.email, this.phone, this.token,
+      this.profilePicture, this.topic,this.points,this.wallet,this.gender,this.status);
 
   UserModel.fromMap(Map<String,dynamic> map,String key)
-      :username = map['username'],
+      : id=key,
+        firstName = map['firstName'],
+        lastName = map['lastName'],
+        gender = map['gender'],
         email = map['email'],
         phone = map['phone'],
         token = map['token'],
         profilePicture = map['profilePicture'],
         topic = map['topic'],
         points = map['points'],
+        status = map['status'],
         wallet = map['wallet'];
 
 

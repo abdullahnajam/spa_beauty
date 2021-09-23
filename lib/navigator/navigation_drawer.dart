@@ -85,6 +85,26 @@ class MenuDrawerState extends State<MenuDrawer> {
     Navigator.pop(context);
   }
 
+
+  Future<String> getSideBarImage()async{
+    String sideBarUrl="";
+    await FirebaseFirestore.instance.collection('settings').doc('app_data').get().then((DocumentSnapshot documentSnapshot) {
+      if (documentSnapshot.exists) {
+        Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
+        setState(() {
+          sideBarUrl=data['sideBar'];
+        });
+      }
+    });
+    print("side bar image $sideBarUrl");
+    return sideBarUrl;
+  }
+  @override
+  void initState() {
+    super.initState();
+
+  }
+
   @override
   Widget build(BuildContext context) {
 
@@ -95,13 +115,48 @@ class MenuDrawerState extends State<MenuDrawer> {
             children: <Widget>[
               Container(
                 height: 200,
+                child: FutureBuilder<String>(
+                  future: getSideBarImage(),
+                  builder: (context,shot){
+                    if (shot.hasData) {
+                      if (shot.data != null) {
+                        return Container(
+                          height: 200,
+                          decoration: BoxDecoration(
+                              image: DecorationImage(
+                                  image: NetworkImage(shot.data.toString()),
+                                  fit: BoxFit.cover
+                              )
+                          ),
+                        );
+                      }
+                      else {
+                        return new Center(
+                          child: Container(
+                              child: Text("no data")
+                          ),
+                        );
+                      }
+                    }
+                    else if (shot.hasError) {
+                      return Text('Error : ${shot.error}');
+                    } else {
+                      return new Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    }
+                  },
+                ),
+              ),
+              /*sideBarUrl==""?Center(child: CircularProgressIndicator(),):Container(
+                height: 200,
                 decoration: BoxDecoration(
                     image: DecorationImage(
-                        image: AssetImage("assets/images/logo.png"),
+                        image: NetworkImage(sideBarUrl),
                         fit: BoxFit.cover
                     )
                 ),
-              ),
+              ),*/
               Container(height: 8),
 
               FirebaseAuth.instance.currentUser!=null  ?

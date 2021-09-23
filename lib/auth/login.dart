@@ -1,11 +1,12 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:sn_progress_dialog/progress_dialog.dart';
 import 'package:spa_beauty/auth/register.dart';
 import 'package:spa_beauty/navigator/bottom_navigation.dart';
-import 'package:spa_beauty/values/constants.dart';
-
+import 'package:spa_beauty/utils/constants.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'auth_selection.dart';
 class Login extends StatefulWidget {
   const Login({Key? key}) : super(key: key);
@@ -15,9 +16,188 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
+  String imageUrl="";
+
+  @override
+  void initState() {
+    super.initState();
+    FirebaseFirestore.instance
+        .collection('settings')
+        .doc('app_data')
+        .get()
+        .then((DocumentSnapshot documentSnapshot) {
+      if (documentSnapshot.exists) {
+        Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
+        setState(() {
+          imageUrl=data['auth'];
+        });
+      }
+    });
+  }
   final _formKey = GlobalKey<FormState>();
   var emailController=TextEditingController();
   var passwordController=TextEditingController();
+  var changeEmailController=TextEditingController();
+  Future<void> _showPasswordDialog() async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Change Password'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children:  <Widget>[
+                Text("A mail has been sent to you. Please check your mail for reset password link"),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child:  Text("OK"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+  Future<void> _showForgotPasswordDialog() async {
+    final _formKey = GlobalKey<FormState>();
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: true, // user must tap button!
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Dialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: const BorderRadius.all(
+                  Radius.circular(10.0),
+                ),
+              ),
+              insetAnimationDuration: const Duration(seconds: 1),
+              insetAnimationCurve: Curves.fastOutSlowIn,
+              elevation: 2,
+
+              child: Container(
+                padding: EdgeInsets.all(20),
+                height: MediaQuery.of(context).size.height*0.4,
+                width: MediaQuery.of(context).size.width*0.5,
+                decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10)
+                ),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Stack(
+                        children: [
+                          Align(
+                            alignment: Alignment.center,
+                            child: Container(
+                              margin: EdgeInsets.all(10),
+                              child: Text('forgotPassword'.tr(),textAlign: TextAlign.center,style: Theme.of(context).textTheme.headline5!.apply(color: darkBrown),),
+                            ),
+                          ),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: Container(
+                              margin: EdgeInsets.all(10),
+
+                            ),
+                          )
+                        ],
+                      ),
+
+                      Expanded(
+                        child: ListView(
+                          children: [
+                            Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'email'.tr(),
+                                  style: Theme.of(context).textTheme.bodyText1!.apply(color: darkBrown),
+                                ),
+                                TextFormField(
+                                  controller: changeEmailController,
+                                  style: TextStyle(color: Colors.black),
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Please enter some text';
+                                    }
+                                    return null;
+                                  },
+                                  decoration: InputDecoration(
+                                    contentPadding: EdgeInsets.all(15),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(7.0),
+                                      borderSide: BorderSide(
+                                        color: lightBrown,
+                                      ),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(7.0),
+                                      borderSide: BorderSide(
+                                          color: lightBrown,
+                                          width: 0.5
+                                      ),
+                                    ),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(7.0),
+                                      borderSide: BorderSide(
+                                        color: lightBrown,
+                                        width: 0.5,
+                                      ),
+                                    ),
+                                    hintText: "",
+                                    floatingLabelBehavior: FloatingLabelBehavior.always,
+                                  ),
+                                ),
+                              ],
+                            ),
+
+
+
+                            SizedBox(height: 15,),
+                            InkWell(
+                              onTap: ()async{
+                                if (_formKey.currentState!.validate()) {
+                                  final FirebaseAuth firebaseAuth = FirebaseAuth.instance;
+                                  await firebaseAuth.sendPasswordResetEmail(email: changeEmailController.text.trim()).whenComplete((){
+                                    _showPasswordDialog();
+                                  }).catchError((onError){
+                                    print(onError.toString());
+
+                                  });
+                                }
+                              },
+                              child: Container(
+                                height: 50,
+                                color: darkBrown,
+                                alignment: Alignment.center,
+                                child: Text('changePassword'.tr(),style: Theme.of(context).textTheme.button!.apply(color: Colors.white),),
+                              ),
+                            )
+                          ],
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -38,7 +218,7 @@ class _LoginState extends State<Login> {
                             icon: Icon(Icons.arrow_back,color: Colors.white,),
                           ),
                           SizedBox(width: 5,),
-                          Text("Sign In",style: TextStyle(color: Colors.white,fontSize: 20,fontWeight: FontWeight.w500),)
+                          Text('signin'.tr(),style: TextStyle(color: Colors.white,fontSize: 20,fontWeight: FontWeight.w500),)
                         ],
                       )
                   ),
@@ -101,7 +281,7 @@ class _LoginState extends State<Login> {
                                         ),
                                       ),
                                       prefixIcon: Icon(Icons.email_outlined,color: darkBrown,size: 22,),
-                                      hintText: "Enter your email",
+                                      hintText: 'enterEmail'.tr(),
                                       // If  you are using latest version of flutter then lable text and hint text shown like this
                                       // if you r using flutter less then 1.20.* then maybe this is not working properly
                                       floatingLabelBehavior: FloatingLabelBehavior.always,
@@ -144,7 +324,7 @@ class _LoginState extends State<Login> {
                                         ),
                                       ),
                                       prefixIcon: Icon(Icons.lock_outline,color: darkBrown,size: 22,),
-                                      hintText: "Enter your password",
+                                      hintText: 'enterPassword'.tr(),
                                       // If  you are using latest version of flutter then lable text and hint text shown like this
                                       // if you r using flutter less then 1.20.* then maybe this is not working properly
                                       floatingLabelBehavior: FloatingLabelBehavior.always,
@@ -163,16 +343,42 @@ class _LoginState extends State<Login> {
                                             password: passwordController.text
                                         ).then((value) {
                                           pr.close();
-                                          Navigator.pushReplacement(context, new MaterialPageRoute(builder: (context) => BottomBar()));
+                                          FirebaseFirestore.instance
+                                              .collection('customer')
+                                              .doc(value.user!.uid)
+                                              .get()
+                                              .then((DocumentSnapshot documentSnapshot) {
+                                            if (documentSnapshot.exists) {
+                                              print('Document exists on the database');
+                                              Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
+                                              if(data['Active']){
+                                                Navigator.pushReplacement(context, new MaterialPageRoute(builder: (context) => BottomBar()));
+                                              }
+                                              else{
+                                                final snackBar = SnackBar(content: Text("This user is blocked by admin"));
+                                                ScaffoldMessenger.of(context).showSnackBar(snackBar);
+
+                                              }
+
+                                            }
+                                          });
 
                                         });
                                       } on FirebaseAuthException catch (e) {
                                         if (e.code == 'user-not-found') {
                                           pr.close();
                                           print('No user found for that email.');
+                                          final snackBar = SnackBar(content: Text("No user found for that email"));
+                                          ScaffoldMessenger.of(context).showSnackBar(snackBar);
                                         } else if (e.code == 'wrong-password') {
                                           pr.close();
                                           print('Wrong password provided for that user.');
+                                          final snackBar = SnackBar(content: Text("Wrong password provided for that user"));
+                                          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                                        }
+                                        else{
+                                          final snackBar = SnackBar(content: Text(e.message.toString()));
+                                          ScaffoldMessenger.of(context).showSnackBar(snackBar);
                                         }
                                       }
                                     }
@@ -192,8 +398,23 @@ class _LoginState extends State<Login> {
                                     ),
                                     alignment: Alignment.center,
                                     margin: EdgeInsets.all(12),
-                                    child:Text("LOGIN",style: TextStyle(color: Colors.white,fontSize: 20,fontWeight: FontWeight.w500),),
+                                    child:Text('login'.tr(),style: TextStyle(color: Colors.white,fontSize: 20,fontWeight: FontWeight.w500),),
                                   ),
+                                ),
+                                SizedBox(height: 10,),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    InkWell(
+                                      onTap: (){
+                                        _showForgotPasswordDialog();
+                                      },
+                                      child: Container(
+                                        margin: EdgeInsets.fromLTRB(12, 0,12, 0),
+                                        child: Text('forgotPassword'.tr(),style: TextStyle(fontSize: 15,fontWeight: FontWeight.w300,color: Colors.black),),
+                                      ),
+                                    )
+                                  ],
                                 ),
                                 SizedBox(height: 10,),
                                 Container(
@@ -206,7 +427,7 @@ class _LoginState extends State<Login> {
                                       ),
                                       SizedBox(width: 10,),
                                       Container(
-                                        child: Text("OR WITH",style: TextStyle(color: Colors.grey),),
+                                        child: Text('orWith'.tr(),style: TextStyle(color: Colors.grey),),
                                       ),
                                       SizedBox(width: 10,),
                                       Container(
@@ -277,14 +498,14 @@ class _LoginState extends State<Login> {
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Text("Don't have an account?"),
+                                      Text('already'.tr()),
                                       SizedBox(width: 5,),
                                       InkWell(
                                         onTap: (){
                                           Navigator.pushReplacement(context, new MaterialPageRoute(
                                               builder: (context) => Register()));
                                         },
-                                        child: Text("REGISTER",style: TextStyle(color: darkBrown,fontWeight: FontWeight.w600),),
+                                        child: Text('registerBtn'.tr(),style: TextStyle(color: darkBrown,fontWeight: FontWeight.w600),),
                                       )
                                     ],
                                   ),

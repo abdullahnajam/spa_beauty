@@ -1,11 +1,13 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:spa_beauty/auth/google_signIn.dart';
 import 'package:spa_beauty/auth/login.dart';
 import 'package:spa_beauty/auth/register.dart';
-import 'package:spa_beauty/values/constants.dart';
+import 'package:spa_beauty/utils/constants.dart';
 
 import 'facebook_signIn.dart';
+import 'package:easy_localization/easy_localization.dart';
 class AuthSelection extends StatefulWidget {
   const AuthSelection({Key? key}) : super(key: key);
 
@@ -21,7 +23,7 @@ class _AuthSelectionState extends State<AuthSelection> {
         children: [
           Expanded(
             flex: 6,
-            child: Image.asset('assets/images/placeholder.png',fit: BoxFit.cover,),
+            child: imageUrl==""?CircularProgressIndicator():Image.network(imageUrl,fit: BoxFit.cover,),
           ),
           Expanded(
             flex: 4,
@@ -48,7 +50,7 @@ class _AuthSelectionState extends State<AuthSelection> {
                     ),
                     alignment: Alignment.center,
                     margin: EdgeInsets.all(12),
-                    child:Text("LOGIN",style: TextStyle(color: Colors.white,fontSize: 20,fontWeight: FontWeight.w500),),
+                    child:Text('login'.tr(),style: TextStyle(color: Colors.white,fontSize: 20,fontWeight: FontWeight.w500),),
                   ),
                 ),
                 InkWell(
@@ -71,7 +73,7 @@ class _AuthSelectionState extends State<AuthSelection> {
                     ),
                     alignment: Alignment.center,
                     margin: EdgeInsets.all(12),
-                    child:Text("REGISTER",style: TextStyle(color: Colors.white,fontSize: 20,fontWeight: FontWeight.w500),),
+                    child:Text('registerBtn'.tr(),style: TextStyle(color: Colors.white,fontSize: 20,fontWeight: FontWeight.w500),),
                   ),
                 ),
                 SizedBox(height: 10,),
@@ -85,7 +87,7 @@ class _AuthSelectionState extends State<AuthSelection> {
                       ),
                       SizedBox(width: 10,),
                       Container(
-                        child: Text("OR WITH",style: TextStyle(color: Colors.grey),),
+                        child: Text('orWith'.tr(),style: TextStyle(color: Colors.grey),),
                       ),
                       SizedBox(width: 10,),
                       Container(
@@ -112,5 +114,23 @@ class _AuthSelectionState extends State<AuthSelection> {
         ],
       ),
     );
+  }
+  String imageUrl="";
+
+  @override
+  void initState() {
+    super.initState();
+    FirebaseFirestore.instance
+        .collection('settings')
+        .doc('app_data')
+        .get()
+        .then((DocumentSnapshot documentSnapshot) {
+      if (documentSnapshot.exists) {
+        Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
+        setState(() {
+          imageUrl=data['auth'];
+        });
+      }
+    });
   }
 }

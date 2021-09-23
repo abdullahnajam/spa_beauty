@@ -6,7 +6,7 @@ import 'package:maps_launcher/maps_launcher.dart';
 import 'package:spa_beauty/model/about_model.dart';
 import 'package:spa_beauty/model/specialist_model.dart';
 import 'package:spa_beauty/screens/home_page.dart';
-import 'package:spa_beauty/values/constants.dart';
+import 'package:spa_beauty/utils/constants.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:easy_localization/easy_localization.dart';
 class About extends StatefulWidget {
@@ -80,12 +80,18 @@ class _AboutState extends State<About> {
                     onPressed: (){} ,
                   ),
                 ),
-
+                context.locale.languageCode=="en"?
                 Positioned(
                   left: 20,
                   top: 40,
                   child: InkWell(onTap: ()=> Navigator.pop(context),
                       child: Icon(Icons.arrow_back_ios_sharp,color:Colors.black54,size: 25,)),
+                ):
+                Positioned(
+                  right: 20,
+                  top: 40,
+                  child: InkWell(onTap: ()=> Navigator.pop(context),
+                      child: Icon(Icons.arrow_forward_ios_outlined,color:Colors.black54,size: 25,)),
                 )
               ],
             ),

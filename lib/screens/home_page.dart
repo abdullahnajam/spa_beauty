@@ -18,10 +18,15 @@ import 'package:spa_beauty/screens/select_gender.dart';
 import 'package:spa_beauty/screens/services_detail.dart';
 import 'package:spa_beauty/screens/services_list.dart';
 import 'package:spa_beauty/search/search_service.dart';
-import 'package:spa_beauty/values/constants.dart';
+import 'package:spa_beauty/utils/constants.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:spa_beauty/values/sharedPref.dart';
+import 'package:spa_beauty/utils/dailog_alerts.dart';
+import 'package:spa_beauty/utils/database_services.dart';
+import 'package:spa_beauty/utils/sharedPref.dart';
+import 'package:spa_beauty/utils/webview.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+import 'all_sub_categories.dart';
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
 
@@ -38,7 +43,7 @@ class _HomePageState extends State<HomePage> {
     Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) => BottomBar()));
 
   }
-  Future<void> _showChangeNotificationDialog(ChangeModel model) async {
+  Future<void> _showChangeAlertDialog(ChangeModel model) async {
     return showDialog<void>(
       context: context,
       barrierDismissible: false, // user must tap button!
@@ -68,10 +73,13 @@ class _HomePageState extends State<HomePage> {
     );
   }
   bool isFilterTabOpened=false;
+  bool isCurrencyLoaded=false;
+  final db = DatabaseServices();
   int? rating=5;
   String? align;
   String? symbol;
   String genderImageUrl="";
+
   var reviewController=TextEditingController();
   @override
   void initState() {
@@ -86,7 +94,8 @@ class _HomePageState extends State<HomePage> {
         querySnapshot.docs.forEach((doc) {
           Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
           ChangeModel model=ChangeModel.fromMap(data, doc.reference.id);
-          _showChangeNotificationDialog(model);
+          _showChangeAlertDialog(model);
+
         });
       });
     }
@@ -96,9 +105,10 @@ class _HomePageState extends State<HomePage> {
       sharedPref.getPopupPref().then((popPref){
         print("pop pref : $popPref");
         if(popPref){
-          WidgetsBinding.instance!.addPostFrameCallback((_) {
+          WidgetsBinding.instance!.addPostFrameCallback((_) async{
           List<int> diff=[];
-            FirebaseFirestore.instance.collection('popups')
+          int expirePopups=0;
+            await FirebaseFirestore.instance.collection('popups')
                 .where("gender",isEqualTo: value.toString())
                 .where("language",isEqualTo: language)
                 .get()
@@ -108,10 +118,17 @@ class _HomePageState extends State<HomePage> {
                 int day= int.parse("${doc['endDate'][0]}${doc['endDate'][1]}");
                 int month= int.parse("${doc['endDate'][3]}${doc['endDate'][4]}");
                 diff.add(DateTime(year,month,day).difference(DateTime.now()).inDays);
+                print("diff inside ${diff.length}");
+                if(DateTime(year,month,day).difference(DateTime.now()).inDays>0){
+                  setState(() {
+                    expirePopups++;
+                  });
+                }
               });
             });
             int j=0,n=0;
-
+          print("diff outside ${diff.length}");
+          print("expirePopups ${expirePopups}");
             for(int i=0;i<diff.length;i++){
               if(diff[i]>0){
                 j++;
@@ -123,14 +140,18 @@ class _HomePageState extends State<HomePage> {
             if(j>0){
 
             }
-          showPopups(value.toString());
-          sharedPref.setPopupPref(false);
+            if(expirePopups>0){
+              showPopups(value.toString());
+              sharedPref.setPopupPref(false);
+            }
+
 
           });
         }
       });
 
     });
+
     sharedPref.getGenderImagePref().then((value){
       print("gender image $value");
       setState(() {
@@ -150,7 +171,6 @@ class _HomePageState extends State<HomePage> {
         _showRatingDialog(model);
       });
     });
-
     FirebaseFirestore.instance
         .collection('settings')
         .doc('currency')
@@ -159,6 +179,7 @@ class _HomePageState extends State<HomePage> {
       if (documentSnapshot.exists) {
         Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
         setState(() {
+          isCurrencyLoaded=true;
           symbol=data['symbol'];
           align=data['align'];
         });
@@ -263,7 +284,7 @@ class _HomePageState extends State<HomePage> {
                     child: RaisedButton(
                       color: darkBrown,
                       onPressed: ()async{
-                        print("presed $rating");
+                        print("pressed $rating");
                         final ProgressDialog pr = ProgressDialog(context: context);
                         pr.show(max: 100, msg: "Loading");
                         await FirebaseFirestore.instance.collection('reviews').doc(model.id).set({
@@ -283,37 +304,53 @@ class _HomePageState extends State<HomePage> {
                             'isRated': true,
                             'rating':rating,
                           }).onError((error, stackTrace){
+                            pr.close();
+                            print("Database 1 Error : ${error.toString()}");
                             final snackBar = SnackBar(content: Text("Database Error : ${error.toString()}"));
                             ScaffoldMessenger.of(context).showSnackBar(snackBar);
                           });
                         }).onError((error, stackTrace){
+                          pr.close();
+                          print("Database 2 Error : ${error.toString()}");
                           final snackBar = SnackBar(content: Text("Database Error : ${error.toString()}"));
                           ScaffoldMessenger.of(context).showSnackBar(snackBar);
                         });
                         await FirebaseFirestore.instance.collection('settings').doc('points').get().then((DocumentSnapshot pointSnapshot) {
                           if (pointSnapshot.exists) {
+
                             print("point exists");
                             Map<String, dynamic> point = pointSnapshot.data() as Map<String, dynamic>;
+                            print("mypoint ${point['point']}");
+                            int reviewPoints=int.parse(point['point']);
                             FirebaseFirestore.instance.collection('customer').doc(FirebaseAuth.instance.currentUser!.uid).get().then((DocumentSnapshot userSnap) {
                               if (userSnap.exists) {
-                                print("customer ");
                                 Map<String, dynamic> user = userSnap.data() as Map<String, dynamic>;
-                                int points=user['points']+point['point'];
+                                print("customer ${user['points']}");
+                                int userPoints=user['points'];
+                                print("user points $userPoints");
+                                int points=userPoints+reviewPoints;
                                 print("points $points ${user['points']} ${point['point']}");
                                 FirebaseFirestore.instance.collection('customer').doc(FirebaseAuth.instance.currentUser!.uid).update({
                                   'points': points,
                                 }).onError((error, stackTrace){
+                                  pr.close();
+                                  print("Database 3 Error : ${error.toString()}");
                                   final snackBar = SnackBar(content: Text("Database Error : ${error.toString()}"));
                                   ScaffoldMessenger.of(context).showSnackBar(snackBar);
+
                                 });
                               }
                             }).onError((error, stackTrace){
+                              pr.close();
+                              print("Database 4 Error : ${error.toString()}");
                               final snackBar = SnackBar(content: Text("Database Error : ${error.toString()}"));
                               ScaffoldMessenger.of(context).showSnackBar(snackBar);
                             });
 
                           }
                         }).onError((error, stackTrace){
+                          pr.close();
+                          print("Database 5 Error : ${error.toString()}");
                           final snackBar = SnackBar(content: Text("Database Error : ${error.toString()}"));
                           ScaffoldMessenger.of(context).showSnackBar(snackBar);
                         });
@@ -426,11 +463,13 @@ class _HomePageState extends State<HomePage> {
                                   padding: const EdgeInsets.only(top: 0.0),
                                   child: difference>0?InkWell(
                                     onTap: ()async{
-                                      await canLaunch(data['link']) ? await launch(data['link']) : throw 'Could not launch ${data['link']}';
+                                      Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => WebViewScreen(data['link'].toString())));
+                                     // await launch();
+                                      //await canLaunch(data['link']) ?  : throw 'Could not launch ${data['link']}';
                                     },
                                     child: Image.network(
                                       data['image'],
-                                      height: MediaQuery.of(context).size.height*0.6,
+                                      height: MediaQuery.of(context).size.height*0.35,
                                       width: MediaQuery.of(context).size.width,
                                       fit: BoxFit.cover,
                                     )
@@ -477,7 +516,7 @@ class _HomePageState extends State<HomePage> {
 
                     )
                 ),
-                child: Column(
+                child: isCurrencyLoaded?Column(
                   children: [
                     Container(
                       height: MediaQuery.of(context).size.height*0.45,
@@ -532,7 +571,7 @@ class _HomePageState extends State<HomePage> {
                                                 }).then((value){
                                                   showSearch<String>(
                                                     context: context,
-                                                    delegate: ServiceSearch(services),
+                                                    delegate: ServiceSearch(services,language),
                                                   );
                                                 });
                                                 print("size ${services.length}");
@@ -736,10 +775,23 @@ class _HomePageState extends State<HomePage> {
                                   scrollDirection: Axis.horizontal,
                                   children: snapshot.data!.docs.map((DocumentSnapshot document) {
                                     Map<String, dynamic> data = document.data() as Map<String, dynamic>;
+                                    CategoryModel model=CategoryModel.fromMap(data, document.reference.id);
 
                                     return  InkWell(
-                                      onTap: (){
-                                        Navigator.push(context, new MaterialPageRoute(builder: (context) => AllServicesList(document.reference.id,data['name'])));
+                                      onTap: ()async{
+                                        int i=0;
+                                        await FirebaseFirestore.instance.collection('categories')
+                                            .where("mainCategoryId", isEqualTo: model.id).get().then((QuerySnapshot querySnapshot) {
+                                          querySnapshot.docs.forEach((doc) {
+                                            i++;
+                                          });
+                                        });
+                                        if(i>0){
+                                          Navigator.push(context, new MaterialPageRoute(builder: (context) => AllSubCategories(model)));
+
+                                        }
+                                        else
+                                        Navigator.push(context, new MaterialPageRoute(builder: (context) => AllServicesList(document.reference.id,language=="English"?data['name']:data['name_ar'])));
                                       },
                                       child: Container(
                                         height: 100,
@@ -749,6 +801,8 @@ class _HomePageState extends State<HomePage> {
                                           mainAxisAlignment: MainAxisAlignment.center,
                                           children: [
                                             Container(
+
+
                                               decoration: BoxDecoration(
                                                   color: Colors.grey,
                                                   shape: BoxShape.circle,
@@ -833,7 +887,7 @@ class _HomePageState extends State<HomePage> {
                                     child: InkWell(
                                       onTap: (){
                                         Navigator.push(context, new MaterialPageRoute(
-                                            builder: (context) => AllServicesList(model.name,model.linkId)));
+                                            builder: (context) => AllServicesList(model.linkId,language=="English"?model.name:model.name)));
                                       },
                                       child: Container(
                                         margin: EdgeInsets.all(10),
@@ -1048,7 +1102,7 @@ class _HomePageState extends State<HomePage> {
 
 
                   ],
-                ),
+                ):Container(),
               );
             }
             else {

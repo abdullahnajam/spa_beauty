@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:spa_beauty/model/service_model.dart';
 import 'package:spa_beauty/screens/point_service_reservation.dart';
-import 'package:spa_beauty/values/constants.dart';
+import 'package:spa_beauty/utils/constants.dart';
 import 'package:easy_localization/easy_localization.dart';
 class RedeemPoints extends StatefulWidget {
   const RedeemPoints({Key? key}) : super(key: key);
@@ -81,6 +81,7 @@ class _RedeemPointsState extends State<RedeemPoints> {
                       alignment: Alignment.center,
                       child: Text('redeemPoints'.tr()),
                     ),
+                    context.locale.languageCode=="en"?
                     Align(
                       alignment: Alignment.centerLeft,
                       child: IconButton(
@@ -88,8 +89,17 @@ class _RedeemPointsState extends State<RedeemPoints> {
                           Navigator.pop(context);
                         },
                         icon: Icon(Icons.arrow_back_sharp,color: darkBrown,),
-                      )
-                    )
+                      ),
+                    ):
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: IconButton(
+                        onPressed: (){
+                          Navigator.pop(context);
+                        },
+                        icon: Icon(Icons.arrow_back_sharp,color: darkBrown,),
+                      ),
+                    ),
                   ],
                 ),
               ),

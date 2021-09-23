@@ -8,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:lottie/lottie.dart';
 import 'package:sn_progress_dialog/progress_dialog.dart';
 import 'package:spa_beauty/auth/auth_selection.dart';
+import 'package:spa_beauty/auth/register.dart';
 import 'package:spa_beauty/model/user_model.dart';
 import 'package:spa_beauty/navigator/bottom_navigation.dart';
 import 'package:spa_beauty/navigator/navigation_drawer.dart';
@@ -16,7 +17,7 @@ import 'package:spa_beauty/screens/invite.dart';
 import 'package:spa_beauty/screens/notifications.dart';
 import 'package:spa_beauty/screens/privacy_policy.dart';
 import 'package:spa_beauty/screens/redeem_points.dart';
-import 'package:spa_beauty/values/constants.dart';
+import 'package:spa_beauty/utils/constants.dart';
 import 'package:spa_beauty/widget/appbar.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
@@ -28,6 +29,7 @@ class MyAccount extends StatefulWidget {
 }
 
 class _MyAccountState extends State<MyAccount> {
+
   final GlobalKey<ScaffoldState> _drawerKey = GlobalKey();
   void _openDrawer () {
     _drawerKey.currentState!.openDrawer();
@@ -247,11 +249,21 @@ class _MyAccountState extends State<MyAccount> {
                 height:  AppBar().preferredSize.height,
                 child: Stack(
                   children: [
+                    context.locale.languageCode=="en"?
                     Align(
                       alignment: Alignment.centerLeft,
                       child: IconButton(
                         onPressed: (){
-                          Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => BottomBar()));
+                          Navigator.push(context, new MaterialPageRoute(builder: (context) => BottomBar()));
+                        },
+                        icon: Icon(Icons.arrow_back_sharp,color: darkBrown,),
+                      ),
+                    ):
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: IconButton(
+                        onPressed: (){
+                          Navigator.push(context, new MaterialPageRoute(builder: (context) => BottomBar()));
                         },
                         icon: Icon(Icons.arrow_back_sharp,color: darkBrown,),
                       ),
@@ -295,7 +307,7 @@ class _MyAccountState extends State<MyAccount> {
                           ),
                           Container(
                             margin: EdgeInsets.all(10),
-                            child: Text(user!.username,style:  Theme.of(context).textTheme.headline6!.apply(color: Colors.black),),
+                            child: Text("${user!.firstName} ${user!.lastName}",style:  Theme.of(context).textTheme.headline6!.apply(color: Colors.black),),
                           ),
                           Container(
                             child: Text(user!.email,style:  TextStyle(color: Colors.grey),),
@@ -479,7 +491,7 @@ class _MyAccountState extends State<MyAccount> {
                   Lottie.asset('assets/json/nouser.json',width: 150,height: 150),
                   Container(
                     alignment: Alignment.center,
-                    child: Text("You are currently not logged In",style: TextStyle(fontSize: 20),),
+                    child: Text('notLoggedIn'.tr(),style: TextStyle(fontSize: 20),),
                   ),
                   SizedBox(height: 20,),
                   InkWell(
@@ -501,7 +513,29 @@ class _MyAccountState extends State<MyAccount> {
                       ),
                       alignment: Alignment.center,
                       margin: EdgeInsets.all(12),
-                      child:Text("LOGIN",style: TextStyle(color: Colors.white,fontSize: 20,fontWeight: FontWeight.w500),),
+                      child:Text('login'.tr(),style: TextStyle(color: Colors.white,fontSize: 20,fontWeight: FontWeight.w500),),
+                    ),
+                  ),
+                  InkWell(
+                    onTap: (){
+                      Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => Register()));
+                    },
+                    child: Container(
+                      height: 50,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(40),
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            darkBrown,
+                            lightBrown,
+                          ],
+                        ),
+                      ),
+                      alignment: Alignment.center,
+                      margin: EdgeInsets.all(12),
+                      child:Text('registerBtn'.tr(),style: TextStyle(color: Colors.white,fontSize: 20,fontWeight: FontWeight.w500),),
                     ),
                   )
 
@@ -529,7 +563,7 @@ class _MyAccountState extends State<MyAccount> {
               dataLoading=false;
               emailController.text=user!.email;
               phoneController.text=user!.phone;
-              usernameController.text=user!.username;
+              usernameController.text="${user!.firstName} ${user!.lastName}";
               profileImage=user!.profilePicture;
             });
           }

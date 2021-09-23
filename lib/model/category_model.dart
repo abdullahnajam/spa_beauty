@@ -2,6 +2,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class CategoryModel{
   String id,name,name_ar,tags,image,gender;bool isFeatured;
+  bool isAllBranchs,isSubCategory;
+  List branchIds;
+  String mainCategoryName,mainCategoryNameAr,mainCategoryId;
+
 
 
   CategoryModel.fromMap(Map<String,dynamic> map,String key)
@@ -11,6 +15,12 @@ class CategoryModel{
         tags = map['tags'],
         image = map['image'],
         gender = map['gender'],
+        isAllBranchs = map['isAllBranchs'],
+        branchIds = map['branchIds'],
+        isSubCategory = map['isSubCategory'],
+        mainCategoryName = map['mainCategoryName'],
+        mainCategoryNameAr = map['mainCategoryNameAr'],
+        mainCategoryId = map['mainCategoryId'],
         isFeatured = map['isFeatured'];
 
 
@@ -18,26 +28,7 @@ class CategoryModel{
   CategoryModel.fromSnapshot(DocumentSnapshot snapshot )
       : this.fromMap(snapshot.data() as Map<String, dynamic>,snapshot.reference.id);
 
-  CategoryModel(this.id, this.name,this.name_ar, this.tags, this.image,this.gender,this.isFeatured);
+  CategoryModel(this.id, this.name,this.name_ar, this.tags, this.image,this.gender,this.isFeatured,this.branchIds,this.isAllBranchs,
+      this.isSubCategory,this.mainCategoryId,this.mainCategoryName,this.mainCategoryNameAr);
 }
 
-class SubCategoryModel{
-  String id,name,tags,image,mainCategory,mainCategoryId;
-
-
-  SubCategoryModel.fromMap(Map<String,dynamic> map,String key)
-      : id=key,
-        name = map['name'],
-        tags = map['tags'],
-        image = map['image'],
-        mainCategory = map['mainCategory'],
-        mainCategoryId = map['mainCategoryId'];
-
-
-
-  SubCategoryModel.fromSnapshot(DocumentSnapshot snapshot )
-      : this.fromMap(snapshot.data() as Map<String, dynamic>,snapshot.reference.id);
-
-  SubCategoryModel(this.id, this.name, this.tags, this.image, this.mainCategory,
-      this.mainCategoryId);
-}

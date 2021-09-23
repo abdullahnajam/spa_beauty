@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:spa_beauty/navigator/bottom_navigation.dart';
 import 'package:spa_beauty/screens/home_page.dart';
 import 'package:spa_beauty/screens/select_gender.dart';
-import 'package:spa_beauty/values/constants.dart';
-import 'package:spa_beauty/values/sharedPref.dart';
+import 'package:spa_beauty/utils/constants.dart';
+import 'package:spa_beauty/utils/sharedPref.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:easy_localization/easy_localization.dart';
 class SplashScreen extends StatefulWidget {
@@ -22,10 +22,24 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> {
   final splashDelay = 5;
   SharedPref sharedPref=new SharedPref();
+  bool isImageLoaded=false;
+  String imageUrl="";
 
   @override
   void initState() {
     super.initState();
+    FirebaseFirestore.instance
+        .collection('settings')
+        .doc('app_data')
+        .get()
+        .then((DocumentSnapshot documentSnapshot) {
+      if (documentSnapshot.exists) {
+        Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
+        setState(() {
+          imageUrl=data['splash'];
+        });
+      }
+    });
     sharedPref.setPopupPref(true);
     _loadWidget();
   }
@@ -51,7 +65,7 @@ class _SplashScreenState extends State<SplashScreen> {
           child: Center(child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Image.asset('assets/images/logo.png',width: 150,height: 150,),
+              imageUrl==""?CircularProgressIndicator():Image.network(imageUrl,width: 150,height: 150,),
             ],
           )),
           decoration: BoxDecoration(

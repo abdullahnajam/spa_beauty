@@ -6,7 +6,7 @@ import 'package:spa_beauty/model/service_model.dart';
 import 'package:spa_beauty/navigator/navigation_drawer.dart';
 import 'package:spa_beauty/screens/reservation.dart';
 import 'package:spa_beauty/screens/services_detail.dart';
-import 'package:spa_beauty/values/constants.dart';
+import 'package:spa_beauty/utils/constants.dart';
 import 'package:spa_beauty/widget/appbar.dart';
 import 'package:easy_localization/easy_localization.dart';
 class AllServices extends StatefulWidget {
@@ -98,7 +98,7 @@ class _AllServicesState extends State<AllServices> {
                         child: Column(
                           children: [
                             Image.asset("assets/images/empty.png",width: 150,height: 150,),
-                            Text("No Service Added")
+                            Text('noServices'.tr())
 
                           ],
                         ),

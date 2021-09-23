@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:spa_beauty/model/user_model.dart';
-import 'package:spa_beauty/values/constants.dart';
+import 'package:spa_beauty/utils/constants.dart';
 
 class AccountInformation extends StatefulWidget {
   UserModel user;
@@ -67,7 +67,7 @@ class _AccountInformationState extends State<AccountInformation> {
                   ),
                   Container(
                     margin: EdgeInsets.all(10),
-                    child: Text(widget.user.username,style:  Theme.of(context).textTheme.headline6!.apply(color: Colors.black),),
+                    child: Text("${widget.user.firstName} ${widget.user.lastName}",style:  Theme.of(context).textTheme.headline6!.apply(color: Colors.black),),
                   ),
                   Container(
                     child: Text(widget.user.email,style:  TextStyle(color: Colors.grey),),

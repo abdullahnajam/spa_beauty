@@ -6,8 +6,8 @@ import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:spa_beauty/model/gender_model.dart';
 import 'package:spa_beauty/navigator/bottom_navigation.dart';
 import 'package:spa_beauty/screens/all_categories.dart';
-import 'package:spa_beauty/values/constants.dart';
-import 'package:spa_beauty/values/sharedPref.dart';
+import 'package:spa_beauty/utils/constants.dart';
+import 'package:spa_beauty/utils/sharedPref.dart';
 import 'package:spa_beauty/widget/appbar.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -205,7 +205,26 @@ class _SelectGenderState extends State<SelectGender> {
                     Align(
                       alignment: Alignment.center,
                       child: Text('chooseGender'.tr()),
-                    )
+                    ),
+                    context.locale.languageCode=="en"?
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: IconButton(
+                        onPressed: (){
+                          Navigator.pop(context);
+                        },
+                        icon: Icon(Icons.arrow_back_sharp,color: darkBrown,),
+                      ),
+                    ):
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: IconButton(
+                        onPressed: (){
+                          Navigator.pop(context);
+                        },
+                        icon: Icon(Icons.arrow_back_sharp,color: darkBrown,),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -221,7 +240,7 @@ class _SelectGenderState extends State<SelectGender> {
                         borderRadius: BorderRadius.circular(10)
                     ),
                     margin: EdgeInsets.all(20),
-                    height: MediaQuery.of(context).size.height*0.75,
+                    height: MediaQuery.of(context).size.height*0.8,
                     width: double.maxFinite,
                     child: PageView.builder(
                         controller: controller,

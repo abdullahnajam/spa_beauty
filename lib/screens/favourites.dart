@@ -5,10 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:lottie/lottie.dart';
 import 'package:spa_beauty/auth/auth_selection.dart';
+import 'package:spa_beauty/auth/register.dart';
 import 'package:spa_beauty/model/service_model.dart';
 import 'package:spa_beauty/navigator/navigation_drawer.dart';
 import 'package:spa_beauty/screens/reservation.dart';
-import 'package:spa_beauty/values/constants.dart';
+import 'package:spa_beauty/utils/constants.dart';
 import 'package:spa_beauty/widget/appbar.dart';
 import 'package:easy_localization/easy_localization.dart';
 class Favourites extends StatefulWidget {
@@ -26,8 +27,19 @@ class _FavouritesState extends State<Favourites> {
   List<String> id=[];
   List<ServiceModel> services=[];
   bool isLoaded=false;
+  String? language;
+  void checkLanguage(){
+    String languageCode=context.locale.toLanguageTag().toString();
+    languageCode="${languageCode[languageCode.length-2]}${languageCode[languageCode.length-1]}";
+    if(languageCode=="US")
+      language="English";
+    else
+      language="Arabic";
+    print("language $language $languageCode");
+  }
   @override
   Widget build(BuildContext context) {
+    checkLanguage();
     return Scaffold(
       backgroundColor: Colors.grey[200],
       drawer: MenuDrawer(),
@@ -84,7 +96,7 @@ class _FavouritesState extends State<Favourites> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     ListTile(
-                                      title: Text(services[index].name,style: TextStyle(fontSize: 15,fontWeight: FontWeight.w500),),
+                                      title: Text(language=="English"?services[index].name:services[index].name_ar,style: TextStyle(fontSize: 15,fontWeight: FontWeight.w500),),
                                       subtitle:Text('service'.tr(),style: TextStyle(fontSize: 12,fontWeight: FontWeight.w300),),
                                     ),
                                     Column(
@@ -164,7 +176,7 @@ class _FavouritesState extends State<Favourites> {
               Lottie.asset('assets/json/nouser.json',width: 150,height: 150),
               Container(
                 alignment: Alignment.center,
-                child: Text("You are currently not logged In",style: TextStyle(fontSize: 20),),
+                child: Text('notLoggedIn'.tr(),style: TextStyle(fontSize: 20),),
               ),
               SizedBox(height: 20,),
               InkWell(
@@ -186,7 +198,29 @@ class _FavouritesState extends State<Favourites> {
                   ),
                   alignment: Alignment.center,
                   margin: EdgeInsets.all(12),
-                  child:Text("LOGIN",style: TextStyle(color: Colors.white,fontSize: 20,fontWeight: FontWeight.w500),),
+                  child:Text('login'.tr(),style: TextStyle(color: Colors.white,fontSize: 20,fontWeight: FontWeight.w500),),
+                ),
+              ),
+              InkWell(
+                onTap: (){
+                  Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => Register()));
+                },
+                child: Container(
+                  height: 50,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(40),
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        darkBrown,
+                        lightBrown,
+                      ],
+                    ),
+                  ),
+                  alignment: Alignment.center,
+                  margin: EdgeInsets.all(12),
+                  child:Text('registerBtn'.tr(),style: TextStyle(color: Colors.white,fontSize: 20,fontWeight: FontWeight.w500),),
                 ),
               )
 
@@ -200,6 +234,7 @@ class _FavouritesState extends State<Favourites> {
   @override
   void initState() {
     super.initState();
+
     if(FirebaseAuth.instance.currentUser!=null){
       FirebaseFirestore.instance.collection('favourites').doc(FirebaseAuth.instance.currentUser!.uid).collection("services").get().then((QuerySnapshot querySnapshot) {
         querySnapshot.docs.forEach((doc) {

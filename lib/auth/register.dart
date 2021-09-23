@@ -5,7 +5,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:sn_progress_dialog/progress_dialog.dart';
 import 'package:spa_beauty/navigator/bottom_navigation.dart';
-import 'package:spa_beauty/values/constants.dart';
+import 'package:spa_beauty/utils/constants.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 import 'login.dart';
 class Register extends StatefulWidget {
@@ -16,11 +17,30 @@ class Register extends StatefulWidget {
 }
 
 class _RegisterState extends State<Register> {
+  String imageUrl="";
+
+  @override
+  void initState() {
+    super.initState();
+    FirebaseFirestore.instance
+        .collection('settings')
+        .doc('app_data')
+        .get()
+        .then((DocumentSnapshot documentSnapshot) {
+      if (documentSnapshot.exists) {
+        Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
+        setState(() {
+          imageUrl=data['auth'];
+        });
+      }
+    });
+  }
   final _formKey = GlobalKey<FormState>();
   var emailController=TextEditingController();
   var passwordController=TextEditingController();
   var genderController=TextEditingController();
-  var usernameController=TextEditingController();
+  var firstnameController=TextEditingController();
+  var lastnameController=TextEditingController();
   var phoneNumberController=TextEditingController();
 
   @override
@@ -45,7 +65,7 @@ class _RegisterState extends State<Register> {
                             icon: Icon(Icons.arrow_back,color: Colors.white,),
                           ),
                           SizedBox(width: 5,),
-                          Text("Sign Up",style: TextStyle(color: Colors.white,fontSize: 20,fontWeight: FontWeight.w500),)
+                          Text('signup'.tr(),style: TextStyle(color: Colors.white,fontSize: 20,fontWeight: FontWeight.w500),)
                         ],
                       )
                   ),
@@ -69,7 +89,7 @@ class _RegisterState extends State<Register> {
                             margin: EdgeInsets.only(left: 10,right: 10),
                             child: TextFormField(
                               keyboardType: TextInputType.text,
-                              controller: usernameController,
+                              controller: firstnameController,
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
                                   return 'Please enter some text';
@@ -100,7 +120,50 @@ class _RegisterState extends State<Register> {
                                   ),
                                 ),
                                 prefixIcon: Icon(Icons.person_outline,color: darkBrown,size: 22,),
-                                hintText: "Enter your username",
+                                hintText: 'firstName'.tr(),
+                                // If  you are using latest version of flutter then lable text and hint text shown like this
+                                // if you r using flutter less then 1.20.* then maybe this is not working properly
+                                floatingLabelBehavior: FloatingLabelBehavior.always,
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 20,),
+                          Container(
+                            margin: EdgeInsets.only(left: 10,right: 10),
+                            child: TextFormField(
+                              keyboardType: TextInputType.text,
+                              controller: lastnameController,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter some text';
+                                }
+                                return null;
+                              },
+
+                              decoration: InputDecoration(
+                                contentPadding: EdgeInsets.all(15),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(30.0),
+                                  borderSide: BorderSide(
+                                    color: darkBrown,
+                                  ),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(30.0),
+                                  borderSide: BorderSide(
+                                      color: darkBrown,
+                                      width: 0.5
+                                  ),
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(30.0),
+                                  borderSide: BorderSide(
+                                    color: darkBrown,
+                                    width: 0.5,
+                                  ),
+                                ),
+                                prefixIcon: Icon(Icons.person_outline,color: darkBrown,size: 22,),
+                                hintText: 'lastName'.tr(),
                                 // If  you are using latest version of flutter then lable text and hint text shown like this
                                 // if you r using flutter less then 1.20.* then maybe this is not working properly
                                 floatingLabelBehavior: FloatingLabelBehavior.always,
@@ -143,7 +206,7 @@ class _RegisterState extends State<Register> {
                                   ),
                                 ),
                                 prefixIcon: Icon(Icons.phone_outlined,color: darkBrown,size: 22,),
-                                hintText: "Enter your phone number",
+                                hintText: 'enterPhone'.tr(),
                                 // If  you are using latest version of flutter then lable text and hint text shown like this
                                 // if you r using flutter less then 1.20.* then maybe this is not working properly
                                 floatingLabelBehavior: FloatingLabelBehavior.always,
@@ -187,7 +250,7 @@ class _RegisterState extends State<Register> {
                                   ),
                                 ),
                                 prefixIcon: Icon(Icons.email_outlined,color: darkBrown,size: 22,),
-                                hintText: "Enter your email",
+                                hintText: 'enterEmail'.tr(),
                                 // If  you are using latest version of flutter then lable text and hint text shown like this
                                 // if you r using flutter less then 1.20.* then maybe this is not working properly
                                 floatingLabelBehavior: FloatingLabelBehavior.always,
@@ -230,7 +293,7 @@ class _RegisterState extends State<Register> {
                                   ),
                                 ),
                                 prefixIcon: Icon(Icons.lock_outline,color: darkBrown,size: 22,),
-                                hintText: "Enter your password",
+                                hintText: 'enterPassword'.tr(),
                                 // If  you are using latest version of flutter then lable text and hint text shown like this
                                 // if you r using flutter less then 1.20.* then maybe this is not working properly
                                 floatingLabelBehavior: FloatingLabelBehavior.always,
@@ -352,7 +415,7 @@ class _RegisterState extends State<Register> {
                                   ),
                                 ),
                                 prefixIcon: Icon(Icons.male_outlined,color: darkBrown,size: 22,),
-                                hintText: "Enter your gender",
+                                hintText:'enterGender'.tr(),
                                 // If  you are using latest version of flutter then lable text and hint text shown like this
                                 // if you r using flutter less then 1.20.* then maybe this is not working properly
                                 floatingLabelBehavior: FloatingLabelBehavior.always,
@@ -374,12 +437,16 @@ class _RegisterState extends State<Register> {
                                     _firebaseMessaging.subscribeToTopic('customer');
                                     _firebaseMessaging.getToken().then((value) {
                                       FirebaseFirestore.instance.collection('customer').doc(FirebaseAuth.instance.currentUser!.uid).set({
-                                        'username': usernameController.text,
+                                        'firstName': firstnameController.text,
+                                        'lastName': lastnameController.text,
                                         'phone': phoneNumberController.text,
                                         'token': value,
                                         'topic': 'customer',
+                                        'status':'Active',
                                         'email': emailController.text,
                                         'gender': genderController.text,
+                                        'points':0,
+                                        'wallet':0,
                                         'profilePicture':"https://firebasestorage.googleapis.com/v0/b/accesfy-882e6.appspot.com/o/images%2F2021-07-27%2001%3A30%3A51.606.png?alt=media&token=50eaee1a-4878-4ad4-985a-dfdfb19ce78d"
                                       }).then((value) {
                                         pr.close();
@@ -425,7 +492,7 @@ class _RegisterState extends State<Register> {
                               ),
                               alignment: Alignment.center,
                               margin: EdgeInsets.all(12),
-                              child:Text("REGISTER",style: TextStyle(color: Colors.white,fontSize: 20,fontWeight: FontWeight.w500),),
+                              child:Text('registerBtn'.tr(),style: TextStyle(color: Colors.white,fontSize: 20,fontWeight: FontWeight.w500),),
                             ),
                           ),
                           SizedBox(height: 10,),
@@ -439,7 +506,7 @@ class _RegisterState extends State<Register> {
                                 ),
                                 SizedBox(width: 10,),
                                 Container(
-                                  child: Text("OR WITH",style: TextStyle(color: Colors.grey),),
+                                  child: Text('orWith'.tr(),style: TextStyle(color: Colors.grey),),
                                 ),
                                 SizedBox(width: 10,),
                                 Container(
@@ -510,14 +577,14 @@ class _RegisterState extends State<Register> {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Text("Already have an account?"),
+                                Text('already2'.tr()),
                                 SizedBox(width: 5,),
                                 InkWell(
                                   onTap: (){
                                     Navigator.pushReplacement(context, new MaterialPageRoute(
                                         builder: (context) => Login()));
                                   },
-                                  child: Text("LOGIN",style: TextStyle(color: darkBrown,fontWeight: FontWeight.w600),),
+                                  child: Text('login'.tr(),style: TextStyle(color: darkBrown,fontWeight: FontWeight.w600),),
                                 )
                               ],
                             ),

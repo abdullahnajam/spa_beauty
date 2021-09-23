@@ -10,7 +10,7 @@ import 'package:spa_beauty/model/service_model.dart';
 import 'package:spa_beauty/model/specialist_model.dart';
 import 'package:spa_beauty/model/time_model.dart';
 import 'package:spa_beauty/navigator/bottom_navigation.dart';
-import 'package:spa_beauty/values/constants.dart';
+import 'package:spa_beauty/utils/constants.dart';
 
 class PointServiceReservation extends StatefulWidget {
   int myPoints;ServiceModel model;
@@ -130,13 +130,23 @@ class _PointServiceReservationState extends State<PointServiceReservation> {
                   SizedBox(height: 30,),
                   Stack(
                     children: [
+                      context.locale.languageCode=="en"?
                       Align(
                         alignment: Alignment.centerLeft,
                         child: IconButton(
                           onPressed: (){
                             Navigator.pop(context);
                           },
-                          icon: Icon(Icons.arrow_back,color: Colors.white,),
+                          icon: Icon(Icons.arrow_back_sharp,color: darkBrown,),
+                        ),
+                      ):
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: IconButton(
+                          onPressed: (){
+                            Navigator.pop(context);
+                          },
+                          icon: Icon(Icons.arrow_back_sharp,color: darkBrown,),
                         ),
                       ),
                       Align(

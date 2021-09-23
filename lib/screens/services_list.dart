@@ -6,7 +6,7 @@ import 'package:spa_beauty/navigator/navigation_drawer.dart';
 import 'package:spa_beauty/screens/reservation.dart';
 import 'package:spa_beauty/screens/services_detail.dart';
 import 'package:spa_beauty/search/search_service.dart';
-import 'package:spa_beauty/values/constants.dart';
+import 'package:spa_beauty/utils/constants.dart';
 import 'package:spa_beauty/widget/appbar.dart';
 import 'package:easy_localization/easy_localization.dart';
 class AllServicesList extends StatefulWidget {
@@ -23,8 +23,19 @@ class _AllServicesListState extends State<AllServicesList> {
   void _openDrawer () {
     _drawerKey.currentState!.openDrawer();
   }
+  String? language;
+  void checkLanguage(){
+    String languageCode=context.locale.toLanguageTag().toString();
+    languageCode="${languageCode[languageCode.length-2]}${languageCode[languageCode.length-1]}";
+    if(languageCode=="US")
+      language="English";
+    else
+      language="Arabic";
+    print("language $language $languageCode");
+  }
   @override
   Widget build(BuildContext context) {
+    checkLanguage();
     final orientation = MediaQuery.of(context).orientation;
     return Scaffold(
       backgroundColor: Colors.grey[200],
@@ -70,7 +81,7 @@ class _AllServicesListState extends State<AllServicesList> {
                   }).then((value){
                     showSearch<String>(
                       context: context,
-                      delegate: ServiceSearch(services),
+                      delegate: ServiceSearch(services,language),
                     );
                   });
                   print("size ${services.length}");
@@ -181,7 +192,7 @@ class _AllServicesListState extends State<AllServicesList> {
                                                 bottomLeft: Radius.circular(10)
                                             ),
                                           ),
-                                          child: Text(data['name'],style: TextStyle(color: Colors.black),),
+                                          child: Text(language=="English"?data['name']:data['name_ar'],style: TextStyle(color: Colors.black),),
                                         )
                                       ],
                                     ),

@@ -7,7 +7,7 @@ import 'package:spa_beauty/screens/favourites.dart';
 import 'package:spa_beauty/screens/home_page.dart';
 import 'package:spa_beauty/screens/my_account.dart';
 import 'package:spa_beauty/screens/notifications.dart';
-import 'package:spa_beauty/values/constants.dart';
+import 'package:spa_beauty/utils/constants.dart';
 
 class BottomBar extends StatefulWidget {
 

@@ -13,7 +13,7 @@ import 'package:spa_beauty/model/time_model.dart';
 import 'package:spa_beauty/navigator/bottom_navigation.dart';
 import 'package:spa_beauty/payment/payment-service.dart';
 import 'package:spa_beauty/screens/checkout.dart';
-import 'package:spa_beauty/values/constants.dart';
+import 'package:spa_beauty/utils/constants.dart';
 class Reservation extends StatefulWidget {
   ServiceModel model;
   bool isOffer;
@@ -128,13 +128,23 @@ class _ReservationState extends State<Reservation> {
                   SizedBox(height: 30,),
                   Stack(
                     children: [
+                      context.locale.languageCode=="en"?
                       Align(
                         alignment: Alignment.centerLeft,
                         child: IconButton(
                           onPressed: (){
                             Navigator.pop(context);
                           },
-                          icon: Icon(Icons.arrow_back,color: Colors.white,),
+                          icon: Icon(Icons.arrow_back_sharp,color: darkBrown,),
+                        ),
+                      ):
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: IconButton(
+                          onPressed: (){
+                            Navigator.pop(context);
+                          },
+                          icon: Icon(Icons.arrow_back_sharp,color: darkBrown,),
                         ),
                       ),
                       Align(
@@ -302,7 +312,12 @@ class _ReservationState extends State<Reservation> {
                           0,
                           amount.toString(),
                           widget.isOffer?0:widget.model.points,
-                          DateTime.now().millisecondsSinceEpoch
+                          DateTime.now().millisecondsSinceEpoch,
+                          "",
+                          "none",
+                          "",
+                          ""
+
                         );
                         if(widget.isOffer){
                           FirebaseFirestore.instance.collection('redeemedOffers').doc(FirebaseAuth.instance.currentUser!.uid)
@@ -325,9 +340,8 @@ class _ReservationState extends State<Reservation> {
                           });
 
                         }
-                        print("res amount $amount");
-                        Navigator.push(context, new MaterialPageRoute(
-                            builder: (context) => Checkout(model)));
+
+                        Navigator.push(context, new MaterialPageRoute(builder: (context) => Checkout(model)));
                       }
 
                     },
@@ -374,7 +388,7 @@ class _ReservationState extends State<Reservation> {
       if (documentSnapshot.exists) {
         Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
         setState(() {
-          username=data['username'];
+          username="${data['firstName']} ${data['lastName']}";
         });
       }
     });

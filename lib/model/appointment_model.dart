@@ -5,6 +5,7 @@ class AppointmentModel{
   bool isRated,paid;
   int datePosted;
   int rating,points;
+  String place,placeId,branchName,branchId;
 
 
 
@@ -21,7 +22,12 @@ class AppointmentModel{
         status = map['status'],
         isRated = map['isRated'],
         rating = map['rating'],
-        paid = map['paid'],paymentMethod = map['paymentMethod'],
+        place = map['place'],
+        placeId = map['placeId'],
+        branchName = map['branchName'],
+        branchId = map['branchId'],
+        paid = map['paid'],
+        paymentMethod = map['paymentMethod'],
         amount = map['amount'],
         datePosted = map['datePosted'],
         points = map['points'];
@@ -42,7 +48,13 @@ class AppointmentModel{
       this.isRated,
       this.paid,
       this.rating,
-      this.amount,this.points,this.datePosted);
+      this.amount,
+      this.points,
+      this.datePosted,
+      this.placeId,
+      this.place,
+      this.branchId,
+      this.branchName);
 
   AppointmentModel.fromSnapshot(DocumentSnapshot snapshot )
       : this.fromMap(snapshot.data() as Map<String, dynamic>,snapshot.reference.id);

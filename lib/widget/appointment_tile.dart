@@ -10,7 +10,7 @@ import 'package:spa_beauty/screens/appointments.dart';
 import 'package:spa_beauty/screens/my_account.dart';
 import 'package:spa_beauty/screens/reservation.dart';
 import 'package:spa_beauty/screens/services_detail.dart';
-import 'package:spa_beauty/values/constants.dart';
+import 'package:spa_beauty/utils/constants.dart';
 import 'package:easy_localization/easy_localization.dart';
 class AppointmentTile extends StatefulWidget {
   AppointmentModel model;
@@ -24,12 +24,16 @@ class AppointmentTile extends StatefulWidget {
 class _AppointmentTileState extends State<AppointmentTile> {
   int? rating=5;
   var reviewController=TextEditingController();
-  String? language;
+  String? language="";
+  bool isDataLoaded=false;
   void checkLanguage(){
     String languageCode=context.locale.toLanguageTag().toString();
     languageCode="${languageCode[languageCode.length-2]}${languageCode[languageCode.length-1]}";
     if(languageCode=="US"){
-      language="English";
+      setState(() {
+        language="English";
+        isDataLoaded=true;
+      });
     }
     else {
       if(widget.model.status=="Pending")
@@ -62,13 +66,30 @@ class _AppointmentTileState extends State<AppointmentTile> {
         });
 
       language = "Arabic";
+      print("service id ${widget.model.serviceId}");
       FirebaseFirestore.instance.collection("services").doc(widget.model.serviceId).get().then((DocumentSnapshot documentSnapshot) {
         if (documentSnapshot.exists) {
+          print("exists");
           Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
           setState(() {
             widget.model.serviceName=data['name_ar'];
+            isDataLoaded=true;
           });
 
+        }
+        else{
+          print("else exists");
+          FirebaseFirestore.instance.collection("offers").doc(widget.model.serviceId).get().then((DocumentSnapshot documentSnapshot) {
+            if (documentSnapshot.exists) {
+              print("inside exists");
+              Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
+              setState(() {
+                widget.model.serviceName=data['name_ar'];
+                isDataLoaded=true;
+              });
+
+            }
+          });
         }
       });
     }
@@ -226,7 +247,7 @@ class _AppointmentTileState extends State<AppointmentTile> {
   Widget build(BuildContext context) {
     checkLanguage();
     Size size = MediaQuery.of(context).size;
-    return Padding(
+    return language!="" && isDataLoaded?Padding(
       padding: const EdgeInsets.only(top: 15.0),
       child:   InkWell(
         onTap: (){
@@ -507,11 +528,10 @@ class _AppointmentTileState extends State<AppointmentTile> {
 
                     children: [
                       Container(
-                        margin: EdgeInsets.fromLTRB(0,8, 0, 0),
+                        //margin: EdgeInsets.fromLTRB(0,8, 0, 0),
 
                         //width: MediaQuery.of(context).size.width*0.2,
                         child: Container(
-                          height: 25,
                           padding: EdgeInsets.fromLTRB(10, 2, 10, 2),
                           decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(20),
@@ -552,6 +572,6 @@ class _AppointmentTileState extends State<AppointmentTile> {
           ),
         ),
       ),
-    );
+    ):Center(child: CircularProgressIndicator(),);
   }
 }

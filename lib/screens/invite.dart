@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:share/share.dart';
-import 'package:spa_beauty/values/constants.dart';
+import 'package:spa_beauty/utils/constants.dart';
 import 'package:spa_beauty/widget/appbar.dart';
 import 'package:easy_localization/easy_localization.dart';
 
@@ -57,40 +57,46 @@ class _InviteFriendState extends State<InviteFriend> {
                   children: [
                     ListTile(
                       onTap: (){
+                        String? url;
                         FirebaseFirestore.instance.collection('settings').doc("share").get().then((DocumentSnapshot documentSnapshot) {
                           if (documentSnapshot.exists) {
                             Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
-                            Share.share('Get your spa service from ${data['playStore']}');
+                            url=data['playStore'];
                             FirebaseFirestore.instance.collection('settings').doc('points').get().then((DocumentSnapshot pointSnapshot) {
                               if (pointSnapshot.exists) {
                                 Map<String, dynamic> point = pointSnapshot.data() as Map<String, dynamic>;
-                                FirebaseFirestore.instance
-                                    .collection('customer')
-                                    .doc(FirebaseAuth.instance.currentUser!.uid)
+                                int sharePoints=int.parse(point['share']);
+                                FirebaseFirestore.instance.collection('customer').doc(FirebaseAuth.instance.currentUser!.uid)
                                     .get()
                                     .then((DocumentSnapshot userSnap) {
                                   if (userSnap.exists) {
                                     Map<String, dynamic> user = userSnap.data() as Map<String, dynamic>;
-                                    int points=user['points']+point['share'];
+                                    int userPoints=user['points'];
+                                    int points=userPoints+sharePoints;
+                                    print("points , user $userPoints + share $sharePoints = $points");
                                     FirebaseFirestore.instance.collection('customer').doc(FirebaseAuth.instance.currentUser!.uid).update({
                                       'points': points,
                                     }).onError((error, stackTrace){
+                                      print("Database 1 Error : ${error.toString()}");
                                       final snackBar = SnackBar(content: Text("Database Error : ${error.toString()}"));
                                       ScaffoldMessenger.of(context).showSnackBar(snackBar);
                                     });
                                   }
                                 }).onError((error, stackTrace){
+                                  print("Database 2 Error : ${error.toString()}");
                                   final snackBar = SnackBar(content: Text("Database Error : ${error.toString()}"));
                                   ScaffoldMessenger.of(context).showSnackBar(snackBar);
                                 });
 
                               }
                             }).onError((error, stackTrace){
+                              print("Database 3 Error : ${error.toString()}");
                               final snackBar = SnackBar(content: Text("Database Error : ${error.toString()}"));
                               ScaffoldMessenger.of(context).showSnackBar(snackBar);
                             });
+
                           }
-                        });
+                        }).then((value) =>Share.share('Get your spa service from $url') );
 
                       },
                       leading: Image.asset('assets/images/playstore.png',scale: 20,),
@@ -108,28 +114,32 @@ class _InviteFriendState extends State<InviteFriend> {
                             FirebaseFirestore.instance.collection('settings').doc('points').get().then((DocumentSnapshot pointSnapshot) {
                               if (pointSnapshot.exists) {
                                 Map<String, dynamic> point = pointSnapshot.data() as Map<String, dynamic>;
-                                FirebaseFirestore.instance
-                                    .collection('customer')
-                                    .doc(FirebaseAuth.instance.currentUser!.uid)
+                                int sharePoints=int.parse(point['share']);
+                                FirebaseFirestore.instance.collection('customer').doc(FirebaseAuth.instance.currentUser!.uid)
                                     .get()
                                     .then((DocumentSnapshot userSnap) {
                                   if (userSnap.exists) {
                                     Map<String, dynamic> user = userSnap.data() as Map<String, dynamic>;
-                                    int points=user['points']+point['share'];
+                                    int userPoints=user['points'];
+                                    int points=userPoints+sharePoints;
+                                    print("points , user $userPoints + share $sharePoints = $points");
                                     FirebaseFirestore.instance.collection('customer').doc(FirebaseAuth.instance.currentUser!.uid).update({
                                       'points': points,
                                     }).onError((error, stackTrace){
+                                      print("Database 1 Error : ${error.toString()}");
                                       final snackBar = SnackBar(content: Text("Database Error : ${error.toString()}"));
                                       ScaffoldMessenger.of(context).showSnackBar(snackBar);
                                     });
                                   }
                                 }).onError((error, stackTrace){
+                                  print("Database 2 Error : ${error.toString()}");
                                   final snackBar = SnackBar(content: Text("Database Error : ${error.toString()}"));
                                   ScaffoldMessenger.of(context).showSnackBar(snackBar);
                                 });
 
                               }
                             }).onError((error, stackTrace){
+                              print("Database 3 Error : ${error.toString()}");
                               final snackBar = SnackBar(content: Text("Database Error : ${error.toString()}"));
                               ScaffoldMessenger.of(context).showSnackBar(snackBar);
                             });
