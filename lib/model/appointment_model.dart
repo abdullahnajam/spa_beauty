@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class AppointmentModel{
   String id,name,userId,date,time,specialistId,specialistName,serviceId,serviceName,status,paymentMethod,amount;
   bool isRated,paid;
-  int datePosted;
+  int datePosted,dateBooked;
   int rating,points;
   String place,placeId,branchName,branchId;
 
@@ -26,6 +26,7 @@ class AppointmentModel{
         placeId = map['placeId'],
         branchName = map['branchName'],
         branchId = map['branchId'],
+        dateBooked = map['dateBooked'],
         paid = map['paid'],
         paymentMethod = map['paymentMethod'],
         amount = map['amount'],
@@ -51,6 +52,7 @@ class AppointmentModel{
       this.amount,
       this.points,
       this.datePosted,
+      this.dateBooked,
       this.placeId,
       this.place,
       this.branchId,

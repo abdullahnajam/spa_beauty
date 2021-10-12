@@ -29,6 +29,8 @@ class Reservation extends StatefulWidget {
 
 class _ReservationState extends State<Reservation> {
 
+  bool monday=true,tuesday=true,wednesday=true,thursday=true,friday=true,saturday=true,sunday=true;
+
   List<TimeModel> time=[];
   String payment='Cash on delivery';
   int? amount;
@@ -288,60 +290,88 @@ class _ReservationState extends State<Reservation> {
                     ),
                   ),
                   InkWell(
-                    onTap: (){
-                      if(appointmentTimeSelected==null){
-                        final snackBar = SnackBar(content: Text("Please select a time slot"));
-                        ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                      }
+                    onTap: ()async{
+                      print("week day number ${_selectedDate.day}");
+                      bool isDateAvailable=true;
 
-                      else{
-                        AppointmentModel model=new AppointmentModel(
-                          "",
-                          username!,
-                            FirebaseAuth.instance.currentUser!.uid,
-                          f.format(_selectedDate).toString(),
-                          appointmentTimeSelected!,
-                            specialistId,
-                            specialistName,
-                          widget.model.id,
-                          widget.model.name,
-                          "Pending",
-                          payment,
-                          false,
-                          false,
-                          0,
-                          amount.toString(),
-                          widget.isOffer?0:widget.model.points,
-                          DateTime.now().millisecondsSinceEpoch,
-                          "",
-                          "none",
-                          "",
-                          ""
+                      final f = new DateFormat('dd-MM-yyyy');
+                      String date=f.format(_selectedDate).toString();
+                      String dayOfWeek=DateFormat('EEEE').format(_selectedDate);
+                      print("week day name ${dayOfWeek}");
+                      isDateAvailable=isWeekDayOn(dayOfWeek.toLowerCase());
+                      await FirebaseFirestore.instance
+                          .collection('off_dates')
+                          .get()
+                          .then((QuerySnapshot querySnapshot) {
+                        querySnapshot.docs.forEach((doc) {
+                          Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+                          if(date==data['date']){
+                            isDateAvailable=false;
+                          }
+                        });
+                      });
 
-                        );
-                        if(widget.isOffer){
-                          FirebaseFirestore.instance.collection('redeemedOffers').doc(FirebaseAuth.instance.currentUser!.uid)
-                              .get().then((DocumentSnapshot documentSnapshot) {
-                            if (documentSnapshot.exists) {
-                              Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
-                              List offers = data['offers'];
-                              offers.add(widget.offerId);
-                              FirebaseFirestore.instance.collection('redeemedOffers').doc(FirebaseAuth.instance.currentUser!.uid).set({
-                                'offers':offers
-                              });
-                            }
-                            else{
-                              List offers=[];
-                              offers.add(widget.offerId);
-                              FirebaseFirestore.instance.collection('redeemedOffers').doc(FirebaseAuth.instance.currentUser!.uid).set({
-                                'offers':offers
-                              });
-                            }
-                          });
 
+                      if(isDateAvailable){
+                        if(appointmentTimeSelected==null){
+                          final snackBar = SnackBar(content: Text("Please select a time slot"));
+                          ScaffoldMessenger.of(context).showSnackBar(snackBar);
                         }
+                        else{
+                          AppointmentModel model=new AppointmentModel(
+                              "",
+                              username!,
+                              FirebaseAuth.instance.currentUser!.uid,
+                              f.format(_selectedDate).toString(),
+                              appointmentTimeSelected!,
+                              specialistId,
+                              specialistName,
+                              widget.model.id,
+                              widget.model.name,
+                              "Pending",
+                              payment,
+                              false,
+                              false,
+                              0,
+                              amount.toString(),
+                              widget.isOffer?0:widget.model.points,
+                              DateTime.now().millisecondsSinceEpoch,
+                              _selectedDate.millisecondsSinceEpoch,
+                              "",
+                              "none",
+                              "",
+                              ""
 
-                        Navigator.push(context, new MaterialPageRoute(builder: (context) => Checkout(model)));
+                          );
+                          if(widget.isOffer){
+                            FirebaseFirestore.instance.collection('redeemedOffers').doc(FirebaseAuth.instance.currentUser!.uid)
+                                .get().then((DocumentSnapshot documentSnapshot) {
+                              if (documentSnapshot.exists) {
+                                Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
+                                List offers = data['offers'];
+                                offers.add(widget.offerId);
+                                FirebaseFirestore.instance.collection('redeemedOffers').doc(FirebaseAuth.instance.currentUser!.uid).set({
+                                  'offers':offers
+                                });
+                              }
+                              else{
+                                List offers=[];
+                                offers.add(widget.offerId);
+                                FirebaseFirestore.instance.collection('redeemedOffers').doc(FirebaseAuth.instance.currentUser!.uid).set({
+                                  'offers':offers
+                                });
+                              }
+                            });
+
+                          }
+
+                          Navigator.push(context, new MaterialPageRoute(builder: (context) => Checkout(model)));
+                        }
+                      }
+                      else{
+                        final snackBar = SnackBar(content: Text("The date is not available"));
+                        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+
                       }
 
                     },
@@ -375,6 +405,24 @@ class _ReservationState extends State<Reservation> {
   @override
   void initState() {
     super.initState();
+    FirebaseFirestore.instance
+        .collection('settings')
+        .doc('week_days')
+        .get()
+        .then((DocumentSnapshot documentSnapshot) {
+      if (documentSnapshot.exists) {
+        Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
+        setState(() {
+          monday=data['monday'];
+          tuesday =data['tuesday'];
+          wednesday=data['wednesday'];
+          thursday=data['thursday'];
+          friday =data['friday'];
+          saturday=data['saturday'];
+          sunday=data['sunday'];
+        });
+      }
+    });
     StripeService.init();
     getTimeSlots();
     getSpecialists();
@@ -393,4 +441,51 @@ class _ReservationState extends State<Reservation> {
       }
     });
   }
+  bool isWeekDayOn(String day) {
+    if (day == "monday") {
+      if (monday)
+        return true;
+      else
+        return false;
+    }
+    else if (day == "tuesday") {
+      if (tuesday)
+        return true;
+      else
+        return false;
+    }
+    else if (day == "wednesday") {
+      if (wednesday)
+        return true;
+      else
+        return false;
+    }
+    else if (day == "thursday") {
+      if (thursday)
+        return true;
+      else
+        return false;
+    }
+    else if (day == "friday") {
+      if (friday)
+        return true;
+      else
+        return false;
+    }
+    else if (day == "saturday") {
+      if (saturday)
+        return true;
+      else
+        return false;
+    }
+    else if (day == "sunday") {
+      if (sunday)
+        return true;
+      else
+        return false;
+    }
+    else
+      return true;
+  }
+
 }

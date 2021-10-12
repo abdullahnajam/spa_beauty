@@ -1,8 +1,11 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:sn_progress_dialog/progress_dialog.dart';
 import 'package:spa_beauty/model/appointment_model.dart';
@@ -10,6 +13,7 @@ import 'package:spa_beauty/model/category_model.dart';
 import 'package:spa_beauty/model/change_model.dart';
 import 'package:spa_beauty/model/portrait_model.dart';
 import 'package:spa_beauty/model/service_model.dart';
+import 'package:spa_beauty/model/slider_model.dart';
 import 'package:spa_beauty/navigator/bottom_navigation.dart';
 import 'package:spa_beauty/navigator/navigation_drawer.dart';
 import 'package:spa_beauty/screens/all_categories.dart';
@@ -80,10 +84,61 @@ class _HomePageState extends State<HomePage> {
   String? symbol;
   String genderImageUrl="";
 
+  Future<List<SliderModel>> getBanners(gender) async{
+    int i=0;
+    List<SliderModel> slider=[];
+    await FirebaseFirestore.instance.collection('banner')
+        .where("gender",isEqualTo: gender)
+        .where("language",isEqualTo: language)
+        .orderBy("position").get().then((QuerySnapshot querySnapshot) {
+      querySnapshot.docs.forEach((doc) {
+        Map<String, dynamic> data = doc.data()! as Map<String, dynamic>;
+        slider.add(SliderModel.fromMap(data, doc.reference.id));
+      });
+      print("places foreach ${slider.length}");
+
+    });
+    print("places retrun ${slider.length}");
+    return slider;
+
+  }
+
+
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+  FlutterLocalNotificationsPlugin();
+
   var reviewController=TextEditingController();
+  void notificationSetting()async{
+    await flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+        ?.createNotificationChannel(channel);
+  }
   @override
   void initState() {
     super.initState();
+    notificationSetting();
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      RemoteNotification? notification = message.notification;
+      AndroidNotification? android = message.notification?.android;
+
+      // If `onMessage` is triggered with a notification, construct our own
+      // local notification to show to users using the created channel.
+      if (notification != null && android != null) {
+        flutterLocalNotificationsPlugin.show(
+            notification.hashCode,
+            notification.title,
+            notification.body,
+            NotificationDetails(
+              android: AndroidNotificationDetails(
+                channel.id,
+                channel.name,
+                channel.description,
+                icon: android?.smallIcon,
+                // other properties...
+              ),
+            ));
+      }
+    });
     if(FirebaseAuth.instance.currentUser!=null){
       FirebaseFirestore.instance
           .collection('notification_popup')
@@ -633,7 +688,7 @@ class _HomePageState extends State<HomePage> {
                                         ],
                                       ),
                                     ),
-                                    Expanded(
+                                    /*Expanded(
                                       child: StreamBuilder<QuerySnapshot>(
                                         stream: FirebaseFirestore.instance.collection('banner')
 
@@ -702,6 +757,80 @@ class _HomePageState extends State<HomePage> {
                                               );
                                             }).toList(),
                                           );
+                                        },
+                                      ),
+                                    ),*/
+                                    Expanded(
+                                      child: FutureBuilder<List<SliderModel>>(
+                                        future: getBanners(prefshot.data.toString()),
+                                        builder: (context,snapshot){
+                                          if (snapshot.hasData) {
+                                            if (snapshot.data != null && snapshot.data!.length>0) {
+                                              return ListView.builder(
+                                                itemCount: snapshot.data!.length,
+                                                shrinkWrap: true,
+                                                itemBuilder: (BuildContext context,int index){
+                                                  return CarouselSlider.builder(
+                                                    options: CarouselOptions(
+                                                      autoPlay: true,
+                                                      enlargeCenterPage: true,
+                                                      viewportFraction: 0.9,
+                                                      aspectRatio: 2.0,
+                                                      initialPage: 0,
+                                                    ),
+                                                    itemCount: snapshot.data!.length,
+                                                    itemBuilder: (BuildContext context, int itemIndex, int pageViewIndex) =>
+                                                        Container(
+                                                          height: MediaQuery.of(context).size.height*0.32,
+                                                          width: MediaQuery.of(context).size.width,
+                                                          margin: EdgeInsets.only(left: 10,right: 10),
+                                                          decoration: BoxDecoration(
+                                                              borderRadius: BorderRadius.circular(20)
+                                                          ),
+                                                          child: ClipRRect(
+                                                            borderRadius: BorderRadius.circular(20),
+                                                            child: CachedNetworkImage(
+                                                              imageUrl: snapshot.data![itemIndex].image,
+                                                              width: MediaQuery.of(context).size.width,
+                                                              fit: BoxFit.cover,
+                                                              placeholder: (context, url) => Center(
+                                                                child: CircularProgressIndicator(),
+                                                              ),
+                                                              errorWidget: (context, url, error) => Icon(Icons.error),
+                                                            ),
+                                                          ),
+                                                        )
+                                                  );
+                                                },
+                                              );
+                                            }
+                                            else {
+                                              return Container(
+                                                  alignment: Alignment.center,
+                                                  child:Column(
+                                                    children: [
+                                                      Container(
+                                                        height: MediaQuery.of(context).size.height*0.27,
+                                                        child: Image.asset("assets/images/logo.png"),
+                                                      ),
+                                                      SizedBox(height: 10,),
+                                                      Text('noBanner'.tr())
+                                                    ],
+                                                  )
+
+                                              );
+                                            }
+                                          }
+                                          else if (snapshot.hasError) {
+                                            return Text('Error : ${snapshot.error}',style: Theme.of(context)
+                                                .textTheme
+                                                .subtitle1!
+                                                .apply(color: Colors.black),);
+                                          } else {
+                                            return new Center(
+                                              child: CircularProgressIndicator(),
+                                            );
+                                          }
                                         },
                                       ),
                                     )

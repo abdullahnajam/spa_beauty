@@ -21,17 +21,51 @@ class Checkout extends StatefulWidget {
 }
 
 class _CheckoutState extends State<Checkout> {
-  String payment='cashPayment'.tr();
+  String payment='';
   String couponId="";
   String? symbol,align;
   List ids=[];
+  List<String> methods=[];
   void back(){
     Navigator.pop(context);
   }
   String? amount;
+  bool? cashPayment,cardPayment;bool isPaymentMethodLoaded=false;
+
   @override
   void initState() {
     super.initState();
+
+    FirebaseFirestore.instance
+        .collection('settings')
+        .doc('payments')
+        .get()
+        .then((DocumentSnapshot documentSnapshot) {
+      if (documentSnapshot.exists) {
+        Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
+        setState(() {
+          cashPayment=data['cashPayment'];
+          cardPayment=data['cardPayment'];
+          if(cashPayment!){
+            payment='cashPayment'.tr();
+            methods.add('cashPayment'.tr());
+          }
+          if(cardPayment!){
+            if(!cashPayment!)
+              payment='cardPayment'.tr();
+            methods.add('cardPayment'.tr());
+          }
+          isPaymentMethodLoaded=true;
+          if(methods.length==0){
+            methods.add('cashPayment'.tr());
+          }
+
+        });
+
+
+      }
+    });
+
 
     FirebaseFirestore.instance
         .collection('settings')
@@ -178,6 +212,7 @@ class _CheckoutState extends State<Checkout> {
       'paid':paid,
       'paymentMethod':payment=='cashPayment'.tr()?"Cash Payment":"Card Payment",
       'datePosted':DateTime.now().millisecondsSinceEpoch,
+      'dateBooked':widget.model.dateBooked,
       'formattedDate':f.format(DateTime.now()).toString(),
       'day':DateTime.now().day,
       'month':DateTime.now().month,
@@ -223,13 +258,22 @@ class _CheckoutState extends State<Checkout> {
     return Scaffold(
       bottomNavigationBar: InkWell(
         onTap: (){
-          if (_formKey.currentState!.validate()) {
-            if(payment=='cardPayment'.tr())
-              payViaNewCard(context);
-            else if(payment=='cashPayment'.tr())
-              checkForBranch(false);
+          if(isPaymentMethodLoaded){
+            if (_formKey.currentState!.validate()) {
+              //check off days
+              if(payment=='cardPayment'.tr())
+                payViaNewCard(context);
+              else if(payment=='cashPayment'.tr())
+                checkForBranch(false);
+
+            }
+          }
+          else{
+            final snackBar = SnackBar(content: Text("Data Loading"));
+            ScaffoldMessenger.of(context).showSnackBar(snackBar);
 
           }
+
         },
         child: Container(
           color: lightBrown,
@@ -241,7 +285,7 @@ class _CheckoutState extends State<Checkout> {
           ),)),
         ),
       ),
-      body: Container(
+      body: isPaymentMethodLoaded?Container(
         height: MediaQuery.of(context).size.height,
         width: MediaQuery.of(context).size.width,
         decoration: BoxDecoration(
@@ -536,7 +580,7 @@ class _CheckoutState extends State<Checkout> {
                               payment = newValue!;
                             });
                           },
-                          items: <String>['cashPayment'.tr(),'cardPayment'.tr()]
+                          items: methods
                               .map<DropdownMenuItem<String>>((String value) {
                             return DropdownMenuItem<String>(
                               value: value,
@@ -556,7 +600,7 @@ class _CheckoutState extends State<Checkout> {
             ],
           ),
         ),
-      ),
+      ):Center(child: CircularProgressIndicator(),),
     );
   }
 }

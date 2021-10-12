@@ -424,21 +424,18 @@ class _AboutState extends State<About> {
                                                        children: [
                                                          Text("Branch Name",style: TextStyle(
                                                              fontSize: 18,
-                                                             color: Colors.black54,
                                                              fontWeight: FontWeight.w500
                                                          ),
                                                          ),
                                                          SizedBox(height: 3,),
                                                          Text(data['name'],style: TextStyle(
                                                              fontSize: 15,
-                                                             color: Colors.black54,
                                                              fontWeight: FontWeight.w300
                                                          ),
                                                          ),
                                                          SizedBox(height: 5,),
                                                          Text(data['phone'],style: TextStyle(
                                                              fontSize: 15,
-                                                             color: Colors.black54,
                                                              fontWeight: FontWeight.w300
                                                          ),
                                                          ),

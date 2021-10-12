@@ -195,7 +195,7 @@ class _NotificationsState extends State<Notifications> {
                                           topRight: Radius.circular(10)
                                         )
                                     ),
-                                    child: Text(language=="English"?model.type_ar:model.type_ar,style: TextStyle(fontWeight: FontWeight.w600),),
+                                    child: Text(language=="English"?model.type:model.type_ar,style: TextStyle(fontWeight: FontWeight.w600),),
                                   ),
                                   Container(
                                     child: Column(

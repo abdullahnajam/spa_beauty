@@ -1,8 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cool_alert/cool_alert.dart';
+import 'package:day_night_switcher/day_night_switcher.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_open_whatsapp/flutter_open_whatsapp.dart';
+import 'package:provider/provider.dart';
 import 'package:spa_beauty/auth/auth_selection.dart';
 import 'package:spa_beauty/model/user_model.dart';
 import 'package:spa_beauty/navigator/bottom_navigation.dart';
@@ -16,6 +18,7 @@ import 'package:spa_beauty/screens/home_page.dart';
 import 'package:spa_beauty/screens/my_account.dart';
 import 'package:spa_beauty/screens/offers.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:spa_beauty/utils/dark_mode.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
@@ -107,7 +110,7 @@ class MenuDrawerState extends State<MenuDrawer> {
 
   @override
   Widget build(BuildContext context) {
-
+    final themeChange = Provider.of<DarkThemeProvider>(context);
     return Drawer(
       child: SingleChildScrollView(
         child: SafeArea(
@@ -307,6 +310,7 @@ class MenuDrawerState extends State<MenuDrawer> {
                 ),
               ),
 
+
               Container(height: 10),
               InkWell(onTap: (){
                 FirebaseFirestore.instance
@@ -347,7 +351,38 @@ class MenuDrawerState extends State<MenuDrawer> {
                   ),
                 ),
               ),
-              Container(height: 10),
+              /*Container(height: 10),
+              Container(height: 50, padding: EdgeInsets.symmetric(horizontal: 20),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    Expanded(
+                      flex: 7,
+                      child: Row(
+                        children: [
+
+                          Icon(Icons.wb_sunny, color: Colors.grey, size: 20),
+                          Container(width: 20),
+                          Expanded(child: Text('theme'.tr(), style: TextStyle(color: Colors.grey))),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      height: 50,
+                      width: 60,
+                      child: DayNightSwitcher(
+                        isDarkModeEnabled: themeChange.darkTheme,
+                        onStateChanged: (isDarkModeEnabled) {
+                          setState(() {
+                            themeChange.darkTheme = isDarkModeEnabled;
+                          });
+                        },
+                      ),
+                    ),
+
+                  ],
+                ),
+              ),*/
 
 
 

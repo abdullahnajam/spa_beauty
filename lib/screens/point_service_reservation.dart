@@ -313,6 +313,7 @@ class _PointServiceReservationState extends State<PointServiceReservation> {
                           'paid':true,
                           'paymentMethod':payment,
                           'datePosted':DateTime.now().millisecondsSinceEpoch,
+                          'dateBooked':_selectedDate.millisecondsSinceEpoch,
                           'formattedDate':f.format(DateTime.now()).toString(),
                           'day':DateTime.now().day,
                           'month':DateTime.now().month,

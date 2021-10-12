@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:sn_progress_dialog/progress_dialog.dart';
@@ -343,6 +344,14 @@ class _LoginState extends State<Login> {
                                             password: passwordController.text
                                         ).then((value) {
                                           pr.close();
+                                          final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
+                                          _firebaseMessaging.subscribeToTopic('customer');
+                                          _firebaseMessaging.getToken().then((value) {
+                                            FirebaseFirestore.instance.collection('customer').doc(FirebaseAuth.instance.currentUser!.uid).update({
+                                              'token': value,
+                                              'topic': 'customer',
+                                            });
+                                          });
                                           FirebaseFirestore.instance
                                               .collection('customer')
                                               .doc(value.user!.uid)
