@@ -216,7 +216,8 @@ class _OffersState extends State<Offers> {
                                   0,
                                     "",
                                   false,
-                                  0
+                                  0,
+                                  false
                                 );
                                 Navigator.push(context, new MaterialPageRoute(builder: (context) => OfferDetail(model2,model)));
                               },

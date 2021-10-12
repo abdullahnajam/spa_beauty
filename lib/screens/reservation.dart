@@ -74,6 +74,10 @@ class _ReservationState extends State<Reservation> {
   List<bool> timeSelected=[];
   String specialistName="none";
   String specialistId="none";
+  String packageName="none";
+  String packageArName="none";
+  String priceOfPackage="0";
+  String packageId="none";
   String? langLocale;
   void checkLanguage(){
     String languageCode=context.locale.toLanguageTag().toString();
@@ -318,6 +322,83 @@ class _ReservationState extends State<Reservation> {
                           ScaffoldMessenger.of(context).showSnackBar(snackBar);
                         }
                         else{
+                          if(widget.model.hasPackages){
+                            showDialog(
+                                context: context,
+                                builder: (BuildContext context){
+                                  return StatefulBuilder(
+                                    builder: (context,setState){
+                                      return Dialog(
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: const BorderRadius.all(
+                                            Radius.circular(10.0),
+                                          ),
+                                        ),
+                                        insetAnimationDuration: const Duration(seconds: 1),
+                                        insetAnimationCurve: Curves.fastOutSlowIn,
+                                        elevation: 2,
+                                        child: Container(
+                                          padding: EdgeInsets.all(10),
+                                          width: MediaQuery.of(context).size.width*0.3,
+                                          child: StreamBuilder<QuerySnapshot>(
+                                            stream: FirebaseFirestore.instance.collection('service_packages')
+                                                .where("serviceId",isEqualTo: widget.model.id).snapshots(),
+                                            builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                                              if (snapshot.hasError) {
+                                                return Center(
+                                                  child: Column(
+                                                    children: [
+                                                      Image.asset("assets/images/wrong.png",width: 150,height: 150,),
+                                                      Text("Something Went Wrong",style: TextStyle(color: Colors.black))
+
+                                                    ],
+                                                  ),
+                                                );
+                                              }
+
+                                              if (snapshot.connectionState == ConnectionState.waiting) {
+                                                return Center(
+                                                  child: CircularProgressIndicator(),
+                                                );
+                                              }
+                                              if (snapshot.data!.size==0){
+                                                return Center(
+                                                    child: Text("No Genders Added",style: TextStyle(color: Colors.black))
+                                                );
+
+                                              }
+
+                                              return new ListView(
+                                                shrinkWrap: true,
+                                                children: snapshot.data!.docs.map((DocumentSnapshot document) {
+                                                  Map<String, dynamic> data = document.data() as Map<String, dynamic>;
+
+                                                  return new Padding(
+                                                    padding: const EdgeInsets.only(top: 15.0),
+                                                    child: ListTile(
+                                                      onTap: (){
+                                                        setState(() {
+                                                          packageName=data['title'];
+                                                          packageArName=data['title_ar'];
+                                                          priceOfPackage=data['price'].toString();
+                                                          packageId=document.reference.id;
+                                                        });
+                                                        Navigator.pop(context);
+                                                      },
+                                                      title: Text("${data['title']}",style: TextStyle(color: Colors.black),),
+                                                    ),
+                                                  );
+                                                }).toList(),
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  );
+                                }
+                            );
+                          }
                           AppointmentModel model=new AppointmentModel(
                               "",
                               username!,
@@ -333,14 +414,18 @@ class _ReservationState extends State<Reservation> {
                               false,
                               false,
                               0,
-                              amount.toString(),
+                              widget.model.hasPackages?priceOfPackage:amount.toString(),
                               widget.isOffer?0:widget.model.points,
                               DateTime.now().millisecondsSinceEpoch,
                               _selectedDate.millisecondsSinceEpoch,
                               "",
                               "none",
                               "",
-                              ""
+                              "",
+                            widget.model.hasPackages?packageName:"none",
+                            widget.model.hasPackages?packageArName:"none",
+                            widget.model.hasPackages?packageId:"none",
+
 
                           );
                           if(widget.isOffer){

@@ -16,7 +16,7 @@ import 'package:spa_beauty/screens/reservation.dart';
 import 'package:spa_beauty/utils/constants.dart';
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:easy_localization/easy_localization.dart';
-
+import 'package:spa_beauty/utils/dark_mode.dart';
 
 class ServiceDetail extends StatefulWidget {
   ServiceModel model;

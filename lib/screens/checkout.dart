@@ -221,6 +221,9 @@ class _CheckoutState extends State<Checkout> {
       'place':"none",
       'branchId': branchId,
       'placeId': "none",
+      'packageId': widget.model.packageId,
+      'packageName': widget.model.packageName,
+      'packageArName': widget.model.packageArName,
     }).then((value) {
       pr.close();
       if(couponId!=""){

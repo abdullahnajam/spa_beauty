@@ -76,6 +76,7 @@
   "playStore": "Play Store",
   "appStore": "App Store",
   "theme": "Theme",
+  "noPackages": "No Packages",
   "changePassword": "Change Password",
   "message": "A mail has been sent to you. Please check your mail for reset password link",
   "ok": "OK",
