@@ -50,7 +50,7 @@ class _AuthSelectionState extends State<AuthSelection> {
                     ),
                     alignment: Alignment.center,
                     margin: EdgeInsets.all(12),
-                    child:Text('login'.tr(),style: TextStyle(fontSize: 20,fontWeight: FontWeight.w500),),
+                    child:Text('login'.tr(),style: TextStyle(fontSize: 20,fontWeight: FontWeight.w500,color: Colors.white),),
                   ),
                 ),
                 InkWell(
@@ -73,7 +73,7 @@ class _AuthSelectionState extends State<AuthSelection> {
                     ),
                     alignment: Alignment.center,
                     margin: EdgeInsets.all(12),
-                    child:Text('registerBtn'.tr(),style: TextStyle(fontSize: 20,fontWeight: FontWeight.w500),),
+                    child:Text('registerBtn'.tr(),style: TextStyle(fontSize: 20,fontWeight: FontWeight.w500,color: Colors.white),),
                   ),
                 ),
                 SizedBox(height: 10,),

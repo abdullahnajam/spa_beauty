@@ -75,7 +75,7 @@
   "phoneNumber": "Phone Number",
   "playStore": "Play Store",
   "appStore": "App Store",
-  "theme": "Theme",
+  "theme": "Dark Mode",
   "noPackages": "No Packages",
   "changePassword": "Change Password",
   "message": "A mail has been sent to you. Please check your mail for reset password link",
@@ -112,5 +112,12 @@
   "noNotifications": "No Notifications",
   "notLoggedIn": "You are currently not logged In",
   "orWith": "OR WITH",
-  "forgotPassword": "Forgot Password?"
+  "forgotPassword": "Forgot Password?",
+  "continueMessage": "To continue with the booking please login",
+  "survey": "Survey",
+  "question": "Question",
+  "suggestion": "Suggestion",
+  "enterSuggestion": "Enter Suggestion",
+  "submit": "Submit",
+  "enterDob": "Enter Date of Birth"
 }

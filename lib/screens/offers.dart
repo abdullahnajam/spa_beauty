@@ -205,7 +205,7 @@ class _OffersState extends State<Offers> {
                                   "",
                                   false,
                                   "",
-                                    "",
+                                    "offer",
                                     "",
                                     "",
                                     0,

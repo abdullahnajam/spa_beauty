@@ -18,6 +18,7 @@ import 'package:spa_beauty/screens/home_page.dart';
 import 'package:spa_beauty/screens/my_account.dart';
 import 'package:spa_beauty/screens/offers.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:spa_beauty/screens/survey.dart';
 import 'package:spa_beauty/utils/dark_mode.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -351,7 +352,7 @@ class MenuDrawerState extends State<MenuDrawer> {
                   ),
                 ),
               ),
-              /*Container(height: 10),
+              Container(height: 10),
               Container(height: 50, padding: EdgeInsets.symmetric(horizontal: 20),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -382,7 +383,7 @@ class MenuDrawerState extends State<MenuDrawer> {
 
                   ],
                 ),
-              ),*/
+              ),
 
 
 

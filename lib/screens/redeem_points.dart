@@ -5,6 +5,7 @@ import 'package:spa_beauty/model/service_model.dart';
 import 'package:spa_beauty/screens/point_service_reservation.dart';
 import 'package:spa_beauty/utils/constants.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:spa_beauty/utils/sharedPref.dart';
 class RedeemPoints extends StatefulWidget {
   const RedeemPoints({Key? key}) : super(key: key);
 
@@ -42,7 +43,7 @@ class _RedeemPointsState extends State<RedeemPoints> {
       }
     });
   }
-
+  SharedPref sharedPref=new SharedPref();
   @override
   Widget build(BuildContext context) {
     final orientation = MediaQuery.of(context).orientation;
@@ -64,222 +65,252 @@ class _RedeemPointsState extends State<RedeemPoints> {
             )
         ),
         child: SafeArea(
-          child: isPointsLoaded?Column(
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border(
-                    bottom: BorderSide(width: 0.15, color: darkBrown),
-                  ),
-                ),
-                height:  AppBar().preferredSize.height,
-                child: Stack(
-                  children: [
-
-                    Align(
-                      alignment: Alignment.center,
-                      child: Text('redeemPoints'.tr()),
-                    ),
-                    context.locale.languageCode=="en"?
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: IconButton(
-                        onPressed: (){
-                          Navigator.pop(context);
-                        },
-                        icon: Icon(Icons.arrow_back_sharp,color: darkBrown,),
-                      ),
-                    ):
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: IconButton(
-                        onPressed: (){
-                          Navigator.pop(context);
-                        },
-                        icon: Icon(Icons.arrow_back_sharp,color: darkBrown,),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.5),
-                      spreadRadius: 5,
-                      blurRadius: 7,
-                      offset: Offset(0, 3), // changes position of shadow
-                    ),
-                  ],
-                ),
-                margin: EdgeInsets.all(10),
-                padding: EdgeInsets.only(top: 10,bottom: 10,left: 10,right: 10),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text('myPoints'.tr(),style: TextStyle(fontSize: 18,fontWeight: FontWeight.bold),),
-                    Text(myPoints.toString(),style: TextStyle(fontSize: 18,color: darkBrown),),
-
-                  ],
-                ),
-              ),
-              Expanded(
-                child: StreamBuilder<QuerySnapshot>(
-                  stream: FirebaseFirestore.instance.collection('services')
-                      .where("isRedeemable", isEqualTo: true).snapshots(),
-                  builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-                    if (snapshot.hasError) {
-                      return Center(
-                        child: Column(
+          child: isPointsLoaded?
+          FutureBuilder<String>(
+            future: sharedPref.getGenderPref(),
+            builder: (context,prefshot){
+              if (prefshot.hasData) {
+                if (prefshot.data != null) {
+                  print("shared ${prefshot.data}");
+                  checkLanguage();
+                  return Column(
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          border: Border(
+                            bottom: BorderSide(width: 0.15, color: darkBrown),
+                          ),
+                        ),
+                        height:  AppBar().preferredSize.height,
+                        child: Stack(
                           children: [
-                            Image.asset("assets/images/wrong.png",width: 150,height: 150,),
-                            Text("Something Went Wrong",style: TextStyle(color: Colors.black))
+
+                            Align(
+                              alignment: Alignment.center,
+                              child: Text('redeemPoints'.tr()),
+                            ),
+                            context.locale.languageCode=="en"?
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: IconButton(
+                                onPressed: (){
+                                  Navigator.pop(context);
+                                },
+                                icon: Icon(Icons.arrow_back_sharp,color: darkBrown,),
+                              ),
+                            ):
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: IconButton(
+                                onPressed: (){
+                                  Navigator.pop(context);
+                                },
+                                icon: Icon(Icons.arrow_back_sharp,color: darkBrown,),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(10),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.5),
+                              spreadRadius: 5,
+                              blurRadius: 7,
+                              offset: Offset(0, 3), // changes position of shadow
+                            ),
+                          ],
+                        ),
+                        margin: EdgeInsets.all(10),
+                        padding: EdgeInsets.only(top: 10,bottom: 10,left: 10,right: 10),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('myPoints'.tr(),style: TextStyle(fontSize: 18,fontWeight: FontWeight.bold),),
+                            Text(myPoints.toString(),style: TextStyle(fontSize: 18,color: darkBrown),),
 
                           ],
                         ),
-                      );
-                    }
+                      ),
+                      Expanded(
+                        child: StreamBuilder<QuerySnapshot>(
+                          stream: FirebaseFirestore.instance.collection('services')
+                              .where("isRedeemable", isEqualTo: true)
+                              .where("gender", isEqualTo: prefshot.data.toString()).snapshots(),
+                          builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                            if (snapshot.hasError) {
+                              return Center(
+                                child: Column(
+                                  children: [
+                                    Image.asset("assets/images/wrong.png",width: 150,height: 150,),
+                                    Text("Something Went Wrong",style: TextStyle(color: Colors.black))
 
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Center(
-                        child: CircularProgressIndicator(),
-                      );
-                    }
-                    if (snapshot.data!.size==0){
-                      return Center(
-                          child: Text('noServices'.tr(),style: TextStyle(color: Colors.black))
-                      );
-
-                    }
-
-                    return new GridView(
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: (orientation == Orientation.portrait) ? 2 : 3),
-                      children: snapshot.data!.docs.map((DocumentSnapshot document) {
-                        Map<String, dynamic> data = document.data() as Map<String, dynamic>;
-                        ServiceModel model=ServiceModel.fromMap(data,document.reference.id);
-                        return InkWell(
-                          onTap: (){
-                            if(myPoints>=model.redeemPoints){
-                              Navigator.push(context, new MaterialPageRoute(builder: (context) => PointServiceReservation(myPoints, model)));
-                            }
-                          },
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(10),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey.withOpacity(0.5),
-                                  spreadRadius: 5,
-                                  blurRadius: 7,
-                                  offset: Offset(0, 3), // changes position of shadow
+                                  ],
                                 ),
-                              ],
-                            ),
+                              );
+                            }
 
+                            if (snapshot.connectionState == ConnectionState.waiting) {
+                              return Center(
+                                child: CircularProgressIndicator(),
+                              );
+                            }
+                            if (snapshot.data!.size==0){
+                              return Center(
+                                  child: Text('noServices'.tr(),style: TextStyle(color: Colors.black))
+                              );
 
-                            margin: const EdgeInsets.all( 10),
-                            child: Column(
-                              children: [
-                                if(myPoints>=model.redeemPoints)
-                                  Container(
-                                      height: MediaQuery.of(context).size.height*0.16,
+                            }
+
+                            return new GridView(
+                              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: (orientation == Orientation.portrait) ? 2 : 3),
+                              children: snapshot.data!.docs.map((DocumentSnapshot document) {
+                                Map<String, dynamic> data = document.data() as Map<String, dynamic>;
+                                ServiceModel model=ServiceModel.fromMap(data,document.reference.id);
+                                return InkWell(
+                                  onTap: (){
+                                    if(myPoints>=model.redeemPoints){
+                                      Navigator.push(context, new MaterialPageRoute(builder: (context) => PointServiceReservation(myPoints, model)));
+                                    }
+                                  },
+                                  child: Container(
                                       decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.only(
-                                            topRight: Radius.circular(10),
-                                            topLeft: Radius.circular(10),
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(10),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.grey.withOpacity(0.5),
+                                            spreadRadius: 5,
+                                            blurRadius: 7,
+                                            offset: Offset(0, 3), // changes position of shadow
                                           ),
-                                          image: DecorationImage(
-                                            image: NetworkImage(model.image),
-                                            fit: BoxFit.cover,
-                                          )
+                                        ],
                                       ),
-                                      child: Align(
-                                          alignment: Alignment.bottomRight,
-                                          child: Container(
-                                            margin: EdgeInsets.all(5),
-                                            height: 20,
-                                            width: 50,
-                                            alignment: Alignment.center,
-                                            decoration: BoxDecoration(
-                                                color: lightBrown,
-                                                borderRadius: BorderRadius.circular(30)
-                                            ),
-                                            child: Row(
-                                              mainAxisAlignment: MainAxisAlignment.center,
-                                              children: [
-                                                Icon(Icons.local_offer,color: Colors.white,size: 15,),
-                                                SizedBox(width: 5,),
-                                                Text(model.redeemPoints.toString(),style: TextStyle(fontSize: 10,color: Colors.white),),
-                                              ],
-                                            ),
-                                          )
-                                      )
-                                  )
-                                else
-                                  Container(
-                                  height: MediaQuery.of(context).size.height*0.16,
-                                      decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.only(
-                                  topRight: Radius.circular(10),
-                                  topLeft: Radius.circular(10),
-                                  ),
-                                          image: DecorationImage(
-                                            colorFilter: new ColorFilter.mode(Colors.black.withOpacity(0.2), BlendMode.dstATop),
-                                            image: NetworkImage(model.image),
-                                            fit: BoxFit.cover,
-                                          )
-                                      ),
-                                      child: Align(
-                                          alignment: Alignment.bottomRight,
-                                          child: Container(
-                                            margin: EdgeInsets.all(5),
-                                            height: 20,
-                                            width: 50,
-                                            alignment: Alignment.center,
-                                            decoration: BoxDecoration(
-                                                color: lightBrown,
-                                                borderRadius: BorderRadius.circular(30)
-                                            ),
-                                            child: Row(
-                                              mainAxisAlignment: MainAxisAlignment.center,
-                                              children: [
-                                                Icon(Icons.local_offer,color: Colors.white,size: 15,),
-                                                SizedBox(width: 5,),
-                                                Text(model.redeemPoints.toString(),style: TextStyle(fontSize: 10,color: Colors.white),),
-                                              ],
-                                            ),
-                                          )
-                                      )
-                                  ),
-                                if(myPoints>=model.redeemPoints)
-                                Container(
-                                  alignment: Alignment.center,
-                                  child:Text(language=="English"?model.name:model.name_ar,textAlign: TextAlign.center,maxLines: 1,style: TextStyle(fontSize: 12,fontWeight: FontWeight.w400),),
-                                )
-                                else
-                                  Container(
-                                    alignment: Alignment.center,
-                                    child:Text(language=="English"?model.name:model.name_ar,textAlign: TextAlign.center,maxLines: 1,style: TextStyle(fontSize: 12,fontWeight: FontWeight.w400,color: Colors.grey),),
-                                  )
 
 
-                              ],
-                            )
-                          ),
-                        );
-                      }).toList(),
-                    );
-                  },
-                ),
-              )
-            ],
-          ):Center(child: CircularProgressIndicator(),),
+                                      margin: const EdgeInsets.all( 10),
+                                      child: Column(
+                                        children: [
+                                          if(myPoints>=model.redeemPoints)
+                                            Container(
+                                                height: MediaQuery.of(context).size.height*0.16,
+                                                decoration: BoxDecoration(
+                                                    borderRadius: BorderRadius.only(
+                                                      topRight: Radius.circular(10),
+                                                      topLeft: Radius.circular(10),
+                                                    ),
+                                                    image: DecorationImage(
+                                                      image: NetworkImage(model.image),
+                                                      fit: BoxFit.cover,
+                                                    )
+                                                ),
+                                                child: Align(
+                                                    alignment: Alignment.bottomRight,
+                                                    child: Container(
+                                                      margin: EdgeInsets.all(5),
+                                                      height: 20,
+                                                      width: 50,
+                                                      alignment: Alignment.center,
+                                                      decoration: BoxDecoration(
+                                                          color: lightBrown,
+                                                          borderRadius: BorderRadius.circular(30)
+                                                      ),
+                                                      child: Row(
+                                                        mainAxisAlignment: MainAxisAlignment.center,
+                                                        children: [
+                                                          Icon(Icons.local_offer,color: Colors.white,size: 15,),
+                                                          SizedBox(width: 5,),
+                                                          Text(model.redeemPoints.toString(),style: TextStyle(fontSize: 10,color: Colors.white),),
+                                                        ],
+                                                      ),
+                                                    )
+                                                )
+                                            )
+                                          else
+                                            Container(
+                                                height: MediaQuery.of(context).size.height*0.16,
+                                                decoration: BoxDecoration(
+                                                    borderRadius: BorderRadius.only(
+                                                      topRight: Radius.circular(10),
+                                                      topLeft: Radius.circular(10),
+                                                    ),
+                                                    image: DecorationImage(
+                                                      colorFilter: new ColorFilter.mode(Colors.black.withOpacity(0.2), BlendMode.dstATop),
+                                                      image: NetworkImage(model.image),
+                                                      fit: BoxFit.cover,
+                                                    )
+                                                ),
+                                                child: Align(
+                                                    alignment: Alignment.bottomRight,
+                                                    child: Container(
+                                                      margin: EdgeInsets.all(5),
+                                                      height: 20,
+                                                      width: 50,
+                                                      alignment: Alignment.center,
+                                                      decoration: BoxDecoration(
+                                                          color: lightBrown,
+                                                          borderRadius: BorderRadius.circular(30)
+                                                      ),
+                                                      child: Row(
+                                                        mainAxisAlignment: MainAxisAlignment.center,
+                                                        children: [
+                                                          Icon(Icons.local_offer,color: Colors.white,size: 15,),
+                                                          SizedBox(width: 5,),
+                                                          Text(model.redeemPoints.toString(),style: TextStyle(fontSize: 10,color: Colors.white),),
+                                                        ],
+                                                      ),
+                                                    )
+                                                )
+                                            ),
+                                          if(myPoints>=model.redeemPoints)
+                                            Container(
+                                              alignment: Alignment.center,
+                                              child:Text(language=="English"?model.name:model.name_ar,textAlign: TextAlign.center,maxLines: 1,style: TextStyle(fontSize: 12,fontWeight: FontWeight.w400),),
+                                            )
+                                          else
+                                            Container(
+                                              alignment: Alignment.center,
+                                              child:Text(language=="English"?model.name:model.name_ar,textAlign: TextAlign.center,maxLines: 1,style: TextStyle(fontSize: 12,fontWeight: FontWeight.w400,color: Colors.grey),),
+                                            )
+
+
+                                        ],
+                                      )
+                                  ),
+                                );
+                              }).toList(),
+                            );
+                          },
+                        ),
+                      )
+                    ],
+                  );
+                }
+                else {
+                  return new Center(
+                    child: Container(
+                        child: Text("no data")
+                    ),
+                  );
+                }
+              }
+              else if (prefshot.hasError) {
+                return Text('Error : ${prefshot.error}');
+              } else {
+                return new Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+            },
+          )
+
+              :
+          Center(child: CircularProgressIndicator(),),
         ),
       ),
     );

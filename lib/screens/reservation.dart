@@ -363,7 +363,7 @@ class _ReservationState extends State<Reservation> {
                                               }
                                               if (snapshot.data!.size==0){
                                                 return Center(
-                                                    child: Text("No Genders Added",style: TextStyle(color: Colors.black))
+                                                    child: Text("No Packages Added",style: TextStyle(color: Colors.black))
                                                 );
 
                                               }
@@ -385,7 +385,10 @@ class _ReservationState extends State<Reservation> {
                                                         });
                                                         Navigator.pop(context);
                                                       },
-                                                      title: Text("${data['title']}",style: TextStyle(color: Colors.black),),
+                                                      title: Text("${data['title']}",maxLines: 1,style: TextStyle(color: Colors.black),),
+
+
+                                                  subtitle: Text(align=="Left"?"$symbol${data['priceOfPackage']}":"${data['priceOfPackage']}$symbol",maxLines: 1,style: TextStyle(fontSize:12,color: Colors.black),),
                                                     ),
                                                   );
                                                 }).toList(),
@@ -425,6 +428,7 @@ class _ReservationState extends State<Reservation> {
                             widget.model.hasPackages?packageName:"none",
                             widget.model.hasPackages?packageArName:"none",
                             widget.model.hasPackages?packageId:"none",
+                            widget.model.gender
 
 
                           );
@@ -486,7 +490,7 @@ class _ReservationState extends State<Reservation> {
       ),
     );
   }
-
+  String? symbol,align;
   @override
   void initState() {
     super.initState();
@@ -506,6 +510,20 @@ class _ReservationState extends State<Reservation> {
           saturday=data['saturday'];
           sunday=data['sunday'];
         });
+      }
+    });
+    FirebaseFirestore.instance
+        .collection('settings')
+        .doc('currency')
+        .get()
+        .then((DocumentSnapshot documentSnapshot) {
+      if (documentSnapshot.exists) {
+        Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
+        setState(() {
+          symbol=data['symbol'];
+          align=data['align'];
+        });
+
       }
     });
     StripeService.init();

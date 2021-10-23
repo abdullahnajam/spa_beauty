@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:multi_masked_formatter/multi_masked_formatter.dart';
 import 'package:sn_progress_dialog/progress_dialog.dart';
 import 'package:spa_beauty/navigator/bottom_navigation.dart';
 import 'package:spa_beauty/utils/constants.dart';
@@ -37,6 +38,7 @@ class _RegisterState extends State<Register> {
   }
   final _formKey = GlobalKey<FormState>();
   var emailController=TextEditingController();
+  var dobController=TextEditingController();
   var passwordController=TextEditingController();
   var genderController=TextEditingController();
   var firstnameController=TextEditingController();
@@ -82,93 +84,100 @@ class _RegisterState extends State<Register> {
                           )
                       ),
 
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                      child: ListView(
                         children: [
-                          Container(
-                            margin: EdgeInsets.only(left: 10,right: 10),
-                            child: TextFormField(
-                              keyboardType: TextInputType.text,
-                              controller: firstnameController,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please enter some text';
-                                }
-                                return null;
-                              },
-
-                              decoration: InputDecoration(
-                                contentPadding: EdgeInsets.all(15),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(30.0),
-                                  borderSide: BorderSide(
-                                    color: darkBrown,
-                                  ),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(30.0),
-                                  borderSide: BorderSide(
-                                      color: darkBrown,
-                                      width: 0.5
-                                  ),
-                                ),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(30.0),
-                                  borderSide: BorderSide(
-                                    color: darkBrown,
-                                    width: 0.5,
-                                  ),
-                                ),
-                                prefixIcon: Icon(Icons.person_outline,color: darkBrown,size: 22,),
-                                hintText: 'firstName'.tr(),
-                                // If  you are using latest version of flutter then lable text and hint text shown like this
-                                // if you r using flutter less then 1.20.* then maybe this is not working properly
-                                floatingLabelBehavior: FloatingLabelBehavior.always,
-                              ),
-                            ),
-                          ),
                           SizedBox(height: 20,),
-                          Container(
-                            margin: EdgeInsets.only(left: 10,right: 10),
-                            child: TextFormField(
-                              keyboardType: TextInputType.text,
-                              controller: lastnameController,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please enter some text';
-                                }
-                                return null;
-                              },
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Container(
+                                  margin: EdgeInsets.only(left: 10,right: 5),
+                                  child: TextFormField(
+                                    keyboardType: TextInputType.text,
+                                    controller: firstnameController,
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return 'Please enter some text';
+                                      }
+                                      return null;
+                                    },
 
-                              decoration: InputDecoration(
-                                contentPadding: EdgeInsets.all(15),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(30.0),
-                                  borderSide: BorderSide(
-                                    color: darkBrown,
+                                    decoration: InputDecoration(
+                                      contentPadding: EdgeInsets.all(15),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(30.0),
+                                        borderSide: BorderSide(
+                                          color: darkBrown,
+                                        ),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(30.0),
+                                        borderSide: BorderSide(
+                                            color: darkBrown,
+                                            width: 0.5
+                                        ),
+                                      ),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(30.0),
+                                        borderSide: BorderSide(
+                                          color: darkBrown,
+                                          width: 0.5,
+                                        ),
+                                      ),
+                                      prefixIcon: Icon(Icons.person_outline,color: darkBrown,size: 22,),
+                                      hintText: 'firstName'.tr(),
+                                      // If  you are using latest version of flutter then lable text and hint text shown like this
+                                      // if you r using flutter less then 1.20.* then maybe this is not working properly
+                                      floatingLabelBehavior: FloatingLabelBehavior.always,
+                                    ),
                                   ),
                                 ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(30.0),
-                                  borderSide: BorderSide(
-                                      color: darkBrown,
-                                      width: 0.5
-                                  ),
-                                ),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(30.0),
-                                  borderSide: BorderSide(
-                                    color: darkBrown,
-                                    width: 0.5,
-                                  ),
-                                ),
-                                prefixIcon: Icon(Icons.person_outline,color: darkBrown,size: 22,),
-                                hintText: 'lastName'.tr(),
-                                // If  you are using latest version of flutter then lable text and hint text shown like this
-                                // if you r using flutter less then 1.20.* then maybe this is not working properly
-                                floatingLabelBehavior: FloatingLabelBehavior.always,
                               ),
-                            ),
+                              Expanded(
+                                child: Container(
+                                  margin: EdgeInsets.only(left: 5,right: 10),
+                                  child: TextFormField(
+                                    keyboardType: TextInputType.text,
+                                    controller: lastnameController,
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return 'Please enter some text';
+                                      }
+                                      return null;
+                                    },
+
+                                    decoration: InputDecoration(
+                                      contentPadding: EdgeInsets.all(15),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(30.0),
+                                        borderSide: BorderSide(
+                                          color: darkBrown,
+                                        ),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(30.0),
+                                        borderSide: BorderSide(
+                                            color: darkBrown,
+                                            width: 0.5
+                                        ),
+                                      ),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(30.0),
+                                        borderSide: BorderSide(
+                                          color: darkBrown,
+                                          width: 0.5,
+                                        ),
+                                      ),
+                                      prefixIcon: Icon(Icons.person_outline,color: darkBrown,size: 22,),
+                                      hintText: 'lastName'.tr(),
+                                      // If  you are using latest version of flutter then lable text and hint text shown like this
+                                      // if you r using flutter less then 1.20.* then maybe this is not working properly
+                                      floatingLabelBehavior: FloatingLabelBehavior.always,
+                                    ),
+                                  ),
+                                ),
+                              )
+                            ],
                           ),
                           SizedBox(height: 20,),
                           Container(
@@ -422,6 +431,52 @@ class _RegisterState extends State<Register> {
                               ),
                             ),
                           ),
+                          SizedBox(height: 20,),
+                          Container(
+                            margin: EdgeInsets.only(left: 10,right: 10),
+                            child: TextFormField(
+                              inputFormatters: [
+                                MultiMaskedTextInputFormatter(
+                                    masks: ['xx-xx-xxxx'], separator: '-')
+                              ],
+                              controller: dobController,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter some text';
+                                }
+                                return null;
+                              },
+
+                              decoration: InputDecoration(
+                                contentPadding: EdgeInsets.all(15),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(30.0),
+                                  borderSide: BorderSide(
+                                    color: darkBrown,
+                                  ),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(30.0),
+                                  borderSide: BorderSide(
+                                      color: darkBrown,
+                                      width: 0.5
+                                  ),
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(30.0),
+                                  borderSide: BorderSide(
+                                    color: darkBrown,
+                                    width: 0.5,
+                                  ),
+                                ),
+                                prefixIcon: Icon(Icons.calendar_today,color: darkBrown,size: 22,),
+                                hintText:'enterDob'.tr(),
+                                // If  you are using latest version of flutter then lable text and hint text shown like this
+                                // if you r using flutter less then 1.20.* then maybe this is not working properly
+                                floatingLabelBehavior: FloatingLabelBehavior.always,
+                              ),
+                            ),
+                          ),
                           SizedBox(height: 10,),
                           InkWell(
                             onTap: ()async{
@@ -447,6 +502,8 @@ class _RegisterState extends State<Register> {
                                         'gender': genderController.text,
                                         'points':0,
                                         'wallet':0,
+                                        'behaviourStatus':"Not Assigned",
+                                        'dateOfBirth':dobController.text,
                                         'profilePicture':"https://firebasestorage.googleapis.com/v0/b/accesfy-882e6.appspot.com/o/images%2F2021-07-27%2001%3A30%3A51.606.png?alt=media&token=50eaee1a-4878-4ad4-985a-dfdfb19ce78d"
                                       }).then((value) {
                                         pr.close();

@@ -352,23 +352,27 @@ class _LoginState extends State<Login> {
                                               'topic': 'customer',
                                             });
                                           });
-                                          FirebaseFirestore.instance
-                                              .collection('customer')
-                                              .doc(value.user!.uid)
-                                              .get()
-                                              .then((DocumentSnapshot documentSnapshot) {
+                                          print("usrId ${value.user!.uid}");
+                                          FirebaseFirestore.instance.collection('customer').doc(FirebaseAuth.instance.currentUser!.uid).get().then((DocumentSnapshot documentSnapshot) {
                                             if (documentSnapshot.exists) {
-                                              print('Document exists on the database');
                                               Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
-                                              if(data['Active']){
+                                              if(data['status']=="Active"){
+                                                print("active");
                                                 Navigator.pushReplacement(context, new MaterialPageRoute(builder: (context) => BottomBar()));
                                               }
                                               else{
+                                                print("disabled");
+                                                FirebaseAuth.instance.signOut();
                                                 final snackBar = SnackBar(content: Text("This user is blocked by admin"));
                                                 ScaffoldMessenger.of(context).showSnackBar(snackBar);
 
                                               }
 
+                                            }
+                                            else{
+                                              FirebaseAuth.instance.signOut();
+                                              final snackBar = SnackBar(content: Text("This user doesnot exists"));
+                                              ScaffoldMessenger.of(context).showSnackBar(snackBar);
                                             }
                                           });
 

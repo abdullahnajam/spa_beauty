@@ -399,7 +399,7 @@ class _ServiceDetailState extends State<ServiceDetail> {
                                               child: Container(
                                                 alignment: Alignment.bottomCenter,
                                                 margin: EdgeInsets.all(10),
-                                                child: Text(data['name'],style: TextStyle(color: Colors.white),),
+                                                child: Text(context.locale.languageCode=="en"?data['name']:data['name_ar'],style: TextStyle(color: Colors.white),),
                                               ),
                                             );
                                           }).toList(),
@@ -497,57 +497,116 @@ class _ServiceDetailState extends State<ServiceDetail> {
                                 children: snapshot.data!.docs.map((DocumentSnapshot document) {
                                   Map<String, dynamic> data = document.data() as Map<String, dynamic>;
                                   ReviewModel model= ReviewModel.fromMap(data, document.reference.id);
-                                  return Container(
-                                    margin: EdgeInsets.all(10),
-                                    decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(10)
-                                    ),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Container(
-                                          width: MediaQuery.of(context).size.width,
-                                          padding: EdgeInsets.all(10),
+                                  if(model.isHidden){
+                                    if(model.userId==FirebaseAuth.instance.currentUser!.uid)
+                                      return Container(
+                                        margin: EdgeInsets.all(10),
+                                        decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            borderRadius: BorderRadius.circular(10)
+                                        ),
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Container(
+                                                width: MediaQuery.of(context).size.width,
+                                                padding: EdgeInsets.all(10),
 
-                                          decoration: BoxDecoration(
-                                              color: Colors.grey[300],
-                                              borderRadius: BorderRadius.only(
-                                                  topLeft: Radius.circular(10),
-                                                  topRight: Radius.circular(10)
+                                                decoration: BoxDecoration(
+                                                    color: Colors.grey[300],
+                                                    borderRadius: BorderRadius.only(
+                                                        topLeft: Radius.circular(10),
+                                                        topRight: Radius.circular(10)
+                                                    )
+                                                ),
+                                                child: Row(
+                                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                  children: [
+                                                    Text(model.username,style: TextStyle(fontWeight: FontWeight.w600),),
+                                                    RatingBar(
+                                                      initialRating: model.rating.toDouble(),
+                                                      direction: Axis.horizontal,
+                                                      allowHalfRating: true,
+                                                      itemCount: 5,
+                                                      ratingWidget: RatingWidget(
+                                                        full: Icon(Icons.star,color: darkBrown),
+                                                        half: Icon(Icons.star_half,color: darkBrown),
+                                                        empty:Icon(Icons.star_border,color: darkBrown),
+                                                      ),
+                                                      ignoreGestures: true,
+                                                      itemSize: 14,
+                                                      itemPadding: EdgeInsets.symmetric(horizontal: 1.0),
+                                                      onRatingUpdate: (rating) {
+                                                        print(rating);
+                                                      },
+                                                    )
+                                                  ],
+                                                )
+                                            ),
+                                            Container(
+                                              margin: EdgeInsets.all(10),
+                                              child: Text(model.review),
+                                            )
+                                          ],
+                                        ),
+                                      );
+                                    else{
+                                      return Container();
+                                    }
+                                  }
+
+                                  else
+                                    return Container(
+                                      margin: EdgeInsets.all(10),
+                                      decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.circular(10)
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Container(
+                                              width: MediaQuery.of(context).size.width,
+                                              padding: EdgeInsets.all(10),
+
+                                              decoration: BoxDecoration(
+                                                  color: Colors.grey[300],
+                                                  borderRadius: BorderRadius.only(
+                                                      topLeft: Radius.circular(10),
+                                                      topRight: Radius.circular(10)
+                                                  )
+                                              ),
+                                              child: Row(
+                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                children: [
+                                                  Text(model.username,style: TextStyle(fontWeight: FontWeight.w600),),
+                                                  RatingBar(
+                                                    initialRating: model.rating.toDouble(),
+                                                    direction: Axis.horizontal,
+                                                    allowHalfRating: true,
+                                                    itemCount: 5,
+                                                    ratingWidget: RatingWidget(
+                                                      full: Icon(Icons.star,color: darkBrown),
+                                                      half: Icon(Icons.star_half,color: darkBrown),
+                                                      empty:Icon(Icons.star_border,color: darkBrown),
+                                                    ),
+                                                    ignoreGestures: true,
+                                                    itemSize: 14,
+                                                    itemPadding: EdgeInsets.symmetric(horizontal: 1.0),
+                                                    onRatingUpdate: (rating) {
+                                                      print(rating);
+                                                    },
+                                                  )
+                                                ],
                                               )
                                           ),
-                                          child: Row(
-                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Text(model.username,style: TextStyle(fontWeight: FontWeight.w600),),
-                                              RatingBar(
-                                                initialRating: model.rating.toDouble(),
-                                                direction: Axis.horizontal,
-                                                allowHalfRating: true,
-                                                itemCount: 5,
-                                                ratingWidget: RatingWidget(
-                                                  full: Icon(Icons.star,color: darkBrown),
-                                                  half: Icon(Icons.star_half,color: darkBrown),
-                                                  empty:Icon(Icons.star_border,color: darkBrown),
-                                                ),
-                                                ignoreGestures: true,
-                                                itemSize: 14,
-                                                itemPadding: EdgeInsets.symmetric(horizontal: 1.0),
-                                                onRatingUpdate: (rating) {
-                                                  print(rating);
-                                                },
-                                              )
-                                            ],
+                                          Container(
+                                            margin: EdgeInsets.all(10),
+                                            child: Text(model.review),
                                           )
-                                        ),
-                                        Container(
-                                          margin: EdgeInsets.all(10),
-                                          child: Text(model.review),
-                                        )
-                                      ],
-                                    ),
-                                  );
+                                        ],
+                                      ),
+                                    );
                                 }).toList(),
                               );
                             },
@@ -577,7 +636,7 @@ class _ServiceDetailState extends State<ServiceDetail> {
               dialogType: DialogType.QUESTION,
               animType: AnimType.BOTTOMSLIDE,
               title: 'notLoggedIn'.tr(),
-              desc: 'To continue with the booking please login',
+              desc: 'continueMessage'.tr(),
               btnCancelOnPress: (){
                 Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) => ServiceDetail(widget.model,widget.Language)));
               },

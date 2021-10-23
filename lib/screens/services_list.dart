@@ -1,12 +1,15 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_open_whatsapp/flutter_open_whatsapp.dart';
+import 'package:sn_progress_dialog/progress_dialog.dart';
 import 'package:spa_beauty/model/service_model.dart';
 import 'package:spa_beauty/navigator/navigation_drawer.dart';
 import 'package:spa_beauty/screens/reservation.dart';
 import 'package:spa_beauty/screens/services_detail.dart';
 import 'package:spa_beauty/search/search_service.dart';
 import 'package:spa_beauty/utils/constants.dart';
+import 'package:spa_beauty/utils/sharedPref.dart';
 import 'package:spa_beauty/widget/appbar.dart';
 import 'package:easy_localization/easy_localization.dart';
 class AllServicesList extends StatefulWidget {
@@ -38,6 +41,26 @@ class _AllServicesListState extends State<AllServicesList> {
     checkLanguage();
     final orientation = MediaQuery.of(context).orientation;
     return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        onPressed: (){
+          final ProgressDialog pr = ProgressDialog(context: context);
+          pr.show(max: 100, msg: "Loading");
+          SharedPref sharedPref=new SharedPref();
+          sharedPref.getGenderPref().then((value){
+            FirebaseFirestore.instance.collection('settings').doc("whatsapp").collection("contacts")
+                .where("gender", isEqualTo:value.toString()).get().then((QuerySnapshot querySnapshot) {querySnapshot.docs.forEach((doc) {
+              pr.close();
+              FlutterOpenWhatsapp.sendSingleMessage(doc['contact'], "Book a service from Hammam spa & beauty app");
+
+            });
+            });
+
+            pr.close();
+          });
+        },
+        child: Image.asset("assets/images/whatsapp.png"),
+        backgroundColor: Colors.green,
+      ),
       backgroundColor: Colors.grey[200],
       drawer: MenuDrawer(),
       key: _drawerKey,
@@ -109,7 +132,7 @@ class _AllServicesListState extends State<AllServicesList> {
               ),
               SizedBox(height: 10,),
 
-              Container(
+              Expanded(
                 child: StreamBuilder<QuerySnapshot>(
                   stream: FirebaseFirestore.instance.collection('services').where('categoryId', isEqualTo: widget.catId).snapshots(),
                   builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
@@ -183,7 +206,7 @@ class _AllServicesListState extends State<AllServicesList> {
                                           ),
                                         ),
                                         Container(
-                                          height: 40,
+                                          height: 50,
                                           padding: EdgeInsets.only(top: 5),
                                           decoration: BoxDecoration(
                                             color: Colors.white,
@@ -204,7 +227,7 @@ class _AllServicesListState extends State<AllServicesList> {
                                       width: 120,
                                       alignment: Alignment.center,
                                       padding: EdgeInsets.only(left: 10,right: 10),
-                                      margin: EdgeInsets.only(top: 150),
+                                      margin: EdgeInsets.only(top: 160),
                                       decoration: BoxDecoration(
                                           color: Colors.white,
                                           border: Border.all(color: lightBrown),

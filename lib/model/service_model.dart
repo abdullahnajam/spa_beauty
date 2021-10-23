@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ServiceModel{
-  String id,name,name_ar,description,description_ar,image,gender,categoryName,categoryId,tags;
+  String id,name,name_ar,description,description_ar,image,gender,categoryName,categoryId, tags;
   bool isActive,isFeatured,isRedeemable,hasPackages;
   int rating;
 

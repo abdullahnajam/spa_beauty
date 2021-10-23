@@ -65,6 +65,7 @@ dependencies:
   badges: ^2.0.1
   carousel_slider: ^4.0.0
   day_night_switcher: ^0.2.0+1
+  multi_masked_formatter: ^0.1.0
   flutter_local_notifications: ^8.2.0
 
 

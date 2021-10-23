@@ -107,10 +107,11 @@
   "noNotifications": "لا إشعارات",
   "notLoggedIn": "حاليا لم تقم بتسجيل دخولك",
   "orWith": "أو مع",
-  "theme": "سمة",
+  "theme": "الوضع المظلم",
   "noPackages": "لا توجد حزم",
   "enterPhone":"أدخل رقم هاتفك",
   "enterGender": "أدخل جنسك",
   "enterUsername": "أدخل اسم المستخدم الخاص بك",
-  "forgotPassword": "هل نسيت كلمة السر؟"
+  "forgotPassword": "هل نسيت كلمة السر؟",
+  "continueMessage": "لمواصلة الحجز يرجى تسجيل الدخول"
 }

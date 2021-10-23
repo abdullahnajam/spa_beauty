@@ -6,21 +6,26 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_open_whatsapp/flutter_open_whatsapp.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:sn_progress_dialog/progress_dialog.dart';
 import 'package:spa_beauty/model/appointment_model.dart';
 import 'package:spa_beauty/model/category_model.dart';
 import 'package:spa_beauty/model/change_model.dart';
+import 'package:spa_beauty/model/offer_model.dart';
+import 'package:spa_beauty/model/popup_model.dart';
 import 'package:spa_beauty/model/portrait_model.dart';
 import 'package:spa_beauty/model/service_model.dart';
 import 'package:spa_beauty/model/slider_model.dart';
 import 'package:spa_beauty/navigator/bottom_navigation.dart';
 import 'package:spa_beauty/navigator/navigation_drawer.dart';
 import 'package:spa_beauty/screens/all_categories.dart';
+import 'package:spa_beauty/screens/offer_details.dart';
 import 'package:spa_beauty/screens/reservation.dart';
 import 'package:spa_beauty/screens/select_gender.dart';
 import 'package:spa_beauty/screens/services_detail.dart';
 import 'package:spa_beauty/screens/services_list.dart';
+import 'package:spa_beauty/screens/survey.dart';
 import 'package:spa_beauty/search/search_service.dart';
 import 'package:spa_beauty/utils/constants.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -29,7 +34,6 @@ import 'package:spa_beauty/utils/database_services.dart';
 import 'package:spa_beauty/utils/sharedPref.dart';
 import 'package:spa_beauty/utils/webview.dart';
 import 'package:url_launcher/url_launcher.dart';
-
 import 'all_sub_categories.dart';
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -100,6 +104,29 @@ class _HomePageState extends State<HomePage> {
     });
     print("places retrun ${slider.length}");
     return slider;
+
+  }
+  Future<List<PopupModel>> getPopupAds(gender) async{
+    int i=0;
+    List<PopupModel> popup=[];
+    await FirebaseFirestore.instance.collection('popups')
+        .where("gender",isEqualTo: gender)
+        .where("language",isEqualTo: language).get().then((QuerySnapshot querySnapshot) {
+      querySnapshot.docs.forEach((doc) {
+        Map<String, dynamic> data = doc.data()! as Map<String, dynamic>;
+        int year= int.parse("${data['endDate'][6]}${data['endDate'][7]}${data['endDate'][8]}${data['endDate'][9]}");
+        int day= int.parse("${data['endDate'][0]}${data['endDate'][1]}");
+        int month= int.parse("${data['endDate'][3]}${data['endDate'][4]}");
+        final date = DateTime(year,month,day);
+        final difference = date.difference(DateTime.now()).inDays;
+        if(difference>0)
+          popup.add(PopupModel.fromMap(data, doc.reference.id));
+      });
+      print("places foreach ${popup.length}");
+
+    });
+    print("places retrun ${popup.length}");
+    return popup;
 
   }
 
@@ -342,7 +369,7 @@ class _HomePageState extends State<HomePage> {
                         print("pressed $rating");
                         final ProgressDialog pr = ProgressDialog(context: context);
                         pr.show(max: 100, msg: "Loading");
-                        await FirebaseFirestore.instance.collection('reviews').doc(model.id).set({
+                        await FirebaseFirestore.instance.collection('reviews').add({
                           'username': model.name,
                           'service': model.serviceName,
                           'serviceId': model.serviceId,
@@ -409,7 +436,8 @@ class _HomePageState extends State<HomePage> {
                           final snackBar = SnackBar(content: Text("Database Error : ${error.toString()}"));
                           ScaffoldMessenger.of(context).showSnackBar(snackBar);
                         });
-                        Navigator.pop(context);
+                        Navigator.push(context, new MaterialPageRoute(
+                            builder: (context) => Survey(model.name)));
                       },
                       child: Text('Review'.tr(),style: TextStyle(color: Colors.white),),
                     )
@@ -425,6 +453,7 @@ class _HomePageState extends State<HomePage> {
   SharedPref sharedPref=new SharedPref();
   String? language;
   void checkLanguage(){
+    print("languge code ${context.locale.languageCode}");
     String languageCode=context.locale.toLanguageTag().toString();
     languageCode="${languageCode[languageCode.length-2]}${languageCode[languageCode.length-1]}";
     if(languageCode=="US")
@@ -456,27 +485,12 @@ class _HomePageState extends State<HomePage> {
                 insetAnimationCurve: Curves.fastOutSlowIn,
                 elevation: 2,
                 child: Container(
-                  padding: EdgeInsets.all(10),
-                  child: Column(
+                    height: MediaQuery.of(context).size.height*0.6,
+                    width: MediaQuery.of(context).size.width*0.9,
+                  child: Stack(
                     children: [
-                      Stack(
-                        children: [
-                          Align(
-                            alignment: Alignment.center,
-                            child: Text("",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 20),),
-                          ),
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: InkWell(
-                              onTap: (){
-                                Navigator.pop(context);
-                              },
-                              child: Icon(Icons.close),
-                            )
-                          )
-                        ],
-                      ),
-                      Expanded(
+
+                     /* Expanded(
                         child: StreamBuilder<QuerySnapshot>(
                           stream: FirebaseFirestore.instance.collection('popups')
                               .where("gender",isEqualTo: gender)
@@ -534,7 +548,89 @@ class _HomePageState extends State<HomePage> {
                             );
                           },
                         ),
+                      ),*/
+                      FutureBuilder<List<PopupModel>>(
+                        future: getPopupAds(gender),
+                        builder: (context,snapshot){
+                          if (snapshot.hasData) {
+                            if (snapshot.data != null && snapshot.data!.length>0) {
+                              return CarouselSlider.builder(
+
+                                  options: CarouselOptions(
+                                    height: MediaQuery.of(context).size.height*0.6,
+                                    autoPlay: true,
+                                    enlargeCenterPage: true,
+                                    viewportFraction: 1,
+                                    aspectRatio: 1,
+                                    initialPage: 0,
+                                  ),
+                                  itemCount: snapshot.data!.length,
+                                  itemBuilder: (BuildContext context, int itemIndex, int pageViewIndex) =>
+                                      InkWell(
+                                        onTap: ()async{
+                                          Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => WebViewScreen(snapshot.data![itemIndex].link)));
+                                          // await launch();
+                                          //await canLaunch(data['link']) ?  : throw 'Could not launch ${data['link']}';
+                                        },
+                                        child: Container(
+                                          height: MediaQuery.of(context).size.height*0.6,
+                                          width: MediaQuery.of(context).size.width*0.9,
+                                          decoration: BoxDecoration(
+                                              image: DecorationImage(
+                                                  image: NetworkImage( snapshot.data![itemIndex].image),
+                                                  fit: BoxFit.cover
+                                              ),
+                                              borderRadius: BorderRadius.circular(10)
+                                          ),
+
+                                        ),
+                                      )
+                              );
+                            }
+                            else {
+                              return Container(
+                                  alignment: Alignment.center,
+                                  child:Column(
+                                    children: [
+                                      Container(
+                                        height: MediaQuery.of(context).size.height*0.27,
+                                        child: Image.asset("assets/images/logo.png"),
+                                      ),
+                                      SizedBox(height: 10,),
+                                      Text('noBanner'.tr())
+                                    ],
+                                  )
+
+                              );
+                            }
+                          }
+                          else if (snapshot.hasError) {
+                            return Text('Error : ${snapshot.error}',style: Theme.of(context)
+                                .textTheme
+                                .subtitle1!
+                                .apply(color: Colors.black),);
+                          } else {
+                            return new Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          }
+                        },
                       ),
+                      Align(
+                          alignment: Alignment.topRight,
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: InkWell(
+                              onTap: (){
+                                Navigator.pop(context);
+                              },
+                              child: CircleAvatar(
+                                backgroundColor: Colors.white,
+                                child: Icon(Icons.close),
+                              ),
+                            ),
+                          )
+                      )
                     ],
                   )
                 ),
@@ -550,6 +646,27 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       backgroundColor: Colors.grey[200],
       key: _drawerKey,
+      floatingActionButton: FloatingActionButton(
+        onPressed: ()async{
+          final ProgressDialog pr = ProgressDialog(context: context);
+          pr.show(max: 100, msg: "Loading");
+          sharedPref.getGenderPref().then((value){
+            FirebaseFirestore.instance.collection('settings').doc("whatsapp").collection("contacts")
+                .where("gender", isEqualTo:value.toString()).get().then((QuerySnapshot querySnapshot) {querySnapshot.docs.forEach((doc) {
+              pr.close();
+                FlutterOpenWhatsapp.sendSingleMessage(doc['contact'], "Book a service from Hammam spa & beauty app");
+
+              });
+            });
+
+            pr.close();
+          });
+
+
+        },
+        child: Image.asset("assets/images/whatsapp.png"),
+        backgroundColor: Colors.green,
+      ),
       drawer: MenuDrawer(),
       body: FutureBuilder<String>(
         future: sharedPref.getGenderPref(),
@@ -688,120 +805,49 @@ class _HomePageState extends State<HomePage> {
                                         ],
                                       ),
                                     ),
-                                    /*Expanded(
-                                      child: StreamBuilder<QuerySnapshot>(
-                                        stream: FirebaseFirestore.instance.collection('banner')
-
-                                            .where("gender",isEqualTo: prefshot.data.toString())
-                                            .where("language",isEqualTo: language)
-                                            .orderBy("position")
-                                            .snapshots(),
-                                        builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-                                          if (snapshot.hasError) {
-                                            return Center(
-                                              child: Column(
-                                                children: [
-                                                  Text("Something Went Wrong ${snapshot.error.toString()}")
-
-                                                ],
-                                              ),
-                                            );
-                                          }
-
-                                          if (snapshot.connectionState == ConnectionState.waiting) {
-                                            return Center(
-                                              child: CircularProgressIndicator(),
-                                            );
-                                          }
-                                          if (snapshot.data!.size==0){
-                                            return Container(
-                                                alignment: Alignment.center,
-                                                child:Column(
-                                                  children: [
-                                                    Container(
-                                                      height: MediaQuery.of(context).size.height*0.27,
-                                                      child: Image.asset("assets/images/logo.png"),
-                                                    ),
-                                                    SizedBox(height: 10,),
-                                                    Text('noBanner'.tr())
-                                                  ],
-                                                )
-
-                                            );
-
-                                          }
-
-                                          return new ListView(
-                                            scrollDirection: Axis.horizontal,
-                                            children: snapshot.data!.docs.map((DocumentSnapshot document) {
-                                              Map<String, dynamic> data = document.data() as Map<String, dynamic>;
-                                              return Container(
-                                                height: MediaQuery.of(context).size.height*0.32,
-                                                width: MediaQuery.of(context).size.width,
-                                                margin: EdgeInsets.only(left: 10,right: 10),
-                                                decoration: BoxDecoration(
-                                                    borderRadius: BorderRadius.circular(20)
-                                                ),
-                                                child: ClipRRect(
-                                                  borderRadius: BorderRadius.circular(20),
-                                                  child: CachedNetworkImage(
-                                                    imageUrl: data['image'],
-                                                    width: MediaQuery.of(context).size.width,
-                                                    fit: BoxFit.cover,
-                                                    placeholder: (context, url) => Center(
-                                                      child: CircularProgressIndicator(),
-                                                    ),
-                                                    errorWidget: (context, url, error) => Icon(Icons.error),
-                                                  ),
-                                                ),
-                                              );
-                                            }).toList(),
-                                          );
-                                        },
-                                      ),
-                                    ),*/
-                                    Expanded(
+                                    Container(
+                                      height: MediaQuery.of(context).size.height*0.3,
                                       child: FutureBuilder<List<SliderModel>>(
                                         future: getBanners(prefshot.data.toString()),
                                         builder: (context,snapshot){
                                           if (snapshot.hasData) {
                                             if (snapshot.data != null && snapshot.data!.length>0) {
-                                              return ListView.builder(
-                                                itemCount: snapshot.data!.length,
-                                                shrinkWrap: true,
-                                                itemBuilder: (BuildContext context,int index){
-                                                  return CarouselSlider.builder(
-                                                    options: CarouselOptions(
-                                                      autoPlay: true,
-                                                      enlargeCenterPage: true,
-                                                      viewportFraction: 0.9,
-                                                      aspectRatio: 2.0,
-                                                      initialPage: 0,
-                                                    ),
-                                                    itemCount: snapshot.data!.length,
-                                                    itemBuilder: (BuildContext context, int itemIndex, int pageViewIndex) =>
-                                                        Container(
-                                                          height: MediaQuery.of(context).size.height*0.32,
-                                                          width: MediaQuery.of(context).size.width,
-                                                          margin: EdgeInsets.only(left: 10,right: 10),
-                                                          decoration: BoxDecoration(
-                                                              borderRadius: BorderRadius.circular(20)
-                                                          ),
-                                                          child: ClipRRect(
-                                                            borderRadius: BorderRadius.circular(20),
-                                                            child: CachedNetworkImage(
-                                                              imageUrl: snapshot.data![itemIndex].image,
-                                                              width: MediaQuery.of(context).size.width,
-                                                              fit: BoxFit.cover,
-                                                              placeholder: (context, url) => Center(
-                                                                child: CircularProgressIndicator(),
-                                                              ),
-                                                              errorWidget: (context, url, error) => Icon(Icons.error),
+                                              return CarouselSlider.builder(
+
+                                                  options: CarouselOptions(
+                                                    autoPlay: true,
+                                                    height: MediaQuery.of(context).size.height*0.32,
+                                                    enlargeCenterPage: true,
+                                                    viewportFraction: 1,
+                                                    aspectRatio: 1,
+                                                    initialPage: 0,
+                                                  ),
+                                                  itemCount: snapshot.data!.length,
+                                                  itemBuilder: (BuildContext context, int itemIndex, int pageViewIndex) =>
+                                                      Container(
+                                                        height: MediaQuery.of(context).size.height*0.32,
+                                                        width: MediaQuery.of(context).size.width*0.9,
+                                                        decoration: BoxDecoration(
+                                                            image: DecorationImage(
+                                                                image: NetworkImage( snapshot.data![itemIndex].image),
+                                                                fit: BoxFit.cover
                                                             ),
-                                                          ),
-                                                        )
-                                                  );
-                                                },
+                                                            borderRadius: BorderRadius.circular(20)
+                                                        ),
+                                                        /* child: ClipRRect(
+                                                              borderRadius: BorderRadius.circular(20),
+                                                              child: CachedNetworkImage(
+                                                                imageUrl: snapshot.data![itemIndex].image,
+                                                                height: MediaQuery.of(context).size.height*0.12,
+                                                                width: MediaQuery.of(context).size.width*0.9,
+                                                                fit: BoxFit.fitHeight,
+                                                                placeholder: (context, url) => Center(
+                                                                  child: CircularProgressIndicator(),
+                                                                ),
+                                                                errorWidget: (context, url, error) => Icon(Icons.error),
+                                                              ),
+                                                            ),*/
+                                                      )
                                               );
                                             }
                                             else {
@@ -833,7 +879,7 @@ class _HomePageState extends State<HomePage> {
                                           }
                                         },
                                       ),
-                                    )
+                                    ),
 
 
                                   ],
@@ -868,7 +914,8 @@ class _HomePageState extends State<HomePage> {
                             child: StreamBuilder<QuerySnapshot>(
                               stream: FirebaseFirestore.instance.collection('categories')
                                   .where("gender",isEqualTo: prefshot.data.toString())
-                                  .where('isFeatured',isEqualTo: true).snapshots(),
+                                  .where('isFeatured',isEqualTo: true)
+                                  .orderBy("position").snapshots(),
                               builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
                                 if (snapshot.hasError) {
                                   return Center(
@@ -930,11 +977,13 @@ class _HomePageState extends State<HomePage> {
                                           mainAxisAlignment: MainAxisAlignment.center,
                                           children: [
                                             Container(
-
-
                                               decoration: BoxDecoration(
                                                   color: Colors.grey,
                                                   shape: BoxShape.circle,
+                                                  image: DecorationImage(
+                                                    image: NetworkImage(data['image']),
+                                                    fit: BoxFit.cover
+                                                  ),
                                                   boxShadow: [
                                                     BoxShadow(
                                                       color: Colors.grey,
@@ -943,20 +992,8 @@ class _HomePageState extends State<HomePage> {
                                                     ),
                                                   ]
                                               ),
-                                              height: 50,
-                                              width: 50,
-                                              margin: EdgeInsets.all(5),
-                                              child: CircleAvatar(
-                                                backgroundColor: Colors.white,
-                                                child: CachedNetworkImage(
-                                                  imageUrl: data['image'],
-                                                  height: 30,
-                                                  width: 30,
-                                                  fit: BoxFit.cover,
-                                                  placeholder: (context, url) => CircularProgressIndicator(),
-                                                  errorWidget: (context, url, error) => Icon(Icons.error),
-                                                ),
-                                              ),
+                                              height: 65,
+                                              width: 65,
                                             ),
                                             Text(language=="English"?data['name']:data['name_ar'],textAlign: TextAlign.center, maxLines: 1,style: TextStyle(
                                                 fontSize: 12,
@@ -1036,6 +1073,100 @@ class _HomePageState extends State<HomePage> {
                               );
                             },
                           ),
+                          StreamBuilder<QuerySnapshot>(
+                            stream: FirebaseFirestore.instance.collection('portrait_banner')
+                                .where('type', isEqualTo: 'Offer')
+                                .where('gender', isEqualTo: prefshot.data.toString())
+                                .where('language', isEqualTo: language)
+                                .orderBy("position")
+                                .snapshots(),
+                            builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                              if (snapshot.hasError) {
+                                return Center(
+                                  child: Column(
+                                    children: [
+                                      Image.asset("assets/images/wrong.png",width: 150,height: 150,),
+                                      Text("Something Went Wrong")
+
+                                    ],
+                                  ),
+                                );
+                              }
+
+                              if (snapshot.connectionState == ConnectionState.waiting) {
+                                return Center(
+                                  child: CircularProgressIndicator(),
+                                );
+                              }
+                              if (snapshot.data!.size==0){
+                                return Container(
+                                  alignment: Alignment.center,
+
+                                );
+
+                              }
+
+                              return new ListView(
+                                shrinkWrap: true,
+                                physics: NeverScrollableScrollPhysics(),
+                                //scrollDirection: Axis.horizontal,
+                                children: snapshot.data!.docs.map((DocumentSnapshot document) {
+                                  Map<String, dynamic> portraitData = document.data() as Map<String, dynamic>;
+
+                                  PortraitModel portrait= PortraitModel.fromMap(portraitData, document.reference.id);
+                                  return new Padding(
+                                    padding: const EdgeInsets.only(top: 15.0),
+                                    child: InkWell(
+                                      onTap: (){
+                                        FirebaseFirestore.instance.collection('offers').doc(portrait.linkId).get().then((DocumentSnapshot documentSnapshot) {
+                                          if (documentSnapshot.exists) {
+                                            Map<String, dynamic> offerData = documentSnapshot.data() as Map<String, dynamic>;
+                                            OfferModel offerModel= OfferModel.fromMap(offerData, document.reference.id);
+                                            ServiceModel model2=new ServiceModel(
+                                                offerModel.id,
+                                                offerModel.name,
+                                                "",
+                                                "",
+                                                "",
+                                                false,
+                                                "",
+                                                "offer",
+                                                "",
+                                                "",
+                                                0,
+                                                offerModel.discount,
+                                                0,
+                                                "",
+                                                true,
+                                                0,
+                                                "",
+                                                false,
+                                                0,
+                                                false
+                                            );
+                                            Navigator.push(context, new MaterialPageRoute(builder: (context) => OfferDetail(model2,offerModel)));
+                                          }
+                                        });
+
+                                      },
+                                      child: Container(
+                                        margin: EdgeInsets.all(10),
+                                        height: MediaQuery.of(context).size.height*0.4,
+                                        width: MediaQuery.of(context).size.width*0.9,
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(10),
+                                          image: DecorationImage(
+                                              image: NetworkImage(portrait.image),
+                                              fit: BoxFit.cover
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
+                              );
+                            },
+                          ),
                           Container(
                             height: 120,
                             child: symbol==""?Center(
@@ -1044,7 +1175,8 @@ class _HomePageState extends State<HomePage> {
                               stream: FirebaseFirestore.instance.collection('services')
                                   .where('gender', isEqualTo: prefshot.data.toString())
                                   .where('isFeatured',isEqualTo: true)
-                                  .where('isActive',isEqualTo: true).snapshots(),
+                                  .where('isActive',isEqualTo: true)
+                                  .orderBy("position").snapshots(),
                               builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
                                 if (snapshot.hasError) {
                                   return Center(
@@ -1148,6 +1280,26 @@ class _HomePageState extends State<HomePage> {
                               },
                             ),
                           ),
+                          if(context.locale.languageCode=="en")
+                            Container(
+                              margin: EdgeInsets.all(10),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                Icon(Icons.arrow_forward),
+                              ],
+                            ),
+                          )
+                          else
+                            Container(
+                              margin: EdgeInsets.all(10),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  Icon(Icons.arrow_back),
+                                ],
+                              ),
+                            ),
                           StreamBuilder<QuerySnapshot>(
                             stream: FirebaseFirestore.instance.collection('portrait_banner')
                                 .where('type', isEqualTo: 'Service')

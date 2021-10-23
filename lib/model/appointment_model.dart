@@ -5,7 +5,7 @@ class AppointmentModel{
   bool isRated,paid;
   int datePosted,dateBooked;
   int rating,points;
-  String place,placeId,branchName,branchId;
+  String place,placeId,branchName,branchId,gender;
   String packageName,packageId,packageArName;
 
 
@@ -14,6 +14,7 @@ class AppointmentModel{
       : id=key,
         name = map['name'],
         userId = map['userId'],
+        gender = map['gender'],
         packageName = map['packageName']??"none",
         packageArName = map['packageArName']??"none",
         packageId = map['packageId']??"none",
@@ -63,7 +64,7 @@ class AppointmentModel{
       this.branchName,
       this.packageId,
       this.packageName,
-      this.packageArName);
+      this.packageArName,this.gender);
 
   AppointmentModel.fromSnapshot(DocumentSnapshot snapshot )
       : this.fromMap(snapshot.data() as Map<String, dynamic>,snapshot.reference.id);

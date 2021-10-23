@@ -191,7 +191,7 @@ class _AppointmentTileState extends State<AppointmentTile> {
                         print("presed $rating");
                         final ProgressDialog pr = ProgressDialog(context: context);
                         pr.show(max: 100, msg: "Loading");
-                        FirebaseFirestore.instance.collection('reviews').doc(widget.model.id).set({
+                        FirebaseFirestore.instance.collection('reviews').add({
                           'username': widget.model.name,
                           'service': widget.model.serviceName,
                           'serviceId': widget.model.serviceId,
@@ -252,9 +252,9 @@ class _AppointmentTileState extends State<AppointmentTile> {
       child:   InkWell(
         onTap: (){
           if (widget.model.isRated == false && widget.model.status == 'Completed') {
-              _showRatingDialog();
+              //_showRatingDialog();
           }
-          if(widget.model.status == 'Pending' || widget.model.status=="قيد الانتظار" ||
+          /*if(widget.model.status == 'Pending' || widget.model.status=="قيد الانتظار" ||
               widget.model.status == 'Approved' || widget.model.status=="وافق"){
             showDialog<void>(
               context: context,
@@ -292,7 +292,7 @@ class _AppointmentTileState extends State<AppointmentTile> {
               },
             );
 
-          }
+          }*/
         },
         child: Container(
           decoration: BoxDecoration(
@@ -457,119 +457,178 @@ class _AppointmentTileState extends State<AppointmentTile> {
                   )
                 ],
               )
-              :IntrinsicHeight(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              :
+
+            Column(
               children: [
-
-                Container(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                IntrinsicHeight(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      SizedBox(height: size.height*0.01,),
-                      Text(widget.model.serviceName,style: TextStyle(
-                        color: Colors.black87,
-                        //fontFamily: 'Georgia Regular',
-                        fontWeight: FontWeight.w700,
-                        fontSize: 17,
-                      ),),
-                      SizedBox(height: size.height*0.0055,),
-                      Row(
-                        children: [
-                          symbol==""?Container():
 
-                          align=="Left"?
-                          Text("$symbol${widget.model.amount}",style: TextStyle(
-                            color: Colors.black87,
-                            //fontFamily: 'Georgia Regular',
-                            fontWeight: FontWeight.w300,
-                            fontSize: 12,
-                          ),):
-                          Text("${widget.model.amount}$symbol",style: TextStyle(
-                            color: Colors.black87,
-                            //fontFamily: 'Georgia Regular',
-                            fontWeight: FontWeight.w300,
-                            fontSize: 12,
-                          ),),
-                          SizedBox(width: 10,),
-                          Text(widget.model.paymentMethod,style: TextStyle(
-                            color: Colors.black87,
-                            //fontFamily: 'Georgia Regular',
-                            fontWeight: FontWeight.w300,
-                            fontSize: 12,
-                          ),),
-                        ],
-                      ),
-                      SizedBox(height: size.height*0.0055,),
-                      Text("${widget.model.date}   ${widget.model.time}",style: TextStyle(
-                        color: Colors.black87,
-                        //fontFamily: 'Georgia Regular',
-                        fontWeight: FontWeight.w500,
-                        fontSize: 12,
-                      ),),
-                      SizedBox(height: size.height*0.0055,),
-                    ],
-                  ),
-                ),
-
-                Container(
-                  padding: EdgeInsets.only(top: 5,bottom: 5),
-                  child: VerticalDivider(
-                    thickness: 0.3,
-                    width: 2,
-                    color: Colors.black,
-                  ),
-                ),
-
-                Container(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-
-                    children: [
                       Container(
-                        //margin: EdgeInsets.fromLTRB(0,8, 0, 0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SizedBox(height: size.height*0.01,),
+                            Text(widget.model.serviceName,style: TextStyle(
+                              color: Colors.black87,
+                              //fontFamily: 'Georgia Regular',
+                              fontWeight: FontWeight.w700,
+                              fontSize: 17,
+                            ),),
+                            SizedBox(height: size.height*0.0055,),
+                            Row(
+                              children: [
+                                symbol==""?Container():
 
-                        //width: MediaQuery.of(context).size.width*0.2,
-                        child: Container(
-                          padding: EdgeInsets.fromLTRB(10, 2, 10, 2),
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(20),
-                              color: darkBrown
-                          ),
-                          alignment: Alignment.center,
-                          child: Text(widget.model.status,style: TextStyle(color: Colors.white),),
+                                align=="Left"?
+                                Text("$symbol${widget.model.amount}",style: TextStyle(
+                                  color: Colors.black87,
+                                  //fontFamily: 'Georgia Regular',
+                                  fontWeight: FontWeight.w300,
+                                  fontSize: 12,
+                                ),):
+                                Text("${widget.model.amount}$symbol",style: TextStyle(
+                                  color: Colors.black87,
+                                  //fontFamily: 'Georgia Regular',
+                                  fontWeight: FontWeight.w300,
+                                  fontSize: 12,
+                                ),),
+                                SizedBox(width: 10,),
+                                Text(widget.model.paymentMethod,style: TextStyle(
+                                  color: Colors.black87,
+                                  //fontFamily: 'Georgia Regular',
+                                  fontWeight: FontWeight.w300,
+                                  fontSize: 12,
+                                ),),
+                              ],
+                            ),
+                            SizedBox(height: size.height*0.0055,),
+                            Text("${widget.model.date}   ${widget.model.time}",style: TextStyle(
+                              color: Colors.black87,
+                              //fontFamily: 'Georgia Regular',
+                              fontWeight: FontWeight.w500,
+                              fontSize: 12,
+                            ),),
+                            SizedBox(height: size.height*0.0055,),
+                          ],
                         ),
                       ),
-                      SizedBox(height: size.height*0.005,),
-                      widget.model.status == 'Completed' ?
-                      widget.model.isRated ? RatingBar(
-                        initialRating: widget.model.rating.toDouble(),
-                        direction: Axis.horizontal,
-                        allowHalfRating: true,
-                        itemCount: 5,
-                        ratingWidget: RatingWidget(
-                          full: Icon(Icons.star,color: darkBrown),
-                          half: Icon(Icons.star_half,color: darkBrown),
-                          empty:Icon(Icons.star_border,color: darkBrown),
+
+                      Container(
+                        padding: EdgeInsets.only(top: 5,bottom: 5),
+                        child: VerticalDivider(
+                          thickness: 0.3,
+                          width: 2,
+                          color: Colors.black,
                         ),
-                        ignoreGestures: true,
-                        itemSize: 14,
-                        itemPadding: EdgeInsets.symmetric(horizontal: 1.0),
-                        onRatingUpdate: (rating) {
-                          print(rating);
-                        },
-                      ) : Container(child: Text("NOT RATED",style: TextStyle(fontSize: 10,color: Colors.grey),) , )
-                          :Container(),
+                      ),
+
+                      Container(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+
+                          children: [
+                            Container(
+                              //margin: EdgeInsets.fromLTRB(0,8, 0, 0),
+
+                              //width: MediaQuery.of(context).size.width*0.2,
+                              child: Container(
+                                padding: EdgeInsets.fromLTRB(10, 2, 10, 2),
+                                decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(20),
+                                    color: darkBrown
+                                ),
+                                alignment: Alignment.center,
+                                child: Text(widget.model.status,style: TextStyle(color: Colors.white),),
+                              ),
+                            ),
+                            SizedBox(height: size.height*0.005,),
+                            widget.model.status == 'Completed' ?
+                            widget.model.isRated ? RatingBar(
+                              initialRating: widget.model.rating.toDouble(),
+                              direction: Axis.horizontal,
+                              allowHalfRating: true,
+                              itemCount: 5,
+                              ratingWidget: RatingWidget(
+                                full: Icon(Icons.star,color: darkBrown),
+                                half: Icon(Icons.star_half,color: darkBrown),
+                                empty:Icon(Icons.star_border,color: darkBrown),
+                              ),
+                              ignoreGestures: true,
+                              itemSize: 14,
+                              itemPadding: EdgeInsets.symmetric(horizontal: 1.0),
+                              onRatingUpdate: (rating) {
+                                print(rating);
+                              },
+                            ) : Container(child: Text("NOT RATED",style: TextStyle(fontSize: 10,color: Colors.grey),) , )
+                                :Container(),
+
+                          ],
+                        ),
+                      )
+
 
                     ],
+                  ),
+                ),
+                InkWell(
+                  onTap: (){
+                    showDialog<void>(
+                      context: context,
+                      barrierDismissible: true, // user must tap button!
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: Text('cancelBooking'.tr()),
+                          content: SingleChildScrollView(
+                            child: ListBody(
+                              children:  <Widget>[
+                                Text('cancelConfirm'.tr()),
+                              ],
+                            ),
+                          ),
+                          actions: <Widget>[
+                            TextButton(
+                              child:  Text('ok'.tr()),
+                              onPressed: () {
+                                FirebaseFirestore.instance.collection("cancelled").doc(widget.model.id).set({
+                                  'user':widget.model.name,
+                                  'userId':FirebaseAuth.instance.currentUser!.uid,
+                                  'service': widget.model.serviceName,
+                                  'dateTime': "${widget.model.time}, ${widget.model.date}"
+                                }).then((value) {
+                                  final snackBar = SnackBar(content: Text("Request submitted. Please wait for admin approval"));
+                                  ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                                  Navigator.of(context).pop();
+                                  //Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) => Appointments()));
+                                });
+
+                              },
+                            ),
+                          ],
+                        );
+                      },
+                    );
+
+                  },
+                  child: Container(
+                    alignment: Alignment.center,
+                    height: 30,
+                    width: MediaQuery.of(context).size.width,
+                    decoration: BoxDecoration(
+                        color: lightBrown,
+                        borderRadius: BorderRadius.only(
+                          bottomRight: Radius.circular(10),
+                          bottomLeft: Radius.circular(10),
+                        )
+                    ),
+                    child: Text('cancelBooking'.tr(),style: TextStyle(color: Colors.white),),
                   ),
                 )
-
-
               ],
-            ),
-          ),
+            )
         ),
       ),
     ):Center(child: CircularProgressIndicator(),);

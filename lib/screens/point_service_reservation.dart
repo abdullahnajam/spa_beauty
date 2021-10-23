@@ -310,6 +310,7 @@ class _PointServiceReservationState extends State<PointServiceReservation> {
                           'isRated':false,
                           'rating':0,
                           'points':0,
+                          'gender':widget.model.gender,
                           'paid':true,
                           'paymentMethod':payment,
                           'datePosted':DateTime.now().millisecondsSinceEpoch,

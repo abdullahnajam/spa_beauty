@@ -201,6 +201,7 @@ class _CheckoutState extends State<Checkout> {
       'userId': FirebaseAuth.instance.currentUser!.uid,
       'date': widget.model.date,
       'time': widget.model.time,
+      'gender':widget.model.gender,
       'specialistId': widget.model.specialistId,
       'specialistName': widget.model.specialistName,
       'serviceId':widget.model.serviceId,
@@ -345,6 +346,7 @@ class _CheckoutState extends State<Checkout> {
                 child: Form(
                   key: _formKey,
                   child: ListView(
+                    padding: EdgeInsets.zero,
                     shrinkWrap: true,
                     children: [
                       Container(
@@ -363,10 +365,36 @@ class _CheckoutState extends State<Checkout> {
                             'service'.tr(),
                             style: Theme.of(context).textTheme.bodyText1!.apply(color: Colors.black),
                           ),
-                          Text(
+                          if(context.locale.languageCode=="en")
+                            Text(
                             "${widget.model.serviceName}",
                             style: Theme.of(context).textTheme.bodyText2!.apply(color: Colors.grey),
-                          ),
+                          )
+                          else
+                            FutureBuilder<DocumentSnapshot>(
+                              future:  FirebaseFirestore.instance.collection('services').doc(widget.model.serviceId).get(),
+                              builder:
+                                  (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
+
+                                if (snapshot.hasError) {
+                                  return Text("Something went wrong");
+                                }
+
+                                if (snapshot.hasData && !snapshot.data!.exists) {
+                                  return Text('service'.tr());
+                                }
+
+                                if (snapshot.connectionState == ConnectionState.done) {
+                                  Map<String, dynamic> data = snapshot.data!.data() as Map<String, dynamic>;
+                                  return Text(
+                                    data['name_ar'],
+                                    style: Theme.of(context).textTheme.bodyText2!.apply(color: Colors.grey),
+                                  );
+                                }
+
+                                return Text("-");
+                              },
+                            ),
                         ],
                       ),
                       SizedBox(height: 10,),
@@ -595,7 +623,7 @@ class _CheckoutState extends State<Checkout> {
 
 
 
-                      SizedBox(height: 15,),
+                      SizedBox(height: MediaQuery.of(context).size.height*0.12,),
                     ],
                   ),
                 ),
