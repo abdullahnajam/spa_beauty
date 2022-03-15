@@ -113,5 +113,6 @@
   "enterGender": "أدخل جنسك",
   "enterUsername": "أدخل اسم المستخدم الخاص بك",
   "forgotPassword": "هل نسيت كلمة السر؟",
-  "continueMessage": "لمواصلة الحجز يرجى تسجيل الدخول"
+  "continueMessage": "لمواصلة الحجز يرجى تسجيل الدخول",
+  "noTimeSlots": "لا توجد فترات زمنية متاحة"
 }

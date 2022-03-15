@@ -1,9 +1,12 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:sn_progress_dialog/progress_dialog.dart';
 import 'package:spa_beauty/model/appointment_model.dart';
+import 'package:spa_beauty/model/stripe_data.dart';
 import 'package:spa_beauty/navigator/bottom_navigation.dart';
 import 'package:spa_beauty/payment/payment-service.dart';
 import 'package:spa_beauty/screens/reservation.dart';
@@ -31,10 +34,28 @@ class _CheckoutState extends State<Checkout> {
   }
   String? amount;
   bool? cashPayment,cardPayment;bool isPaymentMethodLoaded=false;
+  initializeStripe() async {
+    StripeData stripeData;
+    await FirebaseFirestore.instance.collection('settings').doc('stripe').get().then((DocumentSnapshot documentSnapshot) {
+      if (documentSnapshot.exists) {
+        Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
 
+        stripeData=new StripeData(
+            data['publicKey'],
+            data['secretKey'],
+            data['mode'],
+            data['merchantId']
+        );
+        StripeService.init(stripeData.pKey,stripeData.mode,stripeData.mId);
+        StripeService.secret=stripeData.sKey;
+      }
+    });
+
+  }
   @override
   void initState() {
     super.initState();
+    initializeStripe();
 
     FirebaseFirestore.instance
         .collection('settings')
@@ -160,6 +181,7 @@ class _CheckoutState extends State<Checkout> {
       );
     }
   }
+
   payViaNewCard(BuildContext context) async {
     final ProgressDialog pr = ProgressDialog(context: context);
     pr.show(max: 100, msg: "Please wait");
@@ -189,6 +211,32 @@ class _CheckoutState extends State<Checkout> {
     });
 
 
+  }
+  sendNotification(String body,title) async{
+    String url='https://fcm.googleapis.com/fcm/send';
+    Uri myUri = Uri.parse(url);
+    await http.post(
+      myUri,
+      headers: <String, String>{
+        'Content-Type': 'application/json',
+        'Authorization': 'key=$serverToken',
+      },
+      body: jsonEncode(
+        <String, dynamic>{
+          'notification': <String, dynamic>{
+            'body': body,
+            'title': title
+          },
+          'priority': 'high',
+          'data': <String, dynamic>{
+            'click_action': 'FLUTTER_NOTIFICATION_CLICK',
+            'id': '1',
+            'status': 'done'
+          },
+          'to': "/topics/admin",
+        },
+      ),
+    );
   }
   bookAppointment(bool paid)async{
 
@@ -226,6 +274,7 @@ class _CheckoutState extends State<Checkout> {
       'packageName': widget.model.packageName,
       'packageArName': widget.model.packageArName,
     }).then((value) {
+      sendNotification("${widget.model.serviceName} booked by ${widget.model.name} for ${widget.model.date} - ${widget.model.time}", "Service Booked");
       pr.close();
       if(couponId!=""){
         ids.add(couponId);
@@ -281,7 +330,7 @@ class _CheckoutState extends State<Checkout> {
         },
         child: Container(
           color: lightBrown,
-          height: MediaQuery.of(context).size.height*0.09,
+          height: MediaQuery.of(context).size.height*0.07,
           child: Center(child: Text('proceed'.tr(),style:TextStyle(
             color: Colors.white,
             fontSize: 22,
@@ -623,11 +672,12 @@ class _CheckoutState extends State<Checkout> {
 
 
 
-                      SizedBox(height: MediaQuery.of(context).size.height*0.12,),
+
                     ],
                   ),
                 ),
               ),
+              SizedBox(height: MediaQuery.of(context).size.height*0.1,),
             ],
           ),
         ),

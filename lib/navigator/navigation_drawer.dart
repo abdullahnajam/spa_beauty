@@ -313,19 +313,46 @@ class MenuDrawerState extends State<MenuDrawer> {
 
 
               Container(height: 10),
-              InkWell(onTap: (){
-                FirebaseFirestore.instance
-                    .collection('about')
-                    .doc('data')
-                    .get()
-                    .then((DocumentSnapshot documentSnapshot) {
+              InkWell(onTap: ()async{
+                await FirebaseFirestore.instance.collection('settings').doc('support').get().then((DocumentSnapshot documentSnapshot) {
                   if (documentSnapshot.exists) {
                     Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
-                    FlutterOpenWhatsapp.sendSingleMessage(data['contact'], "Book a service from Hammam spa & beauty app");
-                  } else {
-                    print('Document does not exist on the database');
+                    if(data['method']=="Call"){
+                      FirebaseFirestore.instance
+                          .collection('about')
+                          .doc('data')
+                          .get()
+                          .then((DocumentSnapshot documentSnapshot) {
+                        if (documentSnapshot.exists) {
+                          Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
+                          launch("tel://${data['contact']}");
+                        }
+                        else {
+                          print('Document does not exist on the database');
+                        }
+                      });
+
+                    }
+                    else{
+                      FirebaseFirestore.instance
+                          .collection('about')
+                          .doc('data')
+                          .get()
+                          .then((DocumentSnapshot documentSnapshot) {
+                        if (documentSnapshot.exists) {
+                          Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
+                          FlutterOpenWhatsapp.sendSingleMessage(data['contact'], "Book a service from Hammam spa & beauty app");
+                        } else {
+                          print('Document does not exist on the database');
+                        }
+                      });
+                    }
+
                   }
                 });
+
+
+
 
               },
                 child: Container(height: 40, padding: EdgeInsets.symmetric(horizontal: 20),

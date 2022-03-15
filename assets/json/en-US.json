@@ -119,5 +119,6 @@
   "suggestion": "Suggestion",
   "enterSuggestion": "Enter Suggestion",
   "submit": "Submit",
-  "enterDob": "Enter Date of Birth"
+  "enterDob": "Enter Date of Birth",
+  "noTimeSlots": "No Time Slots Available"
 }

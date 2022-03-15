@@ -9,6 +9,7 @@ import 'package:sn_progress_dialog/progress_dialog.dart';
 import 'package:spa_beauty/model/appointment_model.dart';
 import 'package:spa_beauty/model/service_model.dart';
 import 'package:spa_beauty/model/specialist_model.dart';
+import 'package:spa_beauty/model/stripe_data.dart';
 import 'package:spa_beauty/model/time_model.dart';
 import 'package:spa_beauty/navigator/bottom_navigation.dart';
 import 'package:spa_beauty/payment/payment-service.dart';
@@ -52,7 +53,7 @@ class _ReservationState extends State<Reservation> {
     });
   }
   getTimeSlots(){
-    FirebaseFirestore.instance.collection('timeslots').get().then((QuerySnapshot querySnapshot) {
+    FirebaseFirestore.instance.collection('timeslots').where("serviceId" ,isEqualTo: widget.model.id).get().then((QuerySnapshot querySnapshot) {
       querySnapshot.docs.forEach((doc) {
         TimeModel timeModel=new TimeModel(doc['time'], doc['max'],false);
         setState(() {
@@ -201,7 +202,14 @@ class _ReservationState extends State<Reservation> {
                     alignment: Alignment.center,
                     margin: EdgeInsets.all(10),
                     child: CircularProgressIndicator(),
-                  ):Expanded(
+                  ):
+                  time.length==0?
+                  Container(
+                    alignment: Alignment.center,
+                    margin: EdgeInsets.all(10),
+                    child: Text('noTimeSlots'.tr()),
+                  ):
+                  Expanded(
                     child: GridView.builder(
                       itemCount: time.length,
                       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -243,6 +251,7 @@ class _ReservationState extends State<Reservation> {
                       },
                     ),
                   )
+
                 ],
               )
             ),
@@ -491,6 +500,24 @@ class _ReservationState extends State<Reservation> {
     );
   }
   String? symbol,align;
+  initializeStripe() async {
+    StripeData stripeData;
+    await FirebaseFirestore.instance.collection('settings').doc('stripe').get().then((DocumentSnapshot documentSnapshot) {
+      if (documentSnapshot.exists) {
+        Map<String, dynamic> data = documentSnapshot.data() as Map<String, dynamic>;
+
+        stripeData=new StripeData(
+            data['publicKey'],
+            data['secretKey'],
+            data['mode'],
+            data['merchantId']
+        );
+        StripeService.init(stripeData.pKey,stripeData.mode,stripeData.mId);
+        StripeService.secret=stripeData.sKey;
+      }
+    });
+
+  }
   @override
   void initState() {
     super.initState();
@@ -526,7 +553,7 @@ class _ReservationState extends State<Reservation> {
 
       }
     });
-    StripeService.init();
+    initializeStripe();
     getTimeSlots();
     getSpecialists();
     setState(() {

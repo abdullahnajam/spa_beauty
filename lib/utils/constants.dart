@@ -13,3 +13,4 @@ const AndroidNotificationChannel channel = AndroidNotificationChannel(
   'This channel is used for important notifications.', // description
   importance: Importance.max,
 );
+const serverToken="AAAAp-jUd-Y:APA91bH5eKykWgIpIm852lY1GD6mAdZ8JDn7BYfvuslZpehQOO5lQ-HwTBH22B_qci9yeT1ahB1pQU-8otkUjSNhRqvTrmAoN2MgvV7Roind2a6IRbyREG_kD5A-4t5498wgQKlkFAtr";

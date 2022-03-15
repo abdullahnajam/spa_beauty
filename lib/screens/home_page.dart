@@ -436,6 +436,7 @@ class _HomePageState extends State<HomePage> {
                           final snackBar = SnackBar(content: Text("Database Error : ${error.toString()}"));
                           ScaffoldMessenger.of(context).showSnackBar(snackBar);
                         });
+                        Navigator.pop(context);
                         Navigator.push(context, new MaterialPageRoute(
                             builder: (context) => Survey(model.name)));
                       },
@@ -650,17 +651,19 @@ class _HomePageState extends State<HomePage> {
         onPressed: ()async{
           final ProgressDialog pr = ProgressDialog(context: context);
           pr.show(max: 100, msg: "Loading");
+          SharedPref sharedPref=new SharedPref();
           sharedPref.getGenderPref().then((value){
             FirebaseFirestore.instance.collection('settings').doc("whatsapp").collection("contacts")
                 .where("gender", isEqualTo:value.toString()).get().then((QuerySnapshot querySnapshot) {querySnapshot.docs.forEach((doc) {
               pr.close();
-                FlutterOpenWhatsapp.sendSingleMessage(doc['contact'], "Book a service from Hammam spa & beauty app");
+              FlutterOpenWhatsapp.sendSingleMessage(doc['contact'], "Book a service from Hammam spa & beauty app");
 
-              });
+            });
             });
 
             pr.close();
           });
+
 
 
         },
@@ -779,29 +782,26 @@ class _HomePageState extends State<HomePage> {
                                               Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => SelectGender("Home")));
                                             },
                                             child: Container(
-                                              height: 50,
-                                              width: MediaQuery.of(context).size.width*0.15,
-                                              child: CircleAvatar(
-                                                backgroundColor: Colors.white,
-                                                child: Image.network(genderImageUrl,width: 25,height: 25,),
+                                              decoration: BoxDecoration(
+                                                  color: Colors.grey,
+                                                  shape: BoxShape.circle,
+                                                  image: DecorationImage(
+                                                      image: NetworkImage(genderImageUrl),
+                                                      fit: BoxFit.cover
+                                                  ),
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: Colors.grey,
+                                                      blurRadius: 5.0,
+                                                      spreadRadius: 2.0,
+                                                    ),
+                                                  ]
                                               ),
+                                              height: 50,
+                                              width: 50,
                                             ),
                                           ),
-                                          /*InkWell(
-                                                onTap: (){
-                                                  setState(() {
-                                                    isFilterTabOpened=true;
-                                                  });
-                                                },
-                                                child: Container(
-                                                  height: 50,
-                                                  width: MediaQuery.of(context).size.width*0.15,
-                                                  child: CircleAvatar(
-                                                    backgroundColor: Colors.white,
-                                                    child: Image.asset('assets/images/filter.png',width: 25,height: 25,),
-                                                  ),
-                                                ),
-                                              )*/
+
                                         ],
                                       ),
                                     ),

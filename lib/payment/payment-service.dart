@@ -12,17 +12,20 @@ class StripeTransactionResponse {
 class StripeService {
   static String apiBase = 'https://api.stripe.com/v1';
   static String paymentApiUrl = '${StripeService.apiBase}/payment_intents';
-  static String secret = 'sk_test_51IBfRbE9NEzcI9oqWBIhu6mngqpIXmnbKTi8jsBJDARXFGBru3D16LvkUd6TPIyxe9Q71wWIa5wx95eaWgR2ehUm00q7hSspCJ';
+  //live key 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
+  //test key sk_test_51IBfRbE9NEzcI9oqWBIhu6mngqpIXmnbKTi8jsBJDARXFGBru3D16LvkUd6TPIyxe9Q71wWIa5wx95eaWgR2ehUm00q7hSspCJ
+  //= 'sk_test_51IBfRbE9NEzcI9oqWBIhu6mngqpIXmnbKTi8jsBJDARXFGBru3D16LvkUd6TPIyxe9Q71wWIa5wx95eaWgR2ehUm00q7hSspCJ'
+  static String? secret;
   static Map<String, String> headers = {
     'Authorization': 'Bearer ${StripeService.secret}',
     'Content-Type': 'application/x-www-form-urlencoded'
   };
-  static init() {
+  static init(String pubKey,mode,id) {
     StripePayment.setOptions(
         StripeOptions(
-            publishableKey: "pk_test_51IBfRbE9NEzcI9oqgyf4GmtBr14TRRHZ9bBxm6gOifIHU2tWNb2J7XAKXe6jbETpGNSASJ7DwWnQU9JOH1l1HDiw006m77WwxZ",
-            merchantId: "Test",
-            androidPayMode: 'test'
+            publishableKey: pubKey,
+            merchantId: id,
+            androidPayMode: mode
         )
     );
   }
@@ -37,7 +40,6 @@ class StripeService {
           currency!
       );
       var response = await StripePayment.confirmPaymentIntent(
-
           PaymentIntent(
               clientSecret: paymentIntent['client_secret'],
               paymentMethodId: paymentMethod.id
@@ -95,4 +97,3 @@ class StripeService {
     return null!;
   }
 }
-
